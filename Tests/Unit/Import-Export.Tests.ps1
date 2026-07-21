@@ -52,6 +52,19 @@ Get-Process
         { Import-TerminalPresentation -Path (Join-Path $script:WorkPath 'does-not-exist.md') } | Should -Throw
     }
 
+    It 'exports ANSI with a separator between every slide' {
+        $deck = New-TerminalPresentation -Title 'Ansi'
+        $deck | Add-TerminalSlide -Title 'One' -Content { Add-SlideText 'first' } | Out-Null
+        $deck | Add-TerminalSlide -Title 'Two' -Content { Add-SlideText 'second' } | Out-Null
+        $path = Join-Path $script:WorkPath 'deck.ansi'
+        Export-TerminalPresentation -Presentation $deck -Format Ansi -Path $path | Out-Null
+        $raw = Get-Content -Path $path -Raw
+        ([regex]::Matches($raw, ('-' * 40))).Count | Should -Be 1
+        $plain = $raw -replace "`e\[[\d;]*m", ''
+        $plain | Should -Match 'first'
+        $plain | Should -Match 'second'
+    }
+
     It 'imports a deck with no slides' {
         $path = Join-Path $script:WorkPath 'empty.json'
         '{"Title":"Empty","Slides":null}' | Set-Content -Path $path

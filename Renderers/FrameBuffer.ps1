@@ -10,7 +10,8 @@ function ConvertFrom-AnsiToSegments {
         if ($match.Index -gt $pos) {
             $segments.Add([pscustomobject]@{ Text = $Text.Substring($pos, $match.Index - $pos); Foreground = $fg; Bold = $bold })
         }
-        $codes = @($match.Groups[1].Value -split ';' | ForEach-Object { [int]$_ })
+        $rawCodes = $match.Groups[1].Value
+        $codes = if ([string]::IsNullOrEmpty($rawCodes)) { @(0) } else { @($rawCodes -split ';' | ForEach-Object { if ($_ -eq '') { 0 } else { [int]$_ } }) }
         if ($codes.Count -eq 1 -and $codes[0] -eq 0) { $fg = $null; $bold = $false }
         else {
             for ($i = 0; $i -lt $codes.Count; $i++) {

@@ -15,7 +15,7 @@ function Export-TerminalPresentation {
                 $content = for ($i = 0; $i -lt $Presentation.Slides.Count; $i++) {
                     Render-TerminalPresentationToString -Presentation $Presentation -SlideIndex $i -RevealStep $Presentation.Slides[$i].MaxRevealStep
                 }
-                Set-Content -Path $targetPath -Value ($content -join [Environment]::NewLine + [Environment]::NewLine + ('-' * 40) + [Environment]::NewLine) -NoNewline
+                Set-Content -Path $targetPath -Value ($content -join ([Environment]::NewLine + [Environment]::NewLine + ('-' * 40) + [Environment]::NewLine)) -NoNewline
             }
             'PlainText' {
                 $content = for ($i = 0; $i -lt $Presentation.Slides.Count; $i++) {

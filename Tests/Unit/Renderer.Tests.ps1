@@ -77,6 +77,15 @@ Describe 'Renderer helpers' {
         }
     }
 
+    It 'treats bare ESC[m as a reset' {
+        InModuleScope TerminalSlides {
+            $segments = ConvertFrom-AnsiToSegments -Text "$([char]27)[38;2;255;0;0mred$([char]27)[m plain"
+            $segments.Count | Should -Be 2
+            $segments[1].Text | Should -Be ' plain'
+            $segments[1].Foreground | Should -BeNullOrEmpty
+        }
+    }
+
     It 'applies syntax highlighting to code elements' {
         InModuleScope TerminalSlides {
             $theme = Get-ResolvedTheme -Name Midnight
