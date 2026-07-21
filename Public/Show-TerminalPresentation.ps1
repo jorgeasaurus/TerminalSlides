@@ -14,7 +14,7 @@ function Show-TerminalPresentation {
     }
 
     $capability = Get-TerminalPresentationCapability
-    if (-not $capability.Interactive -or $capability.IsRedirected) {
+    if (-not $capability.Interactive -or $capability.IsRedirected -or -not $capability.AnsiSupport) {
         for ($i = 0; $i -lt $Presentation.Slides.Count; $i++) {
             $text = Render-TerminalPresentationToString -Presentation $Presentation -SlideIndex $i -RevealStep $Presentation.Slides[$i].MaxRevealStep -PlainText -Capability $capability
             Write-Output $text
@@ -37,7 +37,8 @@ function Show-TerminalPresentation {
     $showCursor = "`e[?25h"
 
     try {
-        Write-Host -NoNewline ($escAltOn + $hideCursor)
+        if ($capability.AlternateBuffer) { Write-Host -NoNewline ($escAltOn + $hideCursor) }
+        else { Write-Host -NoNewline $hideCursor }
         do {
             $elapsed = [datetime]::UtcNow - $startTime
             $rendered = Render-TerminalPresentationToString -Presentation $Presentation -SlideIndex $slideIndex -RevealStep $revealStep -ShowNotes:$showNotes -OverviewMode:$overviewMode -ShowHelp:$showHelp -Blank:$blank -Elapsed $elapsed -ShowTimer:$showTimer -Capability $capability
@@ -70,6 +71,7 @@ function Show-TerminalPresentation {
     }
     finally {
         Write-Host -NoNewline (Get-AnsiReset)
-        Write-Host -NoNewline ($showCursor + $escAltOff)
+        if ($capability.AlternateBuffer) { Write-Host -NoNewline ($showCursor + $escAltOff) }
+        else { Write-Host -NoNewline $showCursor }
     }
 }
