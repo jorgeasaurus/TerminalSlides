@@ -101,7 +101,7 @@ Describe 'Renderer helpers' {
             $deck | Add-TerminalSlide -Title 'S' -Content { Add-SlideCode -Code 'function foo {}' -Language powershell } | Out-Null
             $frame = Get-RenderedSlideFrame -Presentation $deck -SlideIndex 0 -RevealStep 10
             $slide = $deck.Slides[0]
-            $theme = Get-ResolvedTheme -Presentation $deck -Slide $slide
+            $theme = Get-ResolvedTheme -Name $deck.Theme
             $baseFg = $theme.Foreground
             $colored = @{}
             for ($r = 0; $r -lt $frame.Height; $r++) {
