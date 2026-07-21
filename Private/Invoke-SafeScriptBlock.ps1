@@ -3,6 +3,7 @@ function Invoke-SafeScriptBlock {
     param(
         [Parameter(Mandatory)][scriptblock]$ScriptBlock,
         [switch]$SafeMode,
+        [ValidateSet('Current','Local')][string]$Scope = 'Current',
         [string[]]$AllowedCommands = @('Add-SlideTitle','Add-SlideSubtitle','Add-SlideText','Add-SlideBullet','Add-SlideCode','Add-SlideTable','Add-SlideChart','Add-SlideDiagram','Add-SlideImage','Add-SlideQuote','Add-SlideBox','Add-SlideNotes','Node','Edge')
     )
 
@@ -20,5 +21,5 @@ function Invoke-SafeScriptBlock {
             throw "SafeMode blocked content commands: $($disallowed -join ', ')"
         }
     }
-    & $ScriptBlock
+    if ($Scope -eq 'Local') { . $ScriptBlock } else { & $ScriptBlock }
 }

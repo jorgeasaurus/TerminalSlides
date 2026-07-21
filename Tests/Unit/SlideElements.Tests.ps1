@@ -16,6 +16,20 @@ Describe 'Slide element builders' {
         $deck.Slides[0].MaxRevealStep | Should -Be 2
     }
 
+    It 'runs diagram DSL without forcing SafeMode' {
+        $deck = New-TerminalPresentation -Title 'D'
+        $deck | Add-TerminalSlide -Title 'S' -Content {
+            Add-SlideDiagram -Content {
+                $id = 'a'
+                Node -Id $id -Label 'A'
+                Edge -From 'a' -To 'b'
+            }
+        } | Out-Null
+        $diagram = $deck.Slides[0].Elements | Where-Object { $_.Type -eq 'Diagram' }
+        $diagram | Should -Not -BeNullOrEmpty
+        $diagram.Content.Nodes.Count | Should -Be 1
+    }
+
     It 'creates code elements' {
         $deck = New-TerminalPresentation -Title 'Elements'
         $deck | Add-TerminalSlide -Title 'Slide' -Content { Add-SlideCode -Code 'Write-Host 1' -Language powershell } | Out-Null

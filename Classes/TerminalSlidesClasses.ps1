@@ -27,6 +27,8 @@ class ThemeDefinition {
     [string]$Heading
     [string]$Border
     [string]$CodeTheme
+    [string]$CodeBackground
+    [string]$CodeForeground
     [string]$BulletSymbol
     [string]$BoxDrawingStyle
     [string]$HeadingStyle

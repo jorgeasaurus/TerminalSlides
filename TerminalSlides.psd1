@@ -18,6 +18,8 @@
         'Add-SlideTable'
         'Add-SlideChart'
         'Add-SlideDiagram'
+        'Node'
+        'Edge'
         'Add-SlideImage'
         'Add-SlideQuote'
         'Add-SlideBox'

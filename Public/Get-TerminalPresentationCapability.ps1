@@ -11,7 +11,9 @@ function Get-TerminalPresentationCapability {
     try { $capability.Height = [Console]::WindowHeight } catch { $capability.Height = 24 }
     $term = $env:TERM
     $colorterm = $env:COLORTERM
-    $capability.AnsiSupport = [bool]($IsWindows ? ($env:WT_SESSION -or $env:TERM_PROGRAM -or $PSStyle.Formatting) : ($term -and $term -ne 'dumb'))
+    $supportsVirtualTerminal = $null
+    try { $supportsVirtualTerminal = $Host.UI.SupportsVirtualTerminal } catch { $supportsVirtualTerminal = $null }
+    $capability.AnsiSupport = [bool]($IsWindows ? ($supportsVirtualTerminal ?? [bool]($env:WT_SESSION -or $env:TERM_PROGRAM)) : ($term -and $term -ne 'dumb'))
     $capability.TrueColorSupport = [bool]($colorterm -match 'truecolor|24bit' -or $env:WT_SESSION -or $env:TERM_PROGRAM -eq 'iTerm.app')
     $capability.Color256Support = [bool]($term -match '256' -or $capability.TrueColorSupport)
     $capability.UnicodeSupport = $OutputEncoding.WebName -match 'utf'

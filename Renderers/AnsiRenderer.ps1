@@ -138,7 +138,12 @@ function ConvertTo-ElementLines {
             else {
                 [string]$Element.Content.Code
             }
-            return ,(Format-WordWrap -Text ($code -replace "`r", '') -Width $Width -OverflowBehavior 'Scroll')
+            $language = if ($Element.Content -is [System.Collections.IDictionary]) { [string]$Element.Content['Language'] } elseif ($Element.Content -isnot [string]) { [string]$Element.Content.Language } else { '' }
+            $wrapped = Format-WordWrap -Text ($code -replace "`r", '') -Width $Width -OverflowBehavior 'Scroll'
+            if ($language) {
+                return ,(Get-SyntaxHighlight -Code ($wrapped -join "`n") -Language $language -Theme $Theme)
+            }
+            return ,$wrapped
         }
         'Table' { return ,(ConvertTo-TableLines -Content $Element.Content) }
         'Chart' { return ,(ConvertTo-ChartLines -Content $Element.Content -Properties $Element.Properties -Theme $Theme -Width $Width) }
@@ -192,7 +197,21 @@ function Write-LinesToFrame {
             'Center' { $x = $Region.X + [Math]::Max(0, [Math]::Floor(($Region.Width - (Measure-TextWidth -Text $display)) / 2)) }
             'Right' { $x = $Region.X + [Math]::Max(0, $Region.Width - (Measure-TextWidth -Text $display) - $Element.Padding) }
         }
-        Set-FrameText -FrameBuffer $FrameBuffer -X $x -Y $y -Text $display -Foreground $fg -Background $bg -Bold:($Element.Type -eq 'Title') -Italic:($Element.Type -eq 'Subtitle')
+        $baseBold = ($Element.Type -eq 'Title')
+        $baseItalic = ($Element.Type -eq 'Subtitle')
+        if ($line -match "`e\[") {
+            $segments = ConvertFrom-AnsiToSegments -Text $display
+            if (-not $segments.Count) { $segments = @([pscustomobject]@{ Text = $display; Foreground = $null; Bold = $false }) }
+            $col = $x
+            foreach ($segment in $segments) {
+                $segmentFg = if ($segment.Foreground) { $segment.Foreground } else { $fg }
+                Set-FrameText -FrameBuffer $FrameBuffer -X $col -Y $y -Text $segment.Text -Foreground $segmentFg -Background $bg -Bold:($baseBold -or $segment.Bold) -Italic:$baseItalic
+                $col += (Measure-TextWidth -Text $segment.Text)
+            }
+        }
+        else {
+            Set-FrameText -FrameBuffer $FrameBuffer -X $x -Y $y -Text $display -Foreground $fg -Background $bg -Bold:$baseBold -Italic:$baseItalic
+        }
         $y++
     }
     return $y
@@ -331,7 +350,6 @@ function Render-TerminalPresentationToString {
         [TerminalCapability]$Capability = $script:Capabilities
     )
     $frame = Get-RenderedSlideFrame -Presentation $Presentation -SlideIndex $SlideIndex -RevealStep $RevealStep -ShowNotes:$ShowNotes -OverviewMode:$OverviewMode -ShowHelp:$ShowHelp -Blank:$Blank -Elapsed $Elapsed -ShowTimer:$ShowTimer -Capability $Capability
-    $rendered = $frame.Render($false)
     if ($PlainText) {
         $rows = [System.Collections.Generic.List[string]]::new()
         for ($r = 0; $r -lt $frame.Height; $r++) {
@@ -340,5 +358,5 @@ function Render-TerminalPresentationToString {
         }
         return ($rows -join [Environment]::NewLine)
     }
-    return $rendered
+    return $frame.Render($false)
 }

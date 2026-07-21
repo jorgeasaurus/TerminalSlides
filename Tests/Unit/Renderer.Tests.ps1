@@ -57,4 +57,25 @@ Describe 'Renderer helpers' {
             { Invoke-SafeScriptBlock -ScriptBlock { Add-SlideText 'ok' } -SafeMode } | Should -Not -Throw
         }
     }
+
+    It 'parses ANSI-colored text into styled segments' {
+        InModuleScope TerminalSlides {
+            $text = "$(Get-AnsiFg -Color '#FF0000')red$(Get-AnsiReset) plain"
+            $segments = ConvertFrom-AnsiToSegments -Text $text
+            $segments.Count | Should -Be 2
+            $segments[0].Text | Should -Be 'red'
+            $segments[0].Foreground | Should -Be '#FF0000'
+            $segments[1].Text | Should -Be ' plain'
+            $segments[1].Foreground | Should -BeNullOrEmpty
+        }
+    }
+
+    It 'applies syntax highlighting to code elements' {
+        InModuleScope TerminalSlides {
+            $theme = Get-ResolvedTheme -Name Midnight
+            $element = New-InternalSlideElement -Type 'Code' -Content ([ordered]@{ Code = 'function Test {}'; Language = 'powershell' })
+            $lines = ConvertTo-ElementLines -Element $element -Width 60 -Theme $theme
+            ($lines -join "`n") | Should -Match "`e\["
+        }
+    }
 }

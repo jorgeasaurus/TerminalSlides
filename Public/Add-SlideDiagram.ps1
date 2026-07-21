@@ -1,13 +1,16 @@
+# Diagram DSL state lives in script scope (module scope after dot-sourcing) so
+# Node/Edge can reach it regardless of where the DSL scriptblock was authored.
+$script:DiagramNodes = $null
+$script:DiagramEdges = $null
+
 function Node {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][string]$Id,
         [Parameter(Mandatory)][string]$Label
     )
-    $nodes = Get-TerminalSlidesStateValue -Name CurrentDiagramNodes
-    if (-not $nodes) { throw 'Node can only be used inside Add-SlideDiagram.' }
-    $nodes.Add([pscustomobject]@{ Id = $Id; Label = $Label })
-    Set-TerminalSlidesStateValue -Name CurrentDiagramNodes -Value $nodes
+    if ($null -eq $script:DiagramNodes) { throw 'Node can only be used inside Add-SlideDiagram.' }
+    $script:DiagramNodes.Add([pscustomobject]@{ Id = $Id; Label = $Label })
 }
 
 function Edge {
@@ -17,10 +20,8 @@ function Edge {
         [Parameter(Mandatory)][string]$To,
         [string]$Label
     )
-    $edges = Get-TerminalSlidesStateValue -Name CurrentDiagramEdges
-    if (-not $edges) { throw 'Edge can only be used inside Add-SlideDiagram.' }
-    $edges.Add([pscustomobject]@{ From = $From; To = $To; Label = $Label })
-    Set-TerminalSlidesStateValue -Name CurrentDiagramEdges -Value $edges
+    if ($null -eq $script:DiagramEdges) { throw 'Edge can only be used inside Add-SlideDiagram.' }
+    $script:DiagramEdges.Add([pscustomobject]@{ From = $From; To = $To; Label = $Label })
 }
 
 function Add-SlideDiagram {
@@ -29,30 +30,33 @@ function Add-SlideDiagram {
         [Parameter(Mandatory, ParameterSetName='Dsl')][scriptblock]$Content,
         [Parameter(Mandatory, ParameterSetName='Object')][hashtable]$Diagram,
         [string]$Region = 'Content',
-        [int]$RevealStep = 0
+        [int]$RevealStep = 0,
+        [switch]$SafeMode
     )
     try {
         $payload = if ($PSCmdlet.ParameterSetName -eq 'Object') {
             $Diagram
         }
         else {
-            Set-TerminalSlidesStateValue -Name CurrentDiagramNodes -Value ([System.Collections.Generic.List[object]]::new())
-            Set-TerminalSlidesStateValue -Name CurrentDiagramEdges -Value ([System.Collections.Generic.List[object]]::new())
+            $script:DiagramNodes = [System.Collections.Generic.List[object]]::new()
+            $script:DiagramEdges = [System.Collections.Generic.List[object]]::new()
             try {
-                Invoke-SafeScriptBlock -ScriptBlock $Content -SafeMode
+                # Dot-source into the current scope so script-scoped Node/Edge are
+                # visible to the content scriptblock wherever it was authored.
+                Invoke-SafeScriptBlock -ScriptBlock $Content -SafeMode:$SafeMode -Scope Local
                 @{
-                    Nodes = @(Get-TerminalSlidesStateValue -Name CurrentDiagramNodes)
-                    Edges = @(Get-TerminalSlidesStateValue -Name CurrentDiagramEdges)
+                    Nodes = @($script:DiagramNodes)
+                    Edges = @($script:DiagramEdges)
                 }
             }
             finally {
-                Set-TerminalSlidesStateValue -Name CurrentDiagramNodes -Value $null
-                Set-TerminalSlidesStateValue -Name CurrentDiagramEdges -Value $null
+                $script:DiagramNodes = $null
+                $script:DiagramEdges = $null
             }
         }
         Add-CurrentSlideElement -Element (New-InternalSlideElement -Type Diagram -Content $payload -Region $Region -RevealStep $RevealStep)
     }
     catch {
-        Write-Error $_
+        throw
     }
 }

@@ -85,7 +85,9 @@ function Set-TerminalSlidesStateValue {
 
 function Get-TerminalSlidesStateValue {
     param([Parameter(Mandatory)][string]$Name)
-    return $script:TerminalSlidesState[$Name]
+    # Write-Object with -NoEnumerate prevents empty collections (e.g., a fresh
+    # diagram node list) from being unrolled to $null on return.
+    ,$script:TerminalSlidesState[$Name] | Write-Output -NoEnumerate
 }
 
 function New-InternalSlideElement {
@@ -223,7 +225,7 @@ function New-PresentationFromData {
             if ($Data.Metadata.ContainsKey($key)) { $presentation.Metadata.$key = $Data.Metadata[$key] }
         }
     }
-    foreach ($slideData in @($Data.Slides)) {
+    foreach ($slideData in @($Data.Slides ?? @())) {
         $slide = [Slide]::new()
         foreach ($key in 'Id','Index','Title','Layout','Notes','Background','Transition','Hidden','MaxRevealStep') {
             if ($slideData.ContainsKey($key)) { $slide.$key = $slideData[$key] }
@@ -233,7 +235,7 @@ function New-PresentationFromData {
                 if ($slideData.Metadata.ContainsKey($key)) { $slide.Metadata.$key = $slideData.Metadata[$key] }
             }
         }
-        foreach ($elementData in @($slideData.Elements)) {
+        foreach ($elementData in @($slideData.Elements ?? @())) {
             $element = [SlideElement]::new()
             foreach ($key in 'Id','Type','Content','Region','X','Y','Width','Height','Alignment','VerticalAlignment','Padding','ForegroundColor','BackgroundColor','Border','BorderStyle','Style','RevealStep','OverflowBehavior','Properties') {
                 if ($elementData.ContainsKey($key)) { $element.$key = $elementData[$key] }
@@ -256,5 +258,5 @@ foreach ($file in $publicFiles) { . $file.FullName }
 Initialize-TerminalSlidesThemes
 $script:Capabilities = Get-TerminalPresentationCapability
 Export-ModuleMember -Function @(
-    'New-TerminalPresentation','Add-TerminalSlide','Add-SlideText','Add-SlideTitle','Add-SlideSubtitle','Add-SlideBullet','Add-SlideCode','Add-SlideTable','Add-SlideChart','Add-SlideDiagram','Add-SlideImage','Add-SlideQuote','Add-SlideBox','Add-SlideNotes','Show-TerminalPresentation','Export-TerminalPresentation','Import-TerminalPresentation','Get-TerminalPresentationTheme','New-TerminalPresentationTheme','Test-TerminalPresentation','Get-TerminalPresentationCapability','Set-TerminalSlide','Remove-TerminalSlide','Copy-TerminalSlide','Move-TerminalSlide','Get-TerminalSlide'
+    'New-TerminalPresentation','Add-TerminalSlide','Add-SlideText','Add-SlideTitle','Add-SlideSubtitle','Add-SlideBullet','Add-SlideCode','Add-SlideTable','Add-SlideChart','Add-SlideDiagram','Node','Edge','Add-SlideImage','Add-SlideQuote','Add-SlideBox','Add-SlideNotes','Show-TerminalPresentation','Export-TerminalPresentation','Import-TerminalPresentation','Get-TerminalPresentationTheme','New-TerminalPresentationTheme','Test-TerminalPresentation','Get-TerminalPresentationCapability','Set-TerminalSlide','Remove-TerminalSlide','Copy-TerminalSlide','Move-TerminalSlide','Get-TerminalSlide'
 )

@@ -1,3 +1,34 @@
+function ConvertFrom-AnsiToSegments {
+    [CmdletBinding()]
+    param([AllowNull()][string]$Text)
+    $segments = [System.Collections.Generic.List[object]]::new()
+    if ($null -eq $Text -or $Text -eq '') { return $segments.ToArray() }
+    $fg = $null
+    $bold = $false
+    $pos = 0
+    foreach ($match in [regex]::Matches($Text, "`e\[([\d;]*)m")) {
+        if ($match.Index -gt $pos) {
+            $segments.Add([pscustomobject]@{ Text = $Text.Substring($pos, $match.Index - $pos); Foreground = $fg; Bold = $bold })
+        }
+        $codes = @($match.Groups[1].Value -split ';' | ForEach-Object { [int]$_ })
+        if ($codes.Count -eq 1 -and $codes[0] -eq 0) { $fg = $null; $bold = $false }
+        else {
+            for ($i = 0; $i -lt $codes.Count; $i++) {
+                if ($codes[$i] -eq 1) { $bold = $true }
+                elseif ($codes[$i] -eq 38 -and $i + 4 -lt $codes.Count -and $codes[$i + 1] -eq 2) {
+                    $fg = '#{0:X2}{1:X2}{2:X2}' -f $codes[$i + 2], $codes[$i + 3], $codes[$i + 4]
+                    $i += 4
+                }
+            }
+        }
+        $pos = $match.Index + $match.Length
+    }
+    if ($pos -lt $Text.Length) {
+        $segments.Add([pscustomobject]@{ Text = $Text.Substring($pos); Foreground = $fg; Bold = $bold })
+    }
+    return $segments.ToArray()
+}
+
 function Set-FrameText {
     [CmdletBinding()]
     param(

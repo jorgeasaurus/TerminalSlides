@@ -52,6 +52,14 @@ Get-Process
         { Import-TerminalPresentation -Path (Join-Path $script:WorkPath 'does-not-exist.md') } | Should -Throw
     }
 
+    It 'imports a deck with no slides' {
+        $path = Join-Path $script:WorkPath 'empty.json'
+        '{"Title":"Empty","Slides":null}' | Set-Content -Path $path
+        $deck = Import-TerminalPresentation -Path $path
+        $deck.Title | Should -Be 'Empty'
+        $deck.Slides.Count | Should -Be 0
+    }
+
     It 'exports HTML with expected content' {
         $deck = New-TerminalPresentation -Title 'Html'
         $deck | Add-TerminalSlide -Title 'Slide' -Content { Add-SlideText 'Hello HTML' } | Out-Null

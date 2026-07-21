@@ -31,4 +31,10 @@ Describe 'Themes' {
         $deck = New-TerminalPresentation -Title 'Custom Theme Deck' -Theme DeckTheme
         $deck.Theme | Should -Be 'DeckTheme'
     }
+
+    It 'preserves CodeBackground and CodeForeground from theme files' {
+        $theme = Get-TerminalPresentationTheme -Name Midnight
+        $theme.CodeBackground | Should -Be '#0D1F33'
+        $theme.CodeForeground | Should -Be '#E5F1FF'
+    }
 }
