@@ -8,12 +8,18 @@ $testsPath = Join-Path $PSScriptRoot 'Tests'
 Import-Module $modulePath -Force
 Write-Host 'Module import succeeded.' -ForegroundColor Green
 
-if (-not (Get-Module -ListAvailable -Name Pester)) {
-    Write-Host 'Installing Pester...' -ForegroundColor Yellow
+$pesterModule = Get-Module -ListAvailable -Name Pester |
+    Sort-Object Version -Descending |
+    Select-Object -First 1
+if (-not $pesterModule -or $pesterModule.Version -lt [version]'5.0.0') {
+    Write-Host 'Installing Pester 5.x...' -ForegroundColor Yellow
     Install-Module Pester -Force -MinimumVersion 5.0.0 -Scope CurrentUser
+    $pesterModule = Get-Module -ListAvailable -Name Pester |
+        Sort-Object Version -Descending |
+        Select-Object -First 1
 }
 
-Import-Module Pester -Force
+Import-Module Pester -RequiredVersion $pesterModule.Version -Force
 $config = New-PesterConfiguration
 $config.Run.Path = $testsPath
 $config.Output.Verbosity = 'Detailed'
