@@ -120,8 +120,6 @@ $deck | Add-TerminalSlide -Title 'Flow' -Content {
 - CodeFocus
 - ImageFocus
 - Quote
-- Comparison
-- Dashboard
 - Blank
 
 ## Export formats

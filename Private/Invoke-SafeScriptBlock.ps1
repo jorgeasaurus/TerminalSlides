@@ -15,8 +15,17 @@ function Invoke-SafeScriptBlock {
             throw 'The supplied content script block could not be parsed safely.'
         }
         $commandAsts = $ast.FindAll({ param($node) $node -is [System.Management.Automation.Language.CommandAst] }, $true)
-        $commands = $commandAsts | ForEach-Object { $_.GetCommandName() } | Where-Object { $_ } | Select-Object -Unique
-        $disallowed = @($commands | Where-Object { $_ -notin $AllowedCommands })
+        $commands = [System.Collections.Generic.List[string]]::new()
+        $dynamic = $false
+        foreach ($commandAst in $commandAsts) {
+            $name = $commandAst.GetCommandName()
+            if ($name) { $commands.Add($name) }
+            else { $dynamic = $true }
+        }
+        if ($dynamic) {
+            throw 'SafeMode blocked dynamic or unresolvable command invocations.'
+        }
+        $disallowed = @($commands | Select-Object -Unique | Where-Object { $_ -notin $AllowedCommands })
         if ($disallowed.Count -gt 0) {
             throw "SafeMode blocked content commands: $($disallowed -join ', ')"
         }

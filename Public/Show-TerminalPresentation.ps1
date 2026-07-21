@@ -2,8 +2,7 @@ function Show-TerminalPresentation {
     [CmdletBinding(DefaultParameterSetName='Presentation')]
     param(
         [Parameter(Mandatory, ParameterSetName='Presentation')][TerminalPresentation]$Presentation,
-        [Parameter(Mandatory, ParameterSetName='Path')][string]$Path,
-        [switch]$SafeMode
+        [Parameter(Mandatory, ParameterSetName='Path')][string]$Path
     )
 
     if ($PSCmdlet.ParameterSetName -eq 'Path') {

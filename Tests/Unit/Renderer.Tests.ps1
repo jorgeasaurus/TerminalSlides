@@ -58,6 +58,13 @@ Describe 'Renderer helpers' {
         }
     }
 
+    It 'blocks dynamic command invocation in SafeMode' {
+        InModuleScope TerminalSlides {
+            { Invoke-SafeScriptBlock -ScriptBlock { & 'Get-Process' } -SafeMode } | Should -Throw '*SafeMode*'
+            { Invoke-SafeScriptBlock -ScriptBlock { & $someVariable } -SafeMode } | Should -Throw '*SafeMode*'
+        }
+    }
+
     It 'parses ANSI-colored text into styled segments' {
         InModuleScope TerminalSlides {
             $text = "$(Get-AnsiFg -Color '#FF0000')red$(Get-AnsiReset) plain"
