@@ -204,6 +204,31 @@ class FrameBuffer {
         }
     }
 
+    [bool] CellEquals([FrameBufferCell]$a, [FrameBufferCell]$b) {
+        return ($a.Char -eq $b.Char -and $a.Fg -eq $b.Fg -and $a.Bg -eq $b.Bg -and
+                $a.Bold -eq $b.Bold -and $a.Italic -eq $b.Italic -and $a.Underline -eq $b.Underline)
+    }
+
+    [FrameBufferCell[][]] SnapshotCells() {
+        $rows = [FrameBufferCell[][]]::new($this.Height)
+        for ($r = 0; $r -lt $this.Height; $r++) {
+            $rows[$r] = [FrameBufferCell[]]::new($this.Width)
+            for ($c = 0; $c -lt $this.Width; $c++) {
+                $src = $this.Cells[$r][$c]
+                $copy = [FrameBufferCell]::new()
+                $copy.Char = $src.Char
+                $copy.Fg = $src.Fg
+                $copy.Bg = $src.Bg
+                $copy.Bold = $src.Bold
+                $copy.Italic = $src.Italic
+                $copy.Underline = $src.Underline
+                $copy.Strikethrough = $src.Strikethrough
+                $rows[$r][$c] = $copy
+            }
+        }
+        return $rows
+    }
+
     [string] Render([bool]$diffOnly) {
         $sb = [System.Text.StringBuilder]::new()
         $currentFg = $null
@@ -211,8 +236,17 @@ class FrameBuffer {
         $currentBold = $false
         $currentItalic = $false
         $currentUnderline = $false
+        $hasPrevious = ($null -ne $this.PreviousCells -and $this.PreviousCells.Count -eq $this.Height)
 
         for ($r = 0; $r -lt $this.Height; $r++) {
+            $rowDirty = $true
+            if ($diffOnly -and $hasPrevious) {
+                $rowDirty = $false
+                for ($c = 0; $c -lt $this.Width; $c++) {
+                    if (-not $this.CellEquals($this.Cells[$r][$c], $this.PreviousCells[$r][$c])) { $rowDirty = $true; break }
+                }
+            }
+            if (-not $rowDirty) { continue }
             [void]$sb.Append("`e[$($r + 1);1H")
             for ($c = 0; $c -lt $this.Width; $c++) {
                 $cell = $this.Cells[$r][$c]
@@ -241,7 +275,7 @@ class FrameBuffer {
             }
         }
         [void]$sb.Append("`e[0m")
-        $this.PreviousCells = $this.Cells
+        $this.PreviousCells = $this.SnapshotCells()
         return $sb.ToString()
     }
 }

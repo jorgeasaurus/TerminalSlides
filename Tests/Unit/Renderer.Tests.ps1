@@ -10,6 +10,23 @@ Describe 'Renderer helpers' {
         }
     }
 
+    It 'supports diff rendering with a real cell snapshot' {
+        InModuleScope TerminalSlides {
+            $frame = [FrameBuffer]::new(10, 3)
+            Set-FrameText -FrameBuffer $frame -X 0 -Y 0 -Text 'hello'
+            $null = $frame.Render($false)
+            $snapshot = $frame.PreviousCells
+            $snapshot[0][0].Char | Should -Be 'h'
+            # Mutating live cells must not alter the snapshot.
+            Set-FrameText -FrameBuffer $frame -X 0 -Y 0 -Text 'j'
+            $snapshot[0][0].Char | Should -Be 'h'
+            # Diff render of unchanged rows emits nothing for them.
+            $diff = $frame.Render($true)
+            $diff | Should -Match 'j'
+            ($diff -split "`e\[\d+;1H").Count | Should -BeLessThan 4
+        }
+    }
+
     It 'wraps words within width' {
         InModuleScope TerminalSlides {
             $lines = Format-WordWrap -Text 'alpha beta gamma' -Width 8
