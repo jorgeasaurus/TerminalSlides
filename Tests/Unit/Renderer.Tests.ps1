@@ -95,6 +95,26 @@ Describe 'Renderer helpers' {
         }
     }
 
+    It 'applies ANSI syntax colors to frame buffer cells' {
+        InModuleScope TerminalSlides {
+            $deck = New-TerminalPresentation -Title 'C' -Width 40 -Height 15
+            $deck | Add-TerminalSlide -Title 'S' -Content { Add-SlideCode -Code 'function foo {}' -Language powershell } | Out-Null
+            $frame = Get-RenderedSlideFrame -Presentation $deck -SlideIndex 0 -RevealStep 10
+            $slide = $deck.Slides[0]
+            $theme = Get-ResolvedTheme -Presentation $deck -Slide $slide
+            $baseFg = $theme.Foreground
+            $colored = @{}
+            for ($r = 0; $r -lt $frame.Height; $r++) {
+                foreach ($cell in $frame.Cells[$r]) {
+                    if ($cell.Char -ne ' ' -and $cell.Fg -and $cell.Fg -ne $baseFg) {
+                        $colored[$cell.Fg] = $true
+                    }
+                }
+            }
+            $colored.Count | Should -BeGreaterThan 0
+        }
+    }
+
     It 'blocks disallowed commands in SafeMode via AST analysis' {
         InModuleScope TerminalSlides {
             { Invoke-SafeScriptBlock -ScriptBlock { Get-Process } -SafeMode } | Should -Throw '*SafeMode*'
