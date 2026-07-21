@@ -83,11 +83,14 @@ function Import-TerminalPresentation {
                     if ($current -match '^<!--\s*Notes:\s*(.*?)\s*-->$') { Add-SlideNotes $matches[1]; continue }
                     if ($current.Trim()) { Add-SlideText $current.Trim() }
                 }
+                if ($inCode -and $codeLines.Count -gt 0) {
+                    Add-SlideCode -Code ($codeLines -join "`n") -Language $codeLang
+                }
             } | Out-Null
         }
         return $presentation
     }
     catch {
-        Write-Error $_
+        throw
     }
 }

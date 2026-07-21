@@ -30,4 +30,31 @@ Describe 'Renderer helpers' {
             Strip-AnsiSequences -Text $text | Should -Be 'red'
         }
     }
+
+    It 'highlights PowerShell code regardless of language casing' {
+        InModuleScope TerminalSlides {
+            $theme = Get-ResolvedTheme -Name Midnight
+            $lower = Get-SyntaxHighlight -Code 'function # comment' -Language 'powershell' -Theme $theme
+            $upper = Get-SyntaxHighlight -Code 'function # comment' -Language 'PowerShell' -Theme $theme
+            ($lower -join "`n") | Should -Be ($upper -join "`n")
+            ($upper -join "`n") | Should -Match 'comment'
+        }
+    }
+
+    It 'renders image elements without alt text' {
+        InModuleScope TerminalSlides {
+            $theme = Get-ResolvedTheme -Name Midnight
+            $element = New-InternalSlideElement -Type 'Image' -Content @{ Path = 'diagram.png' }
+            $lines = ConvertTo-ElementLines -Element $element -Width 40 -Theme $theme
+            $lines[0] | Should -Be 'Image: diagram.png'
+            $lines.Count | Should -Be 2
+        }
+    }
+
+    It 'blocks disallowed commands in SafeMode via AST analysis' {
+        InModuleScope TerminalSlides {
+            { Invoke-SafeScriptBlock -ScriptBlock { Get-Process } -SafeMode } | Should -Throw '*SafeMode*'
+            { Invoke-SafeScriptBlock -ScriptBlock { Add-SlideText 'ok' } -SafeMode } | Should -Not -Throw
+        }
+    }
 }

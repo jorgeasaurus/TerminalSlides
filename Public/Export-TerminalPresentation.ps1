@@ -105,6 +105,6 @@ $($slidesHtml -join [Environment]::NewLine)
         Get-Item -Path $targetPath
     }
     catch {
-        Write-Error $_
+        throw
     }
 }

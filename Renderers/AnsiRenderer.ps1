@@ -145,7 +145,7 @@ function ConvertTo-ElementLines {
         'Diagram' { return ,(ConvertTo-DiagramLines -Content $Element.Content) }
         'Image' {
             $path = if ($Element.Content -is [hashtable]) { $Element.Content.Path } else { [string]$Element.Content }
-            $alt = if ($Element.Content -is [hashtable]) { $Element.Content.AltText } else { '' }
+            $alt = if ($Element.Content -is [hashtable]) { [string]($Element.Content.AltText ?? '') } else { '' }
             return ,@("Image: $path", $alt)
         }
         'Quote' {

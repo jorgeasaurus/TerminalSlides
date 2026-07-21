@@ -19,4 +19,16 @@ Describe 'Themes' {
         $theme.Name | Should -Be 'Custom'
         $theme.BoxDrawingStyle | Should -Be 'unicode'
     }
+
+    It 'registers custom themes so they resolve by name' {
+        $null = New-TerminalPresentationTheme -Name RegisteredCustom -Background '#000000' -Foreground '#FFFFFF' -Primary '#111111'
+        $resolved = Get-TerminalPresentationTheme -Name RegisteredCustom
+        $resolved.Name | Should -Be 'RegisteredCustom'
+    }
+
+    It 'accepts custom themes in New-TerminalPresentation' {
+        $null = New-TerminalPresentationTheme -Name DeckTheme -Background '#000000' -Foreground '#FFFFFF' -Primary '#111111'
+        $deck = New-TerminalPresentation -Title 'Custom Theme Deck' -Theme DeckTheme
+        $deck.Theme | Should -Be 'DeckTheme'
+    }
 }

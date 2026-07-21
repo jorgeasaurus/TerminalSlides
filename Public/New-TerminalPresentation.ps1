@@ -7,7 +7,6 @@ function New-TerminalPresentation {
         [string]$Subtitle,
         [string]$Author,
         [string]$Description,
-        [ValidateSet('Midnight','PowerShell','Monochrome','SolarizedDark','SolarizedLight','HighContrast','RetroTerminal','Minimal')]
         [string]$Theme = 'Midnight',
         [int]$Width = 0,
         [int]$Height = 0,
@@ -36,6 +35,6 @@ function New-TerminalPresentation {
         return $presentation
     }
     catch {
-        Write-Error $_
+        throw
     }
 }

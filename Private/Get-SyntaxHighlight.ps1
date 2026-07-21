@@ -20,7 +20,7 @@ function Get-SyntaxHighlight {
     }
     $result = foreach ($line in $lines) {
         $rendered = $line
-        if ($Language -eq 'powershell') {
+        if ($Language -ieq 'powershell') {
             $rendered = $rendered -replace '(#.*)$', "$(Get-AnsiFg $commentColor)`$1$(Get-AnsiReset)"
             $rendered = $rendered -replace "'([^']*)'", "$(Get-AnsiFg $stringColor)'`$1'$(Get-AnsiReset)"
         }

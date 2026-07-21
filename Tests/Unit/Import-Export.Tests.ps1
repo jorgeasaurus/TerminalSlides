@@ -34,6 +34,24 @@ theme: Midnight
         $deck.Slides.Count | Should -Be 1
     }
 
+    It 'imports markdown with unclosed trailing code block' {
+        $path = Join-Path $script:WorkPath 'unclosed.md'
+        @'
+# Code Slide
+
+```powershell
+Get-Process
+'@ | Set-Content -Path $path
+        $deck = Import-TerminalPresentation -Path $path
+        $codeElement = $deck.Slides[0].Elements | Where-Object { $_.Type -eq 'Code' }
+        $codeElement | Should -Not -BeNullOrEmpty
+        $codeElement.Content.Code | Should -Match 'Get-Process'
+    }
+
+    It 'throws on missing import path' {
+        { Import-TerminalPresentation -Path (Join-Path $script:WorkPath 'does-not-exist.md') } | Should -Throw
+    }
+
     It 'exports HTML with expected content' {
         $deck = New-TerminalPresentation -Title 'Html'
         $deck | Add-TerminalSlide -Title 'Slide' -Content { Add-SlideText 'Hello HTML' } | Out-Null

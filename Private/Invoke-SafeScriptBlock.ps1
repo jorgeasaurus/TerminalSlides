@@ -9,12 +9,13 @@ function Invoke-SafeScriptBlock {
     if ($SafeMode) {
         $tokens = $null
         $errors = $null
-        [System.Management.Automation.Language.Parser]::ParseInput($ScriptBlock.ToString(), [ref]$tokens, [ref]$errors) | Out-Null
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput($ScriptBlock.ToString(), [ref]$tokens, [ref]$errors)
         if ($errors.Count -gt 0) {
             throw 'The supplied content script block could not be parsed safely.'
         }
-        $commands = $tokens.Where({ $_.Kind -eq 'Generic' }).Text | Select-Object -Unique
-        $disallowed = @($commands | Where-Object { $_ -and $_ -notin $AllowedCommands })
+        $commandAsts = $ast.FindAll({ param($node) $node -is [System.Management.Automation.Language.CommandAst] }, $true)
+        $commands = $commandAsts | ForEach-Object { $_.GetCommandName() } | Where-Object { $_ } | Select-Object -Unique
+        $disallowed = @($commands | Where-Object { $_ -notin $AllowedCommands })
         if ($disallowed.Count -gt 0) {
             throw "SafeMode blocked content commands: $($disallowed -join ', ')"
         }

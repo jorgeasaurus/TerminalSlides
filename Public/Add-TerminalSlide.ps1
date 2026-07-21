@@ -57,7 +57,7 @@ function Add-TerminalSlide {
             }
         }
         catch {
-            Write-Error $_
+            throw
         }
     }
 }

@@ -41,5 +41,7 @@ function New-TerminalPresentationTheme {
     $theme.WarningColor = $WarningColor
     $theme.SuccessColor = $SuccessColor
     $theme.Metadata = $Metadata
+    if (-not $script:Themes) { $script:Themes = @{} }
+    $script:Themes[$theme.Name] = $theme
     return $theme
 }
