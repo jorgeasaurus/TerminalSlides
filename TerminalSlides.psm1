@@ -219,7 +219,8 @@ function New-PresentationFromData {
         if ($Data.ContainsKey($key)) { $presentation.$key = $Data[$key] }
     }
     if ($Data.ContainsKey('CreatedDate')) { $presentation.CreatedDate = [datetime]::Parse($Data.CreatedDate) }
-    if ($Data.ContainsKey('ModifiedDate')) { $presentation.ModifiedDate = [datetime]::Parse($Data.ModifiedDate) }
+    $importedModifiedDate = $null
+    if ($Data.ContainsKey('ModifiedDate') -and $Data.ModifiedDate) { $importedModifiedDate = [datetime]::Parse($Data.ModifiedDate) }
     if ($Data.ContainsKey('Metadata') -and $Data.Metadata) {
         foreach ($key in 'Title','Subtitle','Author','Description','Version','Custom') {
             if ($Data.Metadata.ContainsKey($key)) { $presentation.Metadata.$key = $Data.Metadata[$key] }
@@ -245,6 +246,7 @@ function New-PresentationFromData {
         $presentation.Slides.Add($slide)
     }
     Update-SlideIndices -Presentation $presentation
+    if ($importedModifiedDate) { $presentation.ModifiedDate = $importedModifiedDate }
     return $presentation
 }
 

@@ -308,14 +308,22 @@ function Get-RenderedSlideFrame {
             }
             foreach ($element in $elements) {
                 if ($element.Border) {
-                    $borderHeight = [Math]::Max(3, [Math]::Min($region.Height - ($y - $region.Y), [Math]::Max(3, ($element.Height + 2))))
+                    $contentWidth = [Math]::Max(1, $region.Width - 2 - ($element.Padding * 2))
+                    $lines = ConvertTo-ElementLines -Element $element -Theme $theme -Width $contentWidth
+                    $availableHeight = [Math]::Max(3, $region.Height - ($y - $region.Y))
+                    $borderHeight = [Math]::Min($availableHeight, [Math]::Max(3, $lines.Count + 2))
                     $borderFg = if ($element.ForegroundColor) { $element.ForegroundColor } else { $theme.Border }
                     $borderBg = if ($element.BackgroundColor) { $element.BackgroundColor } else { $theme.Background }
                     Draw-FrameBox -FrameBuffer $frame -X $region.X -Y $y -Width $region.Width -Height $borderHeight -Foreground $borderFg -Background $borderBg -Style $element.BorderStyle
+                    $innerRegion = @{ X = $region.X + 1; Y = $y + 1; Width = $region.Width - 2; Height = $borderHeight - 2 }
+                    Write-LinesToFrame -FrameBuffer $frame -Lines $lines -Region $innerRegion -Theme $theme -Element $element -StartY ($y + 1) | Out-Null
+                    $y += $borderHeight + 1
                 }
-                $lines = ConvertTo-ElementLines -Element $element -Theme $theme -Width ([Math]::Max(1, $region.Width - ($element.Padding * 2)))
-                $y = Write-LinesToFrame -FrameBuffer $frame -Lines $lines -Region $region -Theme $theme -Element $element -StartY $y
-                $y++
+                else {
+                    $lines = ConvertTo-ElementLines -Element $element -Theme $theme -Width ([Math]::Max(1, $region.Width - ($element.Padding * 2)))
+                    $y = Write-LinesToFrame -FrameBuffer $frame -Lines $lines -Region $region -Theme $theme -Element $element -StartY $y
+                    $y++
+                }
             }
         }
     }

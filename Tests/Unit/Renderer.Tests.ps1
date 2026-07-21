@@ -81,6 +81,20 @@ Describe 'Renderer helpers' {
         }
     }
 
+    It 'renders bordered elements without overwriting the border' {
+        InModuleScope TerminalSlides {
+            $deck = New-TerminalPresentation -Title 'B' -Width 40 -Height 15
+            $deck | Add-TerminalSlide -Title 'S' -Content { Add-SlideCode -Code "line1`nline2`nline3`nline4" -Language text -Border } | Out-Null
+            $frame = Get-RenderedSlideFrame -Presentation $deck -SlideIndex 0 -RevealStep 10
+            $rowText = -join ($frame.Cells[5] | ForEach-Object { $_.Char })
+            # Top border row should be box-drawing, content rows should contain code text
+            $all = (0..($frame.Height - 1) | ForEach-Object { -join ($frame.Cells[$_] | ForEach-Object { $_.Char }) }) -join "`n"
+            $all | Should -Match 'line1'
+            $all | Should -Match 'line4'
+            $all | Should -Match '┌'
+        }
+    }
+
     It 'blocks disallowed commands in SafeMode via AST analysis' {
         InModuleScope TerminalSlides {
             { Invoke-SafeScriptBlock -ScriptBlock { Get-Process } -SafeMode } | Should -Throw '*SafeMode*'

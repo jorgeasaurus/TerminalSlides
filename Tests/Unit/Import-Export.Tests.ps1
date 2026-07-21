@@ -85,6 +85,16 @@ Get-Process
         $plain | Should -Match 'second'
     }
 
+    It 'preserves ModifiedDate through PSD1 roundtrip' {
+        $deck = New-TerminalPresentation -Title 'Dates'
+        $deck | Add-TerminalSlide -Title 'S' -Content { Add-SlideText 'x' } | Out-Null
+        $deck.ModifiedDate = [datetime]'2020-01-02T03:04:05Z'
+        $path = Join-Path $script:WorkPath 'dates.psd1'
+        Export-TerminalPresentation -Presentation $deck -Format Psd1 -Path $path | Out-Null
+        $imported = Import-TerminalPresentation -Path $path
+        $imported.ModifiedDate.ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss') | Should -Be '2020-01-02T03:04:05'
+    }
+
     It 'imports a deck with no slides' {
         $path = Join-Path $script:WorkPath 'empty.json'
         '{"Title":"Empty","Slides":null}' | Set-Content -Path $path
