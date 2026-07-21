@@ -1,0 +1,21 @@
+# Test artifacts
+Tests/Unit/_artifacts/
+Tests/Integration/_artifacts/
+TestResults.xml
+TestResults/
+
+# Build output
+dist/
+out/
+*.zip
+
+# Editor and OS
+.DS_Store
+Thumbs.db
+.vscode/settings.json
+*.swp
+*~
+
+# PowerShell
+*.psm1.bak
+*.psd1.bak
