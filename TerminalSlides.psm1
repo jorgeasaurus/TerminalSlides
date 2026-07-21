@@ -4,8 +4,6 @@ $script:ModuleRoot = $PSScriptRoot
 $script:TerminalSlidesState = @{
     CurrentSlideElements = $null
     CurrentSlideContext  = $null
-    CurrentDiagramNodes  = $null
-    CurrentDiagramEdges  = $null
 }
 $script:Themes = @{}
 $script:Capabilities = $null
