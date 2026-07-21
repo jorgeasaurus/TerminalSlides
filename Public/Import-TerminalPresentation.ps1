@@ -39,8 +39,10 @@ function Import-TerminalPresentation {
         $presentation = New-TerminalPresentation -Title $title -Author $author -Theme $theme
         $slideBuffer = [System.Collections.Generic.List[string]]::new()
         $slides = [System.Collections.Generic.List[string]]::new()
+        $inFence = $false
         foreach ($line in ($content -split "\r?\n")) {
-            if ($line.Trim() -eq '---') {
+            if ($line.TrimStart() -match '^```') { $inFence = -not $inFence }
+            if ($line.Trim() -eq '---' -and -not $inFence) {
                 $candidate = ($slideBuffer -join "`n").Trim()
                 if ($candidate) { $slides.Add($candidate) }
                 $slideBuffer.Clear()

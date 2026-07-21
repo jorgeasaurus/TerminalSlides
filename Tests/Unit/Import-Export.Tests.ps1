@@ -34,6 +34,26 @@ theme: Midnight
         $deck.Slides.Count | Should -Be 1
     }
 
+    It 'does not split slides on --- inside fenced code blocks' {
+        $path = Join-Path $script:WorkPath 'fenced-separator.md'
+        @'
+# Slide One
+
+```yaml
+key: value
+---
+other: thing
+```
+
+# Slide Two
+
+text
+'@ | Set-Content -Path $path
+        $deck = Import-TerminalPresentation -Path $path
+        $deck.Slides.Count | Should -Be 1
+        $deck.Slides[0].Title | Should -Be 'Slide One'
+    }
+
     It 'imports markdown with unclosed trailing code block' {
         $path = Join-Path $script:WorkPath 'unclosed.md'
         @'

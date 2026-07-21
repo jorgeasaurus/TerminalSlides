@@ -51,6 +51,19 @@ Describe 'Renderer helpers' {
         }
     }
 
+    It 'renders box elements with the theme box drawing style' {
+        InModuleScope TerminalSlides {
+            $theme = Get-ResolvedTheme -Name Midnight
+            $theme.BoxDrawingStyle = 'rounded'
+            $element = New-InternalSlideElement -Type 'Box' -Content 'hi'
+            $lines = ConvertTo-ElementLines -Element $element -Width 12 -Theme $theme
+            $lines[0] | Should -Match ([regex]::Escape([string][char]0x256D))
+            $theme.BoxDrawingStyle = 'ascii'
+            $ascii = ConvertTo-ElementLines -Element $element -Width 12 -Theme $theme
+            $ascii[0] | Should -Match '^\+'
+        }
+    }
+
     It 'blocks disallowed commands in SafeMode via AST analysis' {
         InModuleScope TerminalSlides {
             { Invoke-SafeScriptBlock -ScriptBlock { Get-Process } -SafeMode } | Should -Throw '*SafeMode*'

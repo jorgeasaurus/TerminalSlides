@@ -160,12 +160,14 @@ function ConvertTo-ElementLines {
             return ,$lines.ToArray()
         }
         'Box' {
+            $boxChars = Get-BoxCharacters -Style $Theme.BoxDrawingStyle
             $inner = Format-WordWrap -Text $contentText -Width ([Math]::Max(1, $Width - 4))
-            $border = '+' + ('-' * ([Math]::Max(1, $Width - 2))) + '+'
+            $border = $boxChars.Tl + ($boxChars.H * ([Math]::Max(1, $Width - 2))) + $boxChars.Tr
+            $bottom = $boxChars.Bl + ($boxChars.H * ([Math]::Max(1, $Width - 2))) + $boxChars.Br
             $lines = [System.Collections.Generic.List[string]]::new()
             $lines.Add($border)
-            foreach ($line in $inner) { $lines.Add('| ' + $line.PadRight([Math]::Max(1, $Width - 4)) + ' |') }
-            $lines.Add($border)
+            foreach ($line in $inner) { $lines.Add($boxChars.V + ' ' + $line.PadRight([Math]::Max(1, $Width - 4)) + ' ' + $boxChars.V) }
+            $lines.Add($bottom)
             return ,$lines.ToArray()
         }
         default {
@@ -184,8 +186,12 @@ function Write-LinesToFrame {
         [SlideElement]$Element,
         [int]$StartY
     )
-    $fg = if ($Element.ForegroundColor) { $Element.ForegroundColor } else { $Theme.Foreground }
-    $bg = if ($Element.BackgroundColor) { $Element.BackgroundColor } else { $null }
+    $fg = if ($Element.ForegroundColor) { $Element.ForegroundColor }
+          elseif ($Element.Type -eq 'Code' -and $Theme.CodeForeground) { $Theme.CodeForeground }
+          else { $Theme.Foreground }
+    $bg = if ($Element.BackgroundColor) { $Element.BackgroundColor }
+          elseif ($Element.Type -eq 'Code' -and $Theme.CodeBackground) { $Theme.CodeBackground }
+          else { $null }
     $y = $StartY
     $usableWidth = [Math]::Max(1, $Region.Width - ($Element.Padding * 2))
     foreach ($line in $Lines) {
