@@ -12,7 +12,7 @@ function New-TerminalPresentationTheme {
         [string]$Border = $Primary,
         [string]$CodeTheme = 'Default',
         [string]$BulletSymbol = '•',
-        [ValidateSet('unicode','ascii','double')][string]$BoxDrawingStyle = 'unicode',
+        [ValidateSet('unicode','ascii','double','rounded','single')][string]$BoxDrawingStyle = 'unicode',
         [ValidateSet('plain','bold','banner')][string]$HeadingStyle = 'bold',
         [string[]]$ChartPalette = @(),
         [string]$ErrorColor = '#FF0000',

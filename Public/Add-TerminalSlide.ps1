@@ -40,6 +40,9 @@ function Add-TerminalSlide {
                         $slide.Notes = [string]$item.Text
                     }
                 }
+                # Collect elements that were queued via Add-Slide* helpers during the Content scriptblock.
+                # These helpers write to $script:TerminalSlidesState rather than returning values,
+                # so they are captured separately from the scriptblock return values above.
                 foreach ($element in (Get-TerminalSlidesStateValue -Name CurrentSlideElements)) { $slide.Elements.Add($element) }
                 $context = Get-TerminalSlidesStateValue -Name CurrentSlideContext
                 if ($context.Notes) { $slide.Notes = $context.Notes }
