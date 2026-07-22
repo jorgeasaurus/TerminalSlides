@@ -1,7 +1,7 @@
 function Test-TerminalPresentation {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)][TerminalPresentation]$Presentation,
+        [Parameter(Mandatory)][TerminalSlides.Schema.V1.TerminalPresentation]$Presentation,
         [string[]]$Viewport = @('80x24', '120x35', '160x45')
     )
 
@@ -10,7 +10,7 @@ function Test-TerminalPresentation {
             Write-Warning "Viewport '$vp' is invalid."
             continue
         }
-        $capability = [TerminalCapability]::new()
+        $capability = [TerminalSlides.Schema.V1.TerminalCapability]::new()
         $capability.Width = [int]$matches[1]
         $capability.Height = [int]$matches[2]
         $capability.AnsiSupport = $true

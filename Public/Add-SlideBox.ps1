@@ -5,5 +5,5 @@ function Add-SlideBox {
         [string]$Region = 'Content',
         [int]$RevealStep = 0
     )
-    Add-CurrentSlideElement -Element (New-InternalSlideElement -Type Box -Content $Text -Region $Region -RevealStep $RevealStep)
+    Add-CurrentSlideElement -Element (New-InternalSlideElement -Kind Box -Payload ([TerminalSlides.Schema.V1.TextPayload]::new($Text)) -Region $Region -RevealStep $RevealStep)
 }

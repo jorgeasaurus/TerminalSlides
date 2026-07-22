@@ -9,6 +9,6 @@ function Add-SlideText {
         [string]$BackgroundColor,
         [ValidateSet('Wrap','Truncate','Scroll')][string]$OverflowBehavior = 'Wrap'
     )
-    $element = New-InternalSlideElement -Type Text -Content $Text -Region $Region -Alignment $Alignment -RevealStep $RevealStep -ForegroundColor $ForegroundColor -BackgroundColor $BackgroundColor -OverflowBehavior $OverflowBehavior
+    $element = New-InternalSlideElement -Kind Text -Payload ([TerminalSlides.Schema.V1.TextPayload]::new($Text)) -Region $Region -Alignment $Alignment -RevealStep $RevealStep -ForegroundColor $ForegroundColor -BackgroundColor $BackgroundColor -OverflowBehavior $OverflowBehavior
     Add-CurrentSlideElement -Element $element
 }

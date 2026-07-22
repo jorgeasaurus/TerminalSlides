@@ -7,6 +7,6 @@ function Add-SlideCode {
         [int]$RevealStep = 0,
         [switch]$Border
     )
-    $content = [ordered]@{ Code = $Code; Language = $Language }
-    Add-CurrentSlideElement -Element (New-InternalSlideElement -Type Code -Content $content -Region $Region -RevealStep $RevealStep -Border:$Border -Padding 1 -Properties @{ Language = $Language })
+    $payload = [TerminalSlides.Schema.V1.CodePayload]::new($Code, $Language)
+    Add-CurrentSlideElement -Element (New-InternalSlideElement -Kind Code -Payload $payload -Region $Region -RevealStep $RevealStep -Border:$Border -Padding 1)
 }

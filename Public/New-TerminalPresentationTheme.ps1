@@ -10,7 +10,6 @@ function New-TerminalPresentationTheme {
         [string]$Muted = $Foreground,
         [string]$Heading = $Primary,
         [string]$Border = $Primary,
-        [string]$CodeTheme = 'Default',
         [string]$BulletSymbol = '•',
         [ValidateSet('unicode','ascii','double','rounded','single')][string]$BoxDrawingStyle = 'unicode',
         [ValidateSet('plain','bold','banner')][string]$HeadingStyle = 'bold',
@@ -23,7 +22,7 @@ function New-TerminalPresentationTheme {
     foreach ($color in @($Background,$Foreground,$Primary,$Accent,$Muted,$Heading,$Border,$ErrorColor,$WarningColor,$SuccessColor) + $ChartPalette) {
         if ($color) { $null = Convert-HexToRgb -Hex $color }
     }
-    $theme = [ThemeDefinition]::new()
+    $theme = [TerminalSlides.Schema.V1.ThemeDefinition]::new()
     $theme.Name = $Name
     $theme.Background = $Background
     $theme.Foreground = $Foreground
@@ -32,7 +31,7 @@ function New-TerminalPresentationTheme {
     $theme.Muted = $Muted
     $theme.Heading = $Heading
     $theme.Border = $Border
-    $theme.CodeTheme = $CodeTheme
+    $theme.CodeTheme = 'Default'
     $theme.BulletSymbol = $BulletSymbol
     $theme.BoxDrawingStyle = $BoxDrawingStyle
     $theme.HeadingStyle = $HeadingStyle

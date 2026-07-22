@@ -1,27 +1,24 @@
-# Diagram DSL state lives in script scope (module scope after dot-sourcing) so
-# Node/Edge can reach it regardless of where the DSL scriptblock was authored.
-$script:DiagramNodes = $null
-$script:DiagramEdges = $null
-
-function Node {
+function Add-SlideDiagramNode {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][string]$Id,
         [Parameter(Mandatory)][string]$Label
     )
-    if ($null -eq $script:DiagramNodes) { throw 'Node can only be used inside Add-SlideDiagram.' }
-    $script:DiagramNodes.Add([pscustomobject]@{ Id = $Id; Label = $Label })
+    $context = Get-TerminalSlidesBuildContext -Kind Diagram
+    if ($null -eq $context) { throw 'Add-SlideDiagramNode can only be used inside Add-SlideDiagram.' }
+    $context.Nodes.Add([TerminalSlides.Schema.V1.DiagramNode]::new($Id, $Label))
 }
 
-function Edge {
+function Add-SlideDiagramEdge {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][string]$From,
         [Parameter(Mandatory)][string]$To,
         [string]$Label
     )
-    if ($null -eq $script:DiagramEdges) { throw 'Edge can only be used inside Add-SlideDiagram.' }
-    $script:DiagramEdges.Add([pscustomobject]@{ From = $From; To = $To; Label = $Label })
+    $context = Get-TerminalSlidesBuildContext -Kind Diagram
+    if ($null -eq $context) { throw 'Add-SlideDiagramEdge can only be used inside Add-SlideDiagram.' }
+    $context.Edges.Add([TerminalSlides.Schema.V1.DiagramEdge]::new($From, $To, $Label))
 }
 
 function Add-SlideDiagram {
@@ -33,30 +30,34 @@ function Add-SlideDiagram {
         [int]$RevealStep = 0,
         [switch]$SafeMode
     )
-    try {
-        $payload = if ($PSCmdlet.ParameterSetName -eq 'Object') {
+    $diagramData = if ($PSCmdlet.ParameterSetName -eq 'Object') {
             $Diagram
         }
         else {
-            $script:DiagramNodes = [System.Collections.Generic.List[object]]::new()
-            $script:DiagramEdges = [System.Collections.Generic.List[object]]::new()
+            $context = Push-TerminalSlidesBuildContext -Kind Diagram
             try {
-                # Dot-source into the current scope so script-scoped Node/Edge are
-                # visible to the content scriptblock wherever it was authored.
                 Invoke-SafeScriptBlock -ScriptBlock $Content -SafeMode:$SafeMode -Scope Local
                 @{
-                    Nodes = @($script:DiagramNodes)
-                    Edges = @($script:DiagramEdges)
+                    Nodes = @($context.Nodes)
+                    Edges = @($context.Edges)
                 }
             }
             finally {
-                $script:DiagramNodes = $null
-                $script:DiagramEdges = $null
+                Pop-TerminalSlidesBuildContext -Context $context
             }
-        }
-        Add-CurrentSlideElement -Element (New-InternalSlideElement -Type Diagram -Content $payload -Region $Region -RevealStep $RevealStep)
     }
-    catch {
-        throw
-    }
+    $nodes = @($diagramData.Nodes | ForEach-Object {
+        if ($_ -is [TerminalSlides.Schema.V1.DiagramNode]) { $_ }
+        else { [TerminalSlides.Schema.V1.DiagramNode]::new([string](Get-TerminalSemanticProperty $_ Id), [string](Get-TerminalSemanticProperty $_ Label)) }
+    })
+    $edges = @($diagramData.Edges | ForEach-Object {
+        if ($_ -is [TerminalSlides.Schema.V1.DiagramEdge]) { $_ }
+        else { [TerminalSlides.Schema.V1.DiagramEdge]::new([string](Get-TerminalSemanticProperty $_ From), [string](Get-TerminalSemanticProperty $_ To), [string](Get-TerminalSemanticProperty $_ Label)) }
+    })
+    Assert-TerminalDiagramNodeIdentity -Nodes ([TerminalSlides.Schema.V1.DiagramNode[]]$nodes)
+    $payload = [TerminalSlides.Schema.V1.DiagramPayload]::new(
+        [TerminalSlides.Schema.V1.DiagramNode[]]$nodes,
+        [TerminalSlides.Schema.V1.DiagramEdge[]]$edges
+    )
+    Add-CurrentSlideElement -Element (New-InternalSlideElement -Kind Diagram -Payload $payload -Region $Region -RevealStep $RevealStep)
 }

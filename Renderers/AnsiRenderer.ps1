@@ -36,7 +36,7 @@ function ConvertTo-TableLines {
 }
 
 function ConvertTo-ChartLines {
-    param([object]$Content, [hashtable]$Properties, [ThemeDefinition]$Theme, [int]$Width)
+    param([object]$Content, [hashtable]$Properties, [TerminalSlides.Schema.V1.ThemeDefinition]$Theme, [int]$Width)
     $items = @($Content)
     if (-not $items.Count) { return ,@('No chart data') }
     $chartType = ($Properties.ChartType ?? 'HorizontalBar')
@@ -112,7 +112,7 @@ function ConvertTo-DiagramLines {
 }
 
 function ConvertTo-ElementLines {
-    param([SlideElement]$Element, [ThemeDefinition]$Theme, [int]$Width)
+    param([TerminalSlides.Schema.V1.SlideElement]$Element, [TerminalSlides.Schema.V1.ThemeDefinition]$Theme, [int]$Width)
     $contentText = if ($Element.Content -is [string]) { $Element.Content } else { $null }
     switch ($Element.Type) {
         'Title' { return ,(Format-WordWrap -Text $contentText -Width $Width) }
@@ -182,8 +182,8 @@ function Write-LinesToFrame {
         [FrameBuffer]$FrameBuffer,
         [string[]]$Lines,
         [hashtable]$Region,
-        [ThemeDefinition]$Theme,
-        [SlideElement]$Element,
+        [TerminalSlides.Schema.V1.ThemeDefinition]$Theme,
+        [TerminalSlides.Schema.V1.SlideElement]$Element,
         [int]$StartY
     )
     $fg = if ($Element.ForegroundColor) { $Element.ForegroundColor }
@@ -224,7 +224,7 @@ function Write-LinesToFrame {
 }
 
 function Get-SlideRenderDimensions {
-    param([TerminalPresentation]$Presentation, [TerminalCapability]$Capability)
+    param([TerminalSlides.Schema.V1.TerminalPresentation]$Presentation, [TerminalSlides.Schema.V1.TerminalCapability]$Capability)
     $width = if ($Presentation.Width -gt 0) { $Presentation.Width } elseif ($Capability.Width -gt 0) { $Capability.Width } else { 80 }
     $height = if ($Presentation.Height -gt 0) { $Presentation.Height } elseif ($Capability.Height -gt 0) { $Capability.Height } else { 24 }
     return @{ Width = $width; Height = $height }
@@ -233,7 +233,7 @@ function Get-SlideRenderDimensions {
 function Get-RenderedSlideFrame {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)][TerminalPresentation]$Presentation,
+        [Parameter(Mandatory)][TerminalSlides.Schema.V1.TerminalPresentation]$Presentation,
         [Parameter(Mandatory)][int]$SlideIndex,
         [int]$RevealStep = 0,
         [switch]$ShowNotes,
@@ -242,10 +242,10 @@ function Get-RenderedSlideFrame {
         [switch]$Blank,
         [timespan]$Elapsed = [timespan]::Zero,
         [switch]$ShowTimer,
-        [TerminalCapability]$Capability = $script:Capabilities
+        [TerminalSlides.Schema.V1.TerminalCapability]$Capability = $script:Capabilities
     )
 
-    $theme = Get-ResolvedTheme -Name $Presentation.Theme
+    $theme = Resolve-TerminalPresentationTheme -Presentation $Presentation
     $dims = Get-SlideRenderDimensions -Presentation $Presentation -Capability $Capability
     $frame = [FrameBuffer]::new($dims.Width, $dims.Height)
     Fill-FrameRegion -FrameBuffer $frame -Background $theme.Background -Foreground $theme.Foreground
@@ -266,7 +266,7 @@ function Get-RenderedSlideFrame {
         )
         $region = @{ X = 2; Y = 2; Width = $dims.Width - 4; Height = $dims.Height - 4 }
         Draw-FrameBox -FrameBuffer $frame -X $region.X -Y $region.Y -Width $region.Width -Height $region.Height -Foreground $theme.Border -Background $theme.Background -Style $theme.BoxDrawingStyle
-        Write-LinesToFrame -FrameBuffer $frame -Lines $help -Region @{ X = 4; Y = 4; Width = $dims.Width - 8; Height = $dims.Height - 8 } -Theme $theme -Element (New-InternalSlideElement -Type Text -Content '' -ForegroundColor $theme.Foreground) -StartY 4 | Out-Null
+        Write-LinesToFrame -FrameBuffer $frame -Lines $help -Region @{ X = 4; Y = 4; Width = $dims.Width - 8; Height = $dims.Height - 8 } -Theme $theme -Element (New-InternalSlideElement -Kind Text -Payload ([TerminalSlides.Schema.V1.TextPayload]::new('')) -ForegroundColor $theme.Foreground) -StartY 4 | Out-Null
         return $frame
     }
 
@@ -287,11 +287,11 @@ function Get-RenderedSlideFrame {
         Fill-FrameRegion -FrameBuffer $frame -Background $slide.Background -Foreground $theme.Foreground
     }
     if ($regions.ContainsKey('Title') -and $slide.Title) {
-        $titleElement = New-InternalSlideElement -Type Title -Content $slide.Title -ForegroundColor $theme.Heading
+        $titleElement = New-InternalSlideElement -Kind Title -Payload ([TerminalSlides.Schema.V1.TextPayload]::new($slide.Title)) -ForegroundColor $theme.Heading
         $titleLines = Format-WordWrap -Text $slide.Title -Width $regions.Title.Width
         Write-LinesToFrame -FrameBuffer $frame -Lines $titleLines -Region $regions.Title -Theme $theme -Element $titleElement -StartY $regions.Title.Y | Out-Null
         if ($Presentation.Subtitle -and $slide.Layout -eq 'Title') {
-            $subEl = New-InternalSlideElement -Type Subtitle -Content $Presentation.Subtitle -ForegroundColor $theme.Muted
+            $subEl = New-InternalSlideElement -Kind Subtitle -Payload ([TerminalSlides.Schema.V1.TextPayload]::new($Presentation.Subtitle)) -ForegroundColor $theme.Muted
             $subLines = Format-WordWrap -Text $Presentation.Subtitle -Width $regions.Title.Width
             Write-LinesToFrame -FrameBuffer $frame -Lines $subLines -Region @{ X=$regions.Title.X; Y=($regions.Title.Y+2); Width=$regions.Title.Width; Height=2 } -Theme $theme -Element $subEl -StartY ($regions.Title.Y+2) | Out-Null
         }
@@ -343,7 +343,7 @@ function Get-RenderedSlideFrame {
         $notesHeight = [Math]::Min(4, $notes.Count + 2)
         $notesY = [Math]::Max(0, $dims.Height - $notesHeight - 1)
         Draw-FrameBox -FrameBuffer $frame -X 1 -Y $notesY -Width ($dims.Width - 2) -Height $notesHeight -Foreground $theme.Border -Background $theme.Background -Style $theme.BoxDrawingStyle
-        Write-LinesToFrame -FrameBuffer $frame -Lines $notes -Region @{ X = 2; Y = $notesY + 1; Width = $dims.Width - 4; Height = $notesHeight - 2 } -Theme $theme -Element (New-InternalSlideElement -Type Text -Content '' -ForegroundColor $theme.Foreground) -StartY ($notesY + 1) | Out-Null
+        Write-LinesToFrame -FrameBuffer $frame -Lines $notes -Region @{ X = 2; Y = $notesY + 1; Width = $dims.Width - 4; Height = $notesHeight - 2 } -Theme $theme -Element (New-InternalSlideElement -Kind Text -Payload ([TerminalSlides.Schema.V1.TextPayload]::new('')) -ForegroundColor $theme.Foreground) -StartY ($notesY + 1) | Out-Null
     }
     return $frame
 }
@@ -351,7 +351,7 @@ function Get-RenderedSlideFrame {
 function Render-TerminalPresentationToString {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)][TerminalPresentation]$Presentation,
+        [Parameter(Mandatory)][TerminalSlides.Schema.V1.TerminalPresentation]$Presentation,
         [int]$SlideIndex = 0,
         [int]$RevealStep = 0,
         [switch]$PlainText,
@@ -361,7 +361,7 @@ function Render-TerminalPresentationToString {
         [switch]$Blank,
         [timespan]$Elapsed = [timespan]::Zero,
         [switch]$ShowTimer,
-        [TerminalCapability]$Capability = $script:Capabilities
+        [TerminalSlides.Schema.V1.TerminalCapability]$Capability = $script:Capabilities
     )
     $frame = Get-RenderedSlideFrame -Presentation $Presentation -SlideIndex $SlideIndex -RevealStep $RevealStep -ShowNotes:$ShowNotes -OverviewMode:$OverviewMode -ShowHelp:$ShowHelp -Blank:$Blank -Elapsed $Elapsed -ShowTimer:$ShowTimer -Capability $Capability
     if ($PlainText) {

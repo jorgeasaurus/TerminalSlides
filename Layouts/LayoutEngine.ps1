@@ -1,3 +1,54 @@
+$script:TerminalSlideLayouts = @(
+    'TitleAndContent', 'Title', 'SectionHeader', 'TwoColumn', 'ThreeColumn',
+    'CodeFocus', 'ImageFocus', 'Quote', 'Blank'
+)
+$script:TerminalElementRegionOrder = @('Content', 'Left', 'Center', 'Right', 'Image', 'Code', 'Quote')
+
+function Assert-TerminalSlideLayout {
+    param([Parameter(Mandatory)][string]$Layout)
+
+    if ($Layout -notin $script:TerminalSlideLayouts) {
+        throw "Unknown slide layout '$Layout'. Supported layouts: $($script:TerminalSlideLayouts -join ', ')."
+    }
+}
+
+function Get-TerminalElementRegionNames {
+    param([Parameter(Mandatory)][hashtable]$Regions)
+
+    return @($script:TerminalElementRegionOrder | Where-Object { $Regions.ContainsKey($_) })
+}
+
+function Test-TerminalLayoutRegionOverlap {
+    param(
+        [Parameter(Mandatory)][hashtable]$First,
+        [Parameter(Mandatory)][hashtable]$Second
+    )
+
+    return ($First.X -lt ($Second.X + $Second.Width) -and
+        $Second.X -lt ($First.X + $First.Width) -and
+        $First.Y -lt ($Second.Y + $Second.Height) -and
+        $Second.Y -lt ($First.Y + $First.Height))
+}
+
+function Assert-TerminalElementRegionCombination {
+    param(
+        [Parameter(Mandatory)][string]$Layout,
+        [Parameter(Mandatory)][hashtable]$Regions,
+        [Parameter(Mandatory)][AllowEmptyCollection()][string[]]$RegionNames
+    )
+
+    $usedRegions = @($RegionNames | Sort-Object -Unique)
+    for ($firstIndex = 0; $firstIndex -lt $usedRegions.Count; $firstIndex++) {
+        for ($secondIndex = $firstIndex + 1; $secondIndex -lt $usedRegions.Count; $secondIndex++) {
+            $firstName = $usedRegions[$firstIndex]
+            $secondName = $usedRegions[$secondIndex]
+            if (Test-TerminalLayoutRegionOverlap -First $Regions[$firstName] -Second $Regions[$secondName]) {
+                throw "Layout '$Layout' cannot combine overlapping element regions '$firstName' and '$secondName'."
+            }
+        }
+    }
+}
+
 function Get-LayoutRegions {
     [CmdletBinding()]
     param(

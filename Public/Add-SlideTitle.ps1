@@ -7,5 +7,5 @@ function Add-SlideTitle {
         [int]$RevealStep = 0,
         [string]$ForegroundColor
     )
-    Add-CurrentSlideElement -Element (New-InternalSlideElement -Type Title -Content $Title -Region $Region -Alignment $Alignment -RevealStep $RevealStep -ForegroundColor $ForegroundColor)
+    Add-CurrentSlideElement -Element (New-InternalSlideElement -Kind Title -Payload ([TerminalSlides.Schema.V1.TextPayload]::new($Title)) -Region $Region -Alignment $Alignment -RevealStep $RevealStep -ForegroundColor $ForegroundColor)
 }

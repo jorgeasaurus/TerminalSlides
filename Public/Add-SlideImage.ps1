@@ -6,6 +6,8 @@ function Add-SlideImage {
         [string]$Region = 'Content',
         [int]$RevealStep = 0
     )
-    $resolved = if ([System.IO.Path]::IsPathRooted($Path)) { $Path } else { Join-Path (Get-Location) $Path }
-    Add-CurrentSlideElement -Element (New-InternalSlideElement -Type Image -Content @{ Path = $resolved; AltText = $AltText } -Region $Region -RevealStep $RevealStep)
+    $payload = [TerminalSlides.Schema.V1.ImagePayload]::new($Path, $AltText)
+    $element = New-InternalSlideElement -Kind Image -Payload $payload -Region $Region -RevealStep $RevealStep
+    if (-not [System.IO.Path]::IsPathRooted($Path)) { Set-TerminalMediaOrigin -Element $element -Directory (Get-Location).Path }
+    Add-CurrentSlideElement -Element $element
 }

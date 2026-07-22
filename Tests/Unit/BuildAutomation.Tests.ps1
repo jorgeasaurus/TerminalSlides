@@ -6,6 +6,14 @@ Describe 'Build automation' {
             -ErrorAction Stop | Select-Object -First 1 -ExpandProperty Source
     }
 
+    It 'gates builds on the reproducible schema assembly' {
+        $build = Get-Content -LiteralPath $script:BuildPath -Raw
+
+        $build | Should -Match "Build-SchemaAssembly\.ps1'\) -Check"
+        { & (Join-Path $script:RepositoryRoot 'Scripts/Build-SchemaAssembly.ps1') -Check } |
+            Should -Not -Throw
+    }
+
     It 'returns a nonzero process exit code when a Pester test fails' {
         $fixturePath = Join-Path $script:RepositoryRoot `
             'TestInfrastructure/Fixtures/Failing.Tests.ps1'

@@ -1,7 +1,7 @@
 function Show-TerminalPresentation {
     [CmdletBinding(DefaultParameterSetName='Presentation')]
     param(
-        [Parameter(Mandatory, ParameterSetName='Presentation')][TerminalPresentation]$Presentation,
+        [Parameter(Mandatory, ParameterSetName='Presentation')][TerminalSlides.Schema.V1.TerminalPresentation]$Presentation,
         [Parameter(Mandatory, ParameterSetName='Path')][string]$Path
     )
 
