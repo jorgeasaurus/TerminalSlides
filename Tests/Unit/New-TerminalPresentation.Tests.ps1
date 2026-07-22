@@ -23,4 +23,12 @@ Describe 'New-TerminalPresentation' {
     It 'validates theme names' {
         { New-TerminalPresentation -Title 'Bad' -Theme Nope } | Should -Throw
     }
+
+    It 'keeps type identity stable across module re-imports' {
+        $deck = New-TerminalPresentation -Title 'Identity'
+        Remove-Module TerminalSlides -Force
+        Import-Module (Join-Path $PSScriptRoot '..' '..' 'TerminalSlides.psd1') -Force
+        { $deck | Add-TerminalSlide -Title 'S' -Content { Add-SlideText 'x' } | Out-Null } | Should -Not -Throw
+        $deck.Slides.Count | Should -Be 1
+    }
 }

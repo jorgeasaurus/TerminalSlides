@@ -8,6 +8,20 @@ $script:TerminalSlidesState = @{
 $script:Themes = @{}
 $script:Capabilities = $null
 
+# Load the data classes from a compiled assembly. Classes defined in dot-sourced
+# .ps1 files are emitted into a per-import dynamic "PowerShell Class Assembly";
+# after Import-Module -Force (or Remove-Module + Import-Module) objects created
+# earlier no longer satisfy [TerminalPresentation] parameter binding and throw
+# "Cannot convert the value of type TerminalPresentation to type
+# TerminalPresentation". A compiled assembly keeps one stable identity, so
+# presentations always bind across re-imports.
+$dataClassesPath = Join-Path $PSScriptRoot 'Classes/TerminalSlides.DataClasses.cs'
+if (-not ('TerminalPresentation' -as [type])) {
+    Add-Type -Path $dataClassesPath -ReferencedAssemblies @(
+        'System.Collections'
+    )
+}
+
 . (Join-Path $PSScriptRoot 'Classes/TerminalSlidesClasses.ps1')
 
 $privateFiles = @(
