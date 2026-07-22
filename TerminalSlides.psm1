@@ -3,6 +3,10 @@ using namespace System.Collections.Generic
 $script:ModuleRoot = $PSScriptRoot
 $script:Themes = @{}
 $script:Capabilities = $null
+$script:NativePresentationKeyReader = [Func[bool,ConsoleKeyInfo]][Delegate]::CreateDelegate(
+    [Func[bool,ConsoleKeyInfo]],
+    [Console].GetMethod('ReadKey', [type[]]@([bool]))
+)
 
 . (Join-Path $PSScriptRoot 'Classes/TerminalSlidesClasses.ps1')
 
@@ -22,6 +26,7 @@ $privateFiles = @(
     'Private/Invoke-SafeScriptBlock.ps1'
     'Private/ConvertTo-SpectreRenderableLines.ps1'
     'Private/BuildContext.ps1'
+    'Private/PresentationSession.ps1'
     'Private/SlideLayoutPlan.ps1'
 )
 foreach ($file in $privateFiles) { . (Join-Path $PSScriptRoot $file) }

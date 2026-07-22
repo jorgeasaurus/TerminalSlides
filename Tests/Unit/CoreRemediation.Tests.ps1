@@ -685,10 +685,14 @@ Describe 'Core review remediation' {
         $showCommand = Get-Content -LiteralPath (
             Join-Path (Split-Path $script:ModulePath -Parent) 'Public/Show-TerminalPresentation.ps1'
         ) -Raw
+        $sessionReducer = Get-Content -LiteralPath (
+            Join-Path (Split-Path $script:ModulePath -Parent) 'Private/PresentationSession.ps1'
+        ) -Raw
 
-        $showCommand | Should -Match '-DisplayMode \$displayMode'
+        $showCommand | Should -Match '-DisplayMode \$session\.DisplayMode'
         $showCommand | Should -Not -Match '-OverviewMode|-ShowHelp|-Blank:'
-        @([regex]::Matches($showCommand, '\$displayMode -eq ''(Overview|Help|Blank)''')) |
-            Should -HaveCount 4
+        foreach ($mode in 'Overview', 'Help', 'Blank') {
+            $sessionReducer | Should -Match "DisplayMode -eq '$mode'"
+        }
     }
 }
