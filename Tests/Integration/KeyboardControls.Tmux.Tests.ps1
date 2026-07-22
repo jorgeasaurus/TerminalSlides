@@ -435,6 +435,19 @@ try {
         }
     }
 
+    It 'runs the feature demo as an interactive presentation' {
+        $presentation = Start-TmuxPresentation -Demo
+        try {
+            Wait-TmuxPaneText -SessionName $presentation.SessionName -ExpectedText 'Present from the terminal' | Should -Not -BeNullOrEmpty
+
+            Send-TmuxKey -SessionName $presentation.SessionName -Key 'literal:?'
+            Wait-TmuxPaneText -SessionName $presentation.SessionName -ExpectedText 'TerminalSlides Help' | Should -Not -BeNullOrEmpty
+        }
+        finally {
+            Stop-TmuxPresentation -Presentation $presentation
+        }
+    }
+
     It 'reports a presentation process crash as a failed exit' {
         $presentation = Start-TmuxPresentation -Crash
         { Stop-TmuxPresentation -Presentation $presentation } |

@@ -2,6 +2,7 @@
 param(
     [string[]]$TestPath = @('Tests'),
     [string]$TestResultPath = 'build/TestResults/TestResults.xml',
+    [switch]$SkipCodeCoverage,
     [switch]$SkipScriptAnalyzer
 )
 
@@ -52,6 +53,7 @@ if ($env:TERMINALSLIDES_RUN_TMUX_TESTS -eq '1' -and
 
 & (Join-Path $PSScriptRoot 'Scripts/Build-SchemaAssembly.ps1') -Check
 Import-ExactModule -Name PwshSpectreConsole -Version $spectreVersion
+& (Join-Path $PSScriptRoot 'Scripts/Update-Documentation.ps1') -Check
 
 if (-not $SkipScriptAnalyzer) {
     Import-ExactModule -Name PSScriptAnalyzer -Version $scriptAnalyzerVersion

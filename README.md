@@ -1,7 +1,7 @@
 # TerminalSlides
 
 [![CI](https://github.com/jorgeasaurus/TerminalSlides/actions/workflows/ci.yml/badge.svg)](https://github.com/jorgeasaurus/TerminalSlides/actions/workflows/ci.yml)
-[![PowerShell 7+](https://img.shields.io/badge/PowerShell-7%2B-5391FE)](https://github.com/PowerShell/PowerShell)
+[![PowerShell 7.4+](https://img.shields.io/badge/PowerShell-7.4%2B-5391FE)](https://github.com/PowerShell/PowerShell)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
 
 TerminalSlides is a cross-platform PowerShell module for building and delivering ANSI-rendered slide decks directly in the terminal.
@@ -18,14 +18,7 @@ TerminalSlides is a cross-platform PowerShell module for building and delivering
 
 ## Installation
 
-### PowerShell Gallery
-
-```powershell
-Install-Module TerminalSlides
-Import-Module TerminalSlides
-```
-
-### Local repository
+Import the module from a local clone:
 
 ```powershell
 Import-Module ./TerminalSlides.psd1 -Force
@@ -34,7 +27,7 @@ Import-Module ./TerminalSlides.psd1 -Force
 ## Quick start
 
 ```powershell
-Import-Module TerminalSlides
+Import-Module ./TerminalSlides.psd1 -Force
 $deck = New-TerminalPresentation -Title 'Demo'
 $deck |
     Add-TerminalSlide -Title 'Hello' -Content {
@@ -76,14 +69,24 @@ $deck |
 ```powershell
 $deck | Add-TerminalSlide -Title 'Flow' -Content {
     Add-SlideDiagram -Content {
-        Node -Id A -Label 'Start'
-        Node -Id B -Label 'Render'
-        Node -Id C -Label 'Export'
-        Edge -From A -To B
-        Edge -From B -To C -Label 'Complete'
+        Add-SlideDiagramNode -Id A -Label 'Start'
+        Add-SlideDiagramNode -Id B -Label 'Render'
+        Add-SlideDiagramNode -Id C -Label 'Export'
+        Add-SlideDiagramEdge -From A -To B
+        Add-SlideDiagramEdge -From B -To C -Label 'Complete'
     }
 }
 ```
+
+## Image slide
+
+```powershell
+$deck | Add-TerminalSlide -Title 'Architecture' -Layout ImageFocus -Content {
+    Add-SlideImage -Path ./architecture.png -AltText 'System architecture diagram' -Region Image
+}
+```
+
+Images are scaled to their layout region and rendered as truecolor terminal cells. The manifest requires PwshSpectreConsole 2.6.3.
 
 ## Keyboard controls
 

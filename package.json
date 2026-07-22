@@ -1,0 +1,10 @@
+{
+  "name": "terminalslides-documentation",
+  "private": true,
+  "scripts": {
+    "test:docs": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.61.1"
+  }
+}
