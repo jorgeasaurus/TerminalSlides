@@ -1,5 +1,5 @@
-Describe 'Intentional failure fixture' {
-    It 'fails so build failure propagation can be verified' {
+Describe 'Intentional build failure fixture' {
+    It 'fails so the build failure gate can be verified' {
         $true | Should -BeFalse
     }
 }

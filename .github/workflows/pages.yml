@@ -39,6 +39,7 @@ jobs:
           ./build.ps1
           -TestPath Tests/Unit/Documentation.Tests.ps1
           -TestResultPath build/TestResults/Pages.xml
+          -SkipCodeCoverage
           -SkipScriptAnalyzer
 
       - name: Set up Node.js
