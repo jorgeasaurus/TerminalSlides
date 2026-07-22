@@ -3,8 +3,17 @@ Tests/Unit/_artifacts/
 Tests/Integration/_artifacts/
 TestResults.xml
 TestResults/
+test-results/
+/playwright-report/
+/node_modules/
+coverage/
+*.coverage.xml
+/coverage.xml
 
 # Build output
+/build/
+/Classes/bin/
+/Classes/obj/
 dist/
 out/
 *.zip
@@ -12,10 +21,23 @@ out/
 # Editor and OS
 .DS_Store
 Thumbs.db
+.idea/
 .vscode/settings.json
+*.code-workspace
 *.swp
 *~
 
 # PowerShell
 *.psm1.bak
 *.psd1.bak
+
+# Local planning and agent state
+/tasks/
+.agents/
+.claude/
+.codex/
+
+# Local captures and logs
+/terminalslides-demo.png
+/Logs/
+*.log

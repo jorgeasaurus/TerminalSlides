@@ -1,31 +1,89 @@
 [CmdletBinding()]
-param()
+param(
+    [string[]]$TestPath = @('Tests'),
+    [string]$TestResultPath = 'build/TestResults/TestResults.xml',
+    [switch]$SkipScriptAnalyzer
+)
 
 $ErrorActionPreference = 'Stop'
-$modulePath = Join-Path $PSScriptRoot 'TerminalSlides.psd1'
-$testsPath = Join-Path $PSScriptRoot 'Tests'
+$pesterVersion = [version]'5.8.0'
+$scriptAnalyzerVersion = [version]'1.25.0'
 
-Import-Module $modulePath -Force
-Write-Host 'Module import succeeded.' -ForegroundColor Green
+function Import-ExactModule {
+    param(
+        [Parameter(Mandatory)][string]$Name,
+        [Parameter(Mandatory)][version]$Version
+    )
 
-$pesterModule = Get-Module -ListAvailable -Name Pester |
-    Sort-Object Version -Descending |
-    Select-Object -First 1
-if (-not $pesterModule -or $pesterModule.Version -lt [version]'5.0.0') {
-    Write-Host 'Installing Pester 5.x...' -ForegroundColor Yellow
-    Install-Module Pester -Force -MinimumVersion 5.0.0 -Scope CurrentUser
-    $pesterModule = Get-Module -ListAvailable -Name Pester |
-        Sort-Object Version -Descending |
+    $installedModule = Get-Module -ListAvailable -Name $Name |
+        Where-Object Version -eq $Version |
         Select-Object -First 1
+    if (-not $installedModule) {
+        Write-Host "Installing $Name $Version..." -ForegroundColor Yellow
+        Install-Module -Name $Name -RequiredVersion $Version -Repository PSGallery `
+            -Scope CurrentUser -Force -AllowClobber
+    }
+
+    Import-Module -Name $Name -RequiredVersion $Version -Force
 }
 
-Import-Module Pester -RequiredVersion $pesterModule.Version -Force
+function Resolve-RepositoryPath {
+    param([Parameter(Mandatory)][string]$Path)
+
+    if ([System.IO.Path]::IsPathRooted($Path)) { return $Path }
+    return Join-Path $PSScriptRoot $Path
+}
+
+if ($env:TERMINALSLIDES_RUN_TMUX_TESTS -eq '1' -and
+    -not (Get-Command tmux -ErrorAction SilentlyContinue)) {
+    throw 'TERMINALSLIDES_RUN_TMUX_TESTS=1 requires tmux to be installed and available on PATH.'
+}
+
+if (-not $SkipScriptAnalyzer) {
+    Import-ExactModule -Name PSScriptAnalyzer -Version $scriptAnalyzerVersion
+    $analysisPaths = @(
+        'Classes', 'Layouts', 'Private', 'Public', 'Renderers', 'Themes', 'Tests',
+        'TestInfrastructure', 'build.ps1', 'TerminalSlides.psm1'
+    )
+    $analysisIssues = foreach ($analysisPath in $analysisPaths) {
+        $resolvedAnalysisPath = Resolve-RepositoryPath -Path $analysisPath
+        if (Test-Path -LiteralPath $resolvedAnalysisPath -PathType Container) {
+            Invoke-ScriptAnalyzer -Path $resolvedAnalysisPath -Recurse -Severity Error
+        }
+        elseif (Test-Path -LiteralPath $resolvedAnalysisPath -PathType Leaf) {
+            Invoke-ScriptAnalyzer -Path $resolvedAnalysisPath -Severity Error
+        }
+    }
+    if ($analysisIssues) {
+        $analysisIssues | Format-Table RuleName, ScriptName, Line, Message -Wrap |
+            Out-String | Write-Host
+        throw "PSScriptAnalyzer reported $(@($analysisIssues).Count) error(s)."
+    }
+}
+
+Import-ExactModule -Name Pester -Version $pesterVersion
+$resolvedTestPaths = @($TestPath | ForEach-Object { Resolve-RepositoryPath -Path $_ })
+$resolvedTestResultPath = Resolve-RepositoryPath -Path $TestResultPath
+New-Item -Path (Split-Path -Parent $resolvedTestResultPath) -ItemType Directory -Force |
+    Out-Null
+if (Test-Path -LiteralPath $resolvedTestResultPath) {
+    Remove-Item -LiteralPath $resolvedTestResultPath -Force
+}
+
 $config = New-PesterConfiguration
-$config.Run.Path = $testsPath
+$config.Run.Path = $resolvedTestPaths
+$config.Run.PassThru = $true
 $config.Output.Verbosity = 'Detailed'
+$config.TestResult.Enabled = $true
+$config.TestResult.OutputPath = $resolvedTestResultPath
+$config.TestResult.OutputFormat = 'NUnitXml'
+
 $result = Invoke-Pester -Configuration $config
-if ($result.FailedCount -gt 0) {
-    throw "Pester reported $($result.FailedCount) failing test(s)."
+if ($null -eq $result) {
+    throw 'Pester did not return a test result object.'
+}
+if ($result.Result -ne 'Passed' -or $result.FailedCount -gt 0) {
+    throw "Pester reported result '$($result.Result)' with $($result.FailedCount) failing test(s)."
 }
 
 Write-Host 'Build completed successfully.' -ForegroundColor Green

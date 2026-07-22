@@ -2,40 +2,55 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: ['**']
   pull_request:
-    branches: [ main ]
+    branches: ['**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
-  test:
-    permissions:
-      contents: read
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
+  quality:
+    name: Analyze and test
+    runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-    - name: Install Pester
-      shell: pwsh
-      run: Install-Module Pester -Force -MinimumVersion 5.0.0 -Scope CurrentUser
+      - name: Run authoritative quality gate
+        shell: pwsh
+        run: ./build.ps1
 
-    - name: Run Tests
-      shell: pwsh
-      run: |
-        $config = New-PesterConfiguration
-        $config.Run.Path = './Tests'
-        $config.Output.Verbosity = 'Detailed'
-        $config.TestResult.Enabled = $true
-        $config.TestResult.OutputPath = './TestResults.xml'
-        $config.TestResult.OutputFormat = 'NUnitXml'
-        Invoke-Pester -Configuration $config
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: test-results-quality-linux
+          path: build/TestResults/TestResults.xml
+          if-no-files-found: error
 
-    - name: Upload Test Results
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: test-results-${{ matrix.os }}
-        path: TestResults.xml
+  compatibility:
+    name: Functional tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [windows-latest, macos-latest]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Run platform tests
+        shell: pwsh
+        run: ./build.ps1 -SkipScriptAnalyzer
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: test-results-${{ matrix.os }}
+          path: build/TestResults/TestResults.xml
+          if-no-files-found: error
