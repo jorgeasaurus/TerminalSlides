@@ -20,8 +20,9 @@ $privateFiles = @(
     'Private/Format-WordWrap.ps1'
     'Private/Get-SyntaxHighlight.ps1'
     'Private/Invoke-SafeScriptBlock.ps1'
-    'Private/ConvertFrom-AnsiString.ps1'
+    'Private/ConvertTo-SpectreRenderableLines.ps1'
     'Private/BuildContext.ps1'
+    'Private/SlideLayoutPlan.ps1'
 )
 foreach ($file in $privateFiles) { . (Join-Path $PSScriptRoot $file) }
 

@@ -8,6 +8,9 @@ function Show-TerminalPresentation {
     if ($PSCmdlet.ParameterSetName -eq 'Path') {
         $Presentation = Import-TerminalPresentation -Path $Path
     }
+    if ($Presentation) {
+        $Presentation = New-TerminalPresentationView -Presentation $Presentation
+    }
     if (-not $Presentation -or -not $Presentation.Slides.Count) {
         Write-Error 'Presentation contains no slides.'
         return

@@ -43,9 +43,22 @@ function Assert-TerminalElementRegionCombination {
             $firstName = $usedRegions[$firstIndex]
             $secondName = $usedRegions[$secondIndex]
             if (Test-TerminalLayoutRegionOverlap -First $Regions[$firstName] -Second $Regions[$secondName]) {
-                throw "Layout '$Layout' cannot combine overlapping element regions '$firstName' and '$secondName'."
+                throw "Layout '$Layout' cannot combine overlapping element regions '$firstName' and '$secondName'. Choose Content alone or use only disjoint specialized regions."
             }
         }
+    }
+}
+
+function Resolve-TerminalViewport {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][int]$Width,
+        [Parameter(Mandatory)][int]$Height
+    )
+
+    return @{
+        Width = [Math]::Max(20, $Width)
+        Height = [Math]::Max(10, $Height)
     }
 }
 
@@ -56,19 +69,26 @@ function Get-LayoutRegions {
         [Parameter(Mandatory)][int]$Width,
         [Parameter(Mandatory)][int]$Height
     )
-    $w = [Math]::Max(20, $Width)
-    $h = [Math]::Max(10, $Height)
+    Assert-TerminalSlideLayout -Layout $Layout
+    $viewport = Resolve-TerminalViewport -Width $Width -Height $Height
+    $w = $viewport.Width
+    $h = $viewport.Height
     switch ($Layout) {
         'Title' {
+            $titleY = [Math]::Max(1, [Math]::Min([Math]::Floor($h / 3), $h - 9))
+            $subtitleY = $titleY + 2
+            $contentY = $subtitleY + 2
             return @{
-                Title = @{ X = 2; Y = [Math]::Max(1, [Math]::Floor($h / 3)); Width = $w - 4; Height = 4 }
-                Content = @{ X = 2; Y = [Math]::Floor($h / 2); Width = $w - 4; Height = [Math]::Max(2, $h / 3) }
+                Title = @{ X = 2; Y = $titleY; Width = $w - 4; Height = 2 }
+                Subtitle = @{ X = 2; Y = $subtitleY; Width = $w - 4; Height = 2 }
+                Content = @{ X = 2; Y = $contentY; Width = $w - 4; Height = [Math]::Max(1, $h - $contentY - 3) }
             }
         }
         'SectionHeader' {
+            $contentY = [Math]::Floor($h / 2) + 2
             return @{
                 Title = @{ X = 2; Y = [Math]::Floor($h / 2) - 1; Width = $w - 4; Height = 3 }
-                Content = @{ X = 2; Y = [Math]::Floor($h / 2) + 2; Width = $w - 4; Height = 4 }
+                Content = @{ X = 2; Y = $contentY; Width = $w - 4; Height = [Math]::Max(1, ($h - 2) - $contentY) }
             }
         }
         'TwoColumn' {
@@ -118,7 +138,7 @@ function Get-LayoutRegions {
         'Blank' {
             return @{ Content = @{ X = 1; Y = 1; Width = $w - 2; Height = $h - 3 } }
         }
-        default {
+        'TitleAndContent' {
             return @{
                 Title = @{ X = 2; Y = 1; Width = $w - 4; Height = 2 }
                 Content = @{ X = 2; Y = 4; Width = $w - 4; Height = $h - 7 }

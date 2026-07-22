@@ -35,6 +35,5 @@ function Get-AnsiBg {
 function Strip-AnsiSequences {
     [CmdletBinding()]
     param([AllowNull()][string]$Text)
-    if ($null -eq $Text) { return $null }
-    return ([regex]::Replace($Text, "`e\[[0-9;?]*[ -/]*[@-~]", ''))
+    return ([regex]::Replace(($Text ?? ''), "`e\[[0-9;?]*[ -/]*[@-~]", ''))
 }

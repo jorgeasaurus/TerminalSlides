@@ -370,66 +370,6 @@ namespace TerminalSlides.Schema.V1
         public string Id { get; set; }
         public ElementKind Kind { get; }
         public ElementPayload Payload { get; }
-
-        // Transitional read-only projections keep the existing renderer usable
-        // while the typed rendering pipeline lands in the next stacked change.
-        public string Type => Kind.ToString();
-
-        public object Content
-        {
-            get
-            {
-                if (Payload is TextPayload text) return text.Text;
-                if (Payload is CodePayload code) return code;
-                if (Payload is ChartPayload chart) return chart.Points;
-                if (Payload is QuotePayload quote) return quote;
-                if (Payload is ImagePayload image)
-                {
-                    return new Hashtable
-                    {
-                        ["Path"] = image.Path,
-                        ["AltText"] = image.AltText
-                    };
-                }
-                if (Payload is DiagramPayload diagram)
-                {
-                    return new Hashtable
-                    {
-                        ["Nodes"] = diagram.Nodes,
-                        ["Edges"] = diagram.Edges
-                    };
-                }
-                if (Payload is TablePayload table)
-                {
-                    var rows = new ArrayList();
-                    foreach (var row in table.Rows)
-                    {
-                        var values = new Hashtable();
-                        foreach (var cell in row.Cells) values[cell.Name] = cell.Value.Value;
-                        rows.Add(values);
-                    }
-                    return rows.ToArray();
-                }
-                return Payload;
-            }
-        }
-
-        public Hashtable Properties
-        {
-            get
-            {
-                var values = new Hashtable();
-                if (Payload is CodePayload code) values["Language"] = code.Language;
-                if (Payload is ChartPayload chart)
-                {
-                    values["ChartType"] = chart.ChartKind.ToString();
-                    values["Title"] = chart.Title;
-                }
-                return values;
-            }
-        }
-
-        public Hashtable Style => new Hashtable();
         public string Region { get; set; }
         public int X { get; set; }
         public int Y { get; set; }

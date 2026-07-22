@@ -5,9 +5,10 @@ function Test-TerminalPresentation {
         [string[]]$Viewport = @('80x24', '120x35', '160x45')
     )
 
-    $results = foreach ($vp in $Viewport) {
-        if ($vp -notmatch '^(\d+)x(\d+)$') {
-            Write-Warning "Viewport '$vp' is invalid."
+    $view = New-TerminalPresentationView -Presentation $Presentation
+    $results = foreach ($viewportSize in $Viewport) {
+        if ($viewportSize -notmatch '^(\d+)x(\d+)$') {
+            Write-Warning "Viewport '$viewportSize' is invalid."
             continue
         }
         $capability = [TerminalSlides.Schema.V1.TerminalCapability]::new()
@@ -15,14 +16,14 @@ function Test-TerminalPresentation {
         $capability.Height = [int]$matches[2]
         $capability.AnsiSupport = $true
         $capability.Interactive = $false
-        for ($i = 0; $i -lt $Presentation.Slides.Count; $i++) {
-            $text = Render-TerminalPresentationToString -Presentation $Presentation -SlideIndex $i -RevealStep $Presentation.Slides[$i].MaxRevealStep -PlainText -Capability $capability
-            $lineOverflow = @($text -split "`n" | Where-Object { $_.Length -gt $capability.Width })
+
+        for ($index = 0; $index -lt $view.Slides.Count; $index++) {
+            $plan = Get-TerminalSlideLayoutPlan -Presentation $view -SlideIndex $index -Capability $capability
             [pscustomobject]@{
-                Viewport = $vp
-                Slide = $i + 1
-                Fits = ($lineOverflow.Count -eq 0)
-                OverflowLines = $lineOverflow.Count
+                Viewport = $viewportSize
+                Slide = $index + 1
+                Fits = ($plan.OverflowLines -eq 0)
+                OverflowLines = $plan.OverflowLines
             }
         }
     }

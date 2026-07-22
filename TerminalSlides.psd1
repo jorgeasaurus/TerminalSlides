@@ -8,6 +8,9 @@
     Description = 'A PowerShell module for building and delivering terminal-based slide presentations'
     PowerShellVersion = '7.4'
     RequiredAssemblies = @('lib/TerminalSlides.Schema.dll')
+    RequiredModules = @(
+        @{ ModuleName = 'PwshSpectreConsole'; RequiredVersion = '2.6.3' }
+    )
     FunctionsToExport = @(
         'New-TerminalPresentation'
         'Add-TerminalSlide'

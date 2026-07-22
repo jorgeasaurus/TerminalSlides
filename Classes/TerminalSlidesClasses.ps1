@@ -1,26 +1,136 @@
-# Data classes (TerminalCapability, ThemeDefinition, PresentationMetadata,
-# SlideMetadata, SlideElement, Slide, TerminalPresentation) are compiled from
-# Classes/TerminalSlides.DataClasses.cs by the module loader. Keeping them in a
-# real assembly gives them a stable identity across module re-imports and
-# avoids the "PowerShell Class Assembly" stale-type binding failure where a
-# presentation created before Import-Module -Force cannot be passed back to
-# module functions.
+# Public data contracts are loaded from the packaged schema assembly. These
+# PowerShell classes are private rendering models and never cross the module API.
 
 class FrameBufferCell {
-    [char]$Char
+    [string]$Char
+    [bool]$Continuation
     [string]$Fg
     [string]$Bg
     [bool]$Bold
     [bool]$Italic
     [bool]$Underline
-    [bool]$Strikethrough
+}
+
+class TerminalStyledRun {
+    [string]$Text
+    [string]$Foreground
+    [string]$Background
+    [bool]$Bold
+    [bool]$Italic
+    [bool]$Underline
+
+    TerminalStyledRun([string]$text, [string]$foreground, [string]$background, [bool]$bold, [bool]$italic, [bool]$underline) {
+        $this.Text = $text
+        $this.Foreground = $foreground
+        $this.Background = $background
+        $this.Bold = $bold
+        $this.Italic = $italic
+        $this.Underline = $underline
+    }
+}
+
+class TerminalStyledLine {
+    [System.Collections.Generic.List[TerminalStyledRun]]$Runs
+
+    TerminalStyledLine() {
+        $this.Runs = [System.Collections.Generic.List[TerminalStyledRun]]::new()
+    }
+
+    [string] GetText() {
+        $builder = [System.Text.StringBuilder]::new()
+        foreach ($run in $this.Runs) {
+            [void]$builder.Append($run.Text)
+        }
+        return $builder.ToString()
+    }
+
+    [string] ToString() {
+        return $this.GetText()
+    }
+}
+
+class TerminalStyledGrapheme {
+    [string]$Text
+    [TerminalStyledRun]$Style
+
+    TerminalStyledGrapheme([string]$text, [TerminalStyledRun]$style) {
+        $this.Text = $text
+        $this.Style = $style
+    }
+}
+
+class TerminalStyledTextElement {
+    [string]$Text
+    [int]$Width
+    [TerminalStyledRun]$Style
+
+    TerminalStyledTextElement([string]$text, [int]$width, [TerminalStyledRun]$style) {
+        $this.Text = $text
+        $this.Width = $width
+        $this.Style = $style
+    }
+}
+
+class TerminalPreparedRun {
+    [string]$Text
+    [int]$Width
+    [string]$Foreground
+    [string]$Background
+    [bool]$Bold
+    [bool]$Italic
+    [bool]$Underline
+
+    TerminalPreparedRun([string]$text, [int]$width, [string]$foreground, [string]$background, [bool]$bold, [bool]$italic, [bool]$underline) {
+        $this.Text = $text
+        $this.Width = $width
+        $this.Foreground = $foreground
+        $this.Background = $background
+        $this.Bold = $bold
+        $this.Italic = $italic
+        $this.Underline = $underline
+    }
+}
+
+class TerminalPreparedLine {
+    [System.Collections.Generic.List[TerminalPreparedRun]]$Runs
+    [int]$Width
+    [int]$RenderedWidth
+    [int]$StartColumn
+    [int]$AvailableWidth
+
+    TerminalPreparedLine([int]$startColumn, [int]$availableWidth) {
+        $this.Runs = [System.Collections.Generic.List[TerminalPreparedRun]]::new()
+        $this.StartColumn = $startColumn
+        $this.AvailableWidth = $availableWidth
+    }
+
+    [string] GetText() {
+        $builder = [System.Text.StringBuilder]::new()
+        foreach ($run in $this.Runs) {
+            [void]$builder.Append($run.Text)
+        }
+        return $builder.ToString()
+    }
+
+    [string] ToString() {
+        return $this.GetText()
+    }
+}
+
+class TerminalSpectreCapabilities : Spectre.Console.IReadOnlyCapabilities {
+    [Spectre.Console.ColorSystem]$ColorSystem
+    [bool]$Ansi
+    [bool]$Links
+    [bool]$Legacy
+    [bool]$IsTerminal
+    [bool]$Interactive
+    [bool]$Unicode
 }
 
 class FrameBuffer {
     [int]$Width
     [int]$Height
     [FrameBufferCell[][]]$Cells
-    [FrameBufferCell[][]]$PreviousCells
 
     FrameBuffer([int]$width, [int]$height) {
         $this.Width = [Math]::Max(1, $width)
@@ -33,7 +143,6 @@ class FrameBuffer {
             }
         }
         $this.Cells = $rows
-        $this.PreviousCells = $null
         $this.Clear()
     }
 
@@ -42,18 +151,37 @@ class FrameBuffer {
             for ($c = 0; $c -lt $this.Width; $c++) {
                 $cell = $this.Cells[$r][$c]
                 $cell.Char = ' '
+                $cell.Continuation = $false
                 $cell.Fg = $null
                 $cell.Bg = $null
                 $cell.Bold = $false
                 $cell.Italic = $false
                 $cell.Underline = $false
-                $cell.Strikethrough = $false
             }
         }
     }
 
-    [void] SetCell([int]$row, [int]$col, [char]$ch, [string]$fg, [string]$bg, [bool]$bold, [bool]$italic, [bool]$underline) {
+    [void] ClearCellOccupant([int]$row, [int]$col) {
+        if ($row -lt 0 -or $row -ge $this.Height -or $col -lt 0 -or $col -ge $this.Width) { return }
+        $lead = $col
+        while ($lead -gt 0 -and $this.Cells[$row][$lead].Continuation) { $lead-- }
+        $index = $lead
+        do {
+            $cell = $this.Cells[$row][$index]
+            $cell.Char = ' '
+            $cell.Continuation = $false
+            $cell.Fg = $null
+            $cell.Bg = $null
+            $cell.Bold = $false
+            $cell.Italic = $false
+            $cell.Underline = $false
+            $index++
+        } while ($index -lt $this.Width -and $this.Cells[$row][$index].Continuation)
+    }
+
+    [void] SetCell([int]$row, [int]$col, [string]$ch, [string]$fg, [string]$bg, [bool]$bold, [bool]$italic, [bool]$underline) {
         if ($row -ge 0 -and $row -lt $this.Height -and $col -ge 0 -and $col -lt $this.Width) {
+            $this.ClearCellOccupant($row, $col)
             $cell = $this.Cells[$row][$col]
             $cell.Char = $ch
             $cell.Fg = $fg
@@ -64,52 +192,46 @@ class FrameBuffer {
         }
     }
 
-    [bool] CellEquals([FrameBufferCell]$a, [FrameBufferCell]$b) {
-        return ($a.Char -eq $b.Char -and $a.Fg -eq $b.Fg -and $a.Bg -eq $b.Bg -and
-                $a.Bold -eq $b.Bold -and $a.Italic -eq $b.Italic -and $a.Underline -eq $b.Underline)
-    }
-
-    [FrameBufferCell[][]] SnapshotCells() {
-        $rows = [FrameBufferCell[][]]::new($this.Height)
-        for ($r = 0; $r -lt $this.Height; $r++) {
-            $rows[$r] = [FrameBufferCell[]]::new($this.Width)
-            for ($c = 0; $c -lt $this.Width; $c++) {
-                $src = $this.Cells[$r][$c]
-                $copy = [FrameBufferCell]::new()
-                $copy.Char = $src.Char
-                $copy.Fg = $src.Fg
-                $copy.Bg = $src.Bg
-                $copy.Bold = $src.Bold
-                $copy.Italic = $src.Italic
-                $copy.Underline = $src.Underline
-                $copy.Strikethrough = $src.Strikethrough
-                $rows[$r][$c] = $copy
-            }
+    [void] SetContinuationCell([int]$row, [int]$col, [string]$fg, [string]$bg, [bool]$bold, [bool]$italic, [bool]$underline) {
+        if ($row -ge 0 -and $row -lt $this.Height -and $col -ge 0 -and $col -lt $this.Width) {
+            $cell = $this.Cells[$row][$col]
+            $cell.Char = ' '
+            $cell.Continuation = $true
+            $cell.Fg = $fg
+            $cell.Bg = $bg
+            $cell.Bold = $bold
+            $cell.Italic = $italic
+            $cell.Underline = $underline
         }
-        return $rows
     }
 
-    [string] Render([bool]$diffOnly) {
+    [string] GetRowText([int]$row) {
+        if ($row -lt 0 -or $row -ge $this.Height) { return '' }
+        $builder = [System.Text.StringBuilder]::new()
+        foreach ($cell in $this.Cells[$row]) {
+            if (-not $cell.Continuation) { [void]$builder.Append($cell.Char) }
+        }
+        return $builder.ToString()
+    }
+
+    hidden [int] GetColor256Index([string]$hex) {
+        $rgb = Convert-HexToRgb -Hex $hex
+        return 16 + (36 * [Math]::Round($rgb[0] / 51.0)) + (6 * [Math]::Round($rgb[1] / 51.0)) + [Math]::Round($rgb[2] / 51.0)
+    }
+
+    [string] Render([bool]$trueColorSupport, [bool]$color256Support) {
         $sb = [System.Text.StringBuilder]::new()
         $currentFg = $null
         $currentBg = $null
         $currentBold = $false
         $currentItalic = $false
         $currentUnderline = $false
-        $hasPrevious = ($null -ne $this.PreviousCells -and $this.PreviousCells.Count -eq $this.Height)
 
         for ($r = 0; $r -lt $this.Height; $r++) {
-            $rowDirty = $true
-            if ($diffOnly -and $hasPrevious) {
-                $rowDirty = $false
-                for ($c = 0; $c -lt $this.Width; $c++) {
-                    if (-not $this.CellEquals($this.Cells[$r][$c], $this.PreviousCells[$r][$c])) { $rowDirty = $true; break }
-                }
-            }
-            if (-not $rowDirty) { continue }
             [void]$sb.Append("`e[$($r + 1);1H")
             for ($c = 0; $c -lt $this.Width; $c++) {
                 $cell = $this.Cells[$r][$c]
+                if ($cell.Continuation) { continue }
                 $needReset = $false
                 if ($cell.Bold -ne $currentBold -or $cell.Italic -ne $currentItalic -or $cell.Underline -ne $currentUnderline) {
                     $needReset = $true
@@ -121,13 +243,25 @@ class FrameBuffer {
                     if ($cell.Italic) { [void]$sb.Append("`e[3m"); $currentItalic = $true }
                     if ($cell.Underline) { [void]$sb.Append("`e[4m"); $currentUnderline = $true }
                     if ($cell.Fg) {
-                        $rgb = Convert-HexToRgb -Hex $cell.Fg
-                        [void]$sb.Append("`e[38;2;$($rgb[0]);$($rgb[1]);$($rgb[2])m")
+                        if ($trueColorSupport) {
+                            $rgb = Convert-HexToRgb -Hex $cell.Fg
+                            [void]$sb.Append("`e[38;2;$($rgb[0]);$($rgb[1]);$($rgb[2])m")
+                        }
+                        elseif ($color256Support) {
+                            $index = $this.GetColor256Index($cell.Fg)
+                            [void]$sb.Append("`e[38;5;$index" + 'm')
+                        }
                         $currentFg = $cell.Fg
                     }
                     if ($cell.Bg) {
-                        $rgb = Convert-HexToRgb -Hex $cell.Bg
-                        [void]$sb.Append("`e[48;2;$($rgb[0]);$($rgb[1]);$($rgb[2])m")
+                        if ($trueColorSupport) {
+                            $rgb = Convert-HexToRgb -Hex $cell.Bg
+                            [void]$sb.Append("`e[48;2;$($rgb[0]);$($rgb[1]);$($rgb[2])m")
+                        }
+                        elseif ($color256Support) {
+                            $index = $this.GetColor256Index($cell.Bg)
+                            [void]$sb.Append("`e[48;5;$index" + 'm')
+                        }
                         $currentBg = $cell.Bg
                     }
                 }
@@ -135,7 +269,6 @@ class FrameBuffer {
             }
         }
         [void]$sb.Append("`e[0m")
-        $this.PreviousCells = $this.SnapshotCells()
         return $sb.ToString()
     }
 }
