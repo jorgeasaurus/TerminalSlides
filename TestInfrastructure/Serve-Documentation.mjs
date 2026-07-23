@@ -1,8 +1,8 @@
-import { createReadStream, statSync } from 'node:fs';
+import { createReadStream, realpathSync, statSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { extname, isAbsolute, join, normalize, relative, resolve, sep } from 'node:path';
 
-const root = resolve('docs');
+const root = realpathSync(resolve('docs'));
 const contentTypes = new Map([
   ['.css', 'text/css; charset=utf-8'],
   ['.html', 'text/html; charset=utf-8'],
@@ -20,16 +20,34 @@ createServer((request, response) => {
     return;
   }
 
+  const isWithinRoot = (path) => {
+    const relativePath = relative(root, path);
+    return relativePath !== '..' &&
+      !relativePath.startsWith(`..${sep}`) &&
+      !isAbsolute(relativePath);
+  };
   const requestedPath = pathname === '/' ? '/index.html' : pathname;
-  const filePath = normalize(join(root, requestedPath));
-  const relativePath = relative(root, filePath);
-  if (relativePath === '..' || relativePath.startsWith(`..${sep}`) || isAbsolute(relativePath)) {
+  let filePath = normalize(join(root, requestedPath));
+  if (!isWithinRoot(filePath)) {
     response.writeHead(403).end('Forbidden');
     return;
   }
 
   try {
-    const file = statSync(filePath);
+    filePath = realpathSync(filePath);
+    if (!isWithinRoot(filePath)) {
+      response.writeHead(403).end('Forbidden');
+      return;
+    }
+    let file = statSync(filePath);
+    if (file.isDirectory()) {
+      filePath = realpathSync(join(filePath, 'index.html'));
+      if (!isWithinRoot(filePath)) {
+        response.writeHead(403).end('Forbidden');
+        return;
+      }
+      file = statSync(filePath);
+    }
     if (!file.isFile()) throw new Error('Not a file');
     response.writeHead(200, {
       'Content-Length': file.size,

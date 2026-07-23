@@ -6,7 +6,8 @@ function Show-TerminalPresentation {
     [CmdletBinding(DefaultParameterSetName='Presentation')]
     param(
         [Parameter(Mandatory, ParameterSetName='Presentation')][TerminalSlides.Schema.V1.TerminalPresentation]$Presentation,
-        [Parameter(Mandatory, ParameterSetName='Path')][string]$Path
+        [Parameter(Mandatory, ParameterSetName='Path')][string]$Path,
+        [ValidateSet('Blocks', 'Sixel')][string]$ImageRenderer = 'Blocks'
     )
 
     if ($PSCmdlet.ParameterSetName -eq 'Path') {
@@ -37,14 +38,36 @@ function Show-TerminalPresentation {
     $escAltOff = "`e[?1049l"
     $hideCursor = "`e[?25l"
     $showCursor = "`e[?25h"
+    $imageWarnings = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
 
     try {
         if ($capability.AlternateBuffer) { Write-Host -NoNewline ($escAltOn + $hideCursor) }
         else { Write-Host -NoNewline $hideCursor }
         do {
             $elapsed = [datetime]::UtcNow - $startTime
-            $rendered = Render-TerminalPresentationToString -Presentation $Presentation -SlideIndex $session.SlideIndex -RevealStep $session.RevealStep -ShowNotes:$session.ShowNotes -DisplayMode $session.DisplayMode -Elapsed $elapsed -ShowTimer:$session.ShowTimer -Capability $capability
+            $layoutPlan = if ($ImageRenderer -eq 'Sixel' -and $session.DisplayMode -eq 'Slide') {
+                Get-TerminalSlideLayoutPlan -Presentation $Presentation `
+                    -SlideIndex $session.SlideIndex -RevealStep $session.RevealStep `
+                    -Capability $capability
+            }
+            $rendered = Render-TerminalPresentationToString -Presentation $Presentation `
+                -SlideIndex $session.SlideIndex -RevealStep $session.RevealStep `
+                -ShowNotes:$session.ShowNotes -DisplayMode $session.DisplayMode `
+                -Elapsed $elapsed -ShowTimer:$session.ShowTimer -Capability $capability `
+                -LayoutPlan $layoutPlan
             Write-Host -NoNewline $rendered
+            if ($ImageRenderer -eq 'Sixel') {
+                $overlayWarnings = @()
+                $imageOverlay = Get-TerminalNativeImageOverlay -Presentation $Presentation `
+                    -SlideIndex $session.SlideIndex -RevealStep $session.RevealStep `
+                    -DisplayMode $session.DisplayMode -Capability $capability `
+                    -LayoutPlan $layoutPlan `
+                    -WarningAction SilentlyContinue -WarningVariable overlayWarnings
+                foreach ($warning in $overlayWarnings) {
+                    [void]$imageWarnings.Add([string]$warning.Message)
+                }
+                if ($imageOverlay) { Write-Host -NoNewline $imageOverlay }
+            }
             $key = Read-TerminalPresentationKey
             $action = ConvertTo-TerminalPresentationAction -Key $key
             $session = Invoke-TerminalPresentationAction -Session $session -Action $action -Presentation $Presentation
@@ -54,5 +77,6 @@ function Show-TerminalPresentation {
         Write-Host -NoNewline (Get-AnsiReset)
         if ($capability.AlternateBuffer) { Write-Host -NoNewline ($showCursor + $escAltOff) }
         else { Write-Host -NoNewline $showCursor }
+        foreach ($warning in $imageWarnings) { Write-Warning $warning }
     }
 }

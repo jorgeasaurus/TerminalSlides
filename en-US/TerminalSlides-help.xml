@@ -24,14 +24,14 @@
         <maml:description><maml:para>Specifies the Region value.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
         <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>Content</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="2" aliases="none">
         <maml:name>RevealStep</maml:name>
         <maml:description><maml:para>Specifies the RevealStep value.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.Int32</command:parameterValue>
         <dev:type><maml:name>System.Int32</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>0</dev:defaultValue>
       </command:parameter>
     </command:syntaxItem>
     </command:syntax>
@@ -48,14 +48,14 @@
       <maml:description><maml:para>Specifies the Region value.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
       <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>Content</dev:defaultValue>
     </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="2" aliases="none">
       <maml:name>RevealStep</maml:name>
       <maml:description><maml:para>Specifies the RevealStep value.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.Int32</command:parameterValue>
       <dev:type><maml:name>System.Int32</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>0</dev:defaultValue>
     </command:parameter>
     </command:parameters>
     <command:inputTypes />
@@ -96,14 +96,14 @@
         <maml:description><maml:para>Specifies the Region value.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
         <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>Content</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>RevealStep</maml:name>
         <maml:description><maml:para>Specifies the RevealStep value.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.Int32</command:parameterValue>
         <dev:type><maml:name>System.Int32</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>0</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>ForegroundColor</maml:name>
@@ -127,14 +127,14 @@
       <maml:description><maml:para>Specifies the Region value.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
       <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>Content</dev:defaultValue>
     </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
       <maml:name>RevealStep</maml:name>
       <maml:description><maml:para>Specifies the RevealStep value.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.Int32</command:parameterValue>
       <dev:type><maml:name>System.Int32</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>0</dev:defaultValue>
     </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
       <maml:name>ForegroundColor</maml:name>
@@ -182,21 +182,21 @@
         <maml:description><maml:para>Specifies the ChartType value. Accepted values: HorizontalBar, Bar, Line, Sparkline, Gauge.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
         <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>HorizontalBar</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="2" aliases="none">
         <maml:name>Region</maml:name>
         <maml:description><maml:para>Specifies the Region value.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
         <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>Content</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="3" aliases="none">
         <maml:name>RevealStep</maml:name>
         <maml:description><maml:para>Specifies the RevealStep value.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.Int32</command:parameterValue>
         <dev:type><maml:name>System.Int32</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>0</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="4" aliases="none">
         <maml:name>Title</maml:name>
@@ -220,21 +220,21 @@
       <maml:description><maml:para>Specifies the ChartType value. Accepted values: HorizontalBar, Bar, Line, Sparkline, Gauge.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
       <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>HorizontalBar</dev:defaultValue>
     </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="2" aliases="none">
       <maml:name>Region</maml:name>
       <maml:description><maml:para>Specifies the Region value.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
       <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>Content</dev:defaultValue>
     </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="3" aliases="none">
       <maml:name>RevealStep</maml:name>
       <maml:description><maml:para>Specifies the RevealStep value.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.Int32</command:parameterValue>
       <dev:type><maml:name>System.Int32</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>0</dev:defaultValue>
     </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="4" aliases="none">
       <maml:name>Title</maml:name>
@@ -286,21 +286,21 @@ $deck | Add-TerminalSlide -Title &apos;Pipeline&apos; -Content {
         <maml:description><maml:para>Specifies the Language value.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
         <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>text</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="2" aliases="none">
         <maml:name>Region</maml:name>
         <maml:description><maml:para>Specifies the Region value.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
         <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>Content</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="3" aliases="none">
         <maml:name>RevealStep</maml:name>
         <maml:description><maml:para>Specifies the RevealStep value.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.Int32</command:parameterValue>
         <dev:type><maml:name>System.Int32</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>0</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Border</maml:name>
@@ -323,21 +323,21 @@ $deck | Add-TerminalSlide -Title &apos;Pipeline&apos; -Content {
       <maml:description><maml:para>Specifies the Language value.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
       <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>text</dev:defaultValue>
     </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="2" aliases="none">
       <maml:name>Region</maml:name>
       <maml:description><maml:para>Specifies the Region value.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
       <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>Content</dev:defaultValue>
     </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="3" aliases="none">
       <maml:name>RevealStep</maml:name>
       <maml:description><maml:para>Specifies the RevealStep value.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.Int32</command:parameterValue>
       <dev:type><maml:name>System.Int32</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>0</dev:defaultValue>
     </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
       <maml:name>Border</maml:name>
@@ -386,14 +386,14 @@ $deck | Add-TerminalSlide -Title &apos;Pipeline&apos; -Content {
         <maml:description><maml:para>Specifies the Region value.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
         <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>Content</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>RevealStep</maml:name>
         <maml:description><maml:para>Specifies the RevealStep value.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.Int32</command:parameterValue>
         <dev:type><maml:name>System.Int32</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>0</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>SafeMode</maml:name>
@@ -416,14 +416,14 @@ $deck | Add-TerminalSlide -Title &apos;Pipeline&apos; -Content {
         <maml:description><maml:para>Specifies the Region value.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
         <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>Content</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>RevealStep</maml:name>
         <maml:description><maml:para>Specifies the RevealStep value.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.Int32</command:parameterValue>
         <dev:type><maml:name>System.Int32</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>0</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>SafeMode</maml:name>
@@ -434,17 +434,17 @@ $deck | Add-TerminalSlide -Title &apos;Pipeline&apos; -Content {
     </command:syntaxItem>
     </command:syntax>
     <command:parameters>
-    <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+    <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
       <maml:name>Content</maml:name>
       <maml:description><maml:para>Specifies the Content value.</maml:para></maml:description>
-      <command:parameterValue required="false" variableLength="false">System.Management.Automation.ScriptBlock</command:parameterValue>
+      <command:parameterValue required="true" variableLength="false">System.Management.Automation.ScriptBlock</command:parameterValue>
       <dev:type><maml:name>System.Management.Automation.ScriptBlock</maml:name><maml:uri /></dev:type>
       <dev:defaultValue>None</dev:defaultValue>
     </command:parameter>
-    <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+    <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
       <maml:name>Diagram</maml:name>
       <maml:description><maml:para>Specifies the Diagram value.</maml:para></maml:description>
-      <command:parameterValue required="false" variableLength="false">System.Collections.Hashtable</command:parameterValue>
+      <command:parameterValue required="true" variableLength="false">System.Collections.Hashtable</command:parameterValue>
       <dev:type><maml:name>System.Collections.Hashtable</maml:name><maml:uri /></dev:type>
       <dev:defaultValue>None</dev:defaultValue>
     </command:parameter>
@@ -453,14 +453,14 @@ $deck | Add-TerminalSlide -Title &apos;Pipeline&apos; -Content {
       <maml:description><maml:para>Specifies the Region value.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
       <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>Content</dev:defaultValue>
     </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
       <maml:name>RevealStep</maml:name>
       <maml:description><maml:para>Specifies the RevealStep value.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.Int32</command:parameterValue>
       <dev:type><maml:name>System.Int32</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>0</dev:defaultValue>
     </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
       <maml:name>SafeMode</maml:name>
@@ -650,14 +650,14 @@ $deck | Add-TerminalSlide -Title &apos;Pipeline&apos; -Content {
         <maml:description><maml:para>Specifies the Region value.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
         <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>Content</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="3" aliases="none">
         <maml:name>RevealStep</maml:name>
         <maml:description><maml:para>Specifies the RevealStep value.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.Int32</command:parameterValue>
         <dev:type><maml:name>System.Int32</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>0</dev:defaultValue>
       </command:parameter>
     </command:syntaxItem>
     </command:syntax>
@@ -681,14 +681,14 @@ $deck | Add-TerminalSlide -Title &apos;Pipeline&apos; -Content {
       <maml:description><maml:para>Specifies the Region value.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
       <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>Content</dev:defaultValue>
     </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="3" aliases="none">
       <maml:name>RevealStep</maml:name>
       <maml:description><maml:para>Specifies the RevealStep value.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.Int32</command:parameterValue>
       <dev:type><maml:name>System.Int32</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>0</dev:defaultValue>
     </command:parameter>
     </command:parameters>
     <command:inputTypes />
@@ -788,14 +788,14 @@ $deck | Add-TerminalSlide `
         <maml:description><maml:para>Specifies the Region value.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
         <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>Content</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="3" aliases="none">
         <maml:name>RevealStep</maml:name>
         <maml:description><maml:para>Specifies the RevealStep value.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.Int32</command:parameterValue>
         <dev:type><maml:name>System.Int32</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>0</dev:defaultValue>
       </command:parameter>
     </command:syntaxItem>
     </command:syntax>
@@ -819,14 +819,14 @@ $deck | Add-TerminalSlide `
       <maml:description><maml:para>Specifies the Region value.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
       <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>Content</dev:defaultValue>
     </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="3" aliases="none">
       <maml:name>RevealStep</maml:name>
       <maml:description><maml:para>Specifies the RevealStep value.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.Int32</command:parameterValue>
       <dev:type><maml:name>System.Int32</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>0</dev:defaultValue>
     </command:parameter>
     </command:parameters>
     <command:inputTypes />
@@ -868,21 +868,21 @@ $deck | Add-TerminalSlide `
         <maml:description><maml:para>Specifies the Region value.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
         <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>Content</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Alignment</maml:name>
         <maml:description><maml:para>Specifies the Alignment value. Accepted values: Left, Center, Right.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
         <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>Center</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>RevealStep</maml:name>
         <maml:description><maml:para>Specifies the RevealStep value.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.Int32</command:parameterValue>
         <dev:type><maml:name>System.Int32</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>0</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>ForegroundColor</maml:name>
@@ -906,21 +906,21 @@ $deck | Add-TerminalSlide `
       <maml:description><maml:para>Specifies the Region value.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
       <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>Content</dev:defaultValue>
     </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
       <maml:name>Alignment</maml:name>
       <maml:description><maml:para>Specifies the Alignment value. Accepted values: Left, Center, Right.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
       <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>Center</dev:defaultValue>
     </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
       <maml:name>RevealStep</maml:name>
       <maml:description><maml:para>Specifies the RevealStep value.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.Int32</command:parameterValue>
       <dev:type><maml:name>System.Int32</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>0</dev:defaultValue>
     </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
       <maml:name>ForegroundColor</maml:name>
@@ -967,14 +967,14 @@ $deck | Add-TerminalSlide `
         <maml:description><maml:para>Specifies the Region value.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
         <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>Content</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="2" aliases="none">
         <maml:name>RevealStep</maml:name>
         <maml:description><maml:para>Specifies the RevealStep value.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.Int32</command:parameterValue>
         <dev:type><maml:name>System.Int32</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>0</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Border</maml:name>
@@ -997,14 +997,14 @@ $deck | Add-TerminalSlide `
       <maml:description><maml:para>Specifies the Region value.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
       <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>Content</dev:defaultValue>
     </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="2" aliases="none">
       <maml:name>RevealStep</maml:name>
       <maml:description><maml:para>Specifies the RevealStep value.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.Int32</command:parameterValue>
       <dev:type><maml:name>System.Int32</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>0</dev:defaultValue>
     </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
       <maml:name>Border</maml:name>
@@ -1053,21 +1053,21 @@ $deck | Add-TerminalSlide -Title &apos;Services&apos; -Content {
         <maml:description><maml:para>Specifies the Region value.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
         <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>Content</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Alignment</maml:name>
         <maml:description><maml:para>Specifies the Alignment value. Accepted values: Left, Center, Right.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
         <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>Left</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>RevealStep</maml:name>
         <maml:description><maml:para>Specifies the RevealStep value.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.Int32</command:parameterValue>
         <dev:type><maml:name>System.Int32</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>0</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>ForegroundColor</maml:name>
@@ -1088,7 +1088,7 @@ $deck | Add-TerminalSlide -Title &apos;Services&apos; -Content {
         <maml:description><maml:para>Specifies the OverflowBehavior value. Accepted values: Wrap, Truncate, Scroll.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
         <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>Wrap</dev:defaultValue>
       </command:parameter>
     </command:syntaxItem>
     </command:syntax>
@@ -1105,21 +1105,21 @@ $deck | Add-TerminalSlide -Title &apos;Services&apos; -Content {
       <maml:description><maml:para>Specifies the Region value.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
       <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>Content</dev:defaultValue>
     </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
       <maml:name>Alignment</maml:name>
       <maml:description><maml:para>Specifies the Alignment value. Accepted values: Left, Center, Right.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
       <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>Left</dev:defaultValue>
     </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
       <maml:name>RevealStep</maml:name>
       <maml:description><maml:para>Specifies the RevealStep value.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.Int32</command:parameterValue>
       <dev:type><maml:name>System.Int32</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>0</dev:defaultValue>
     </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
       <maml:name>ForegroundColor</maml:name>
@@ -1140,7 +1140,7 @@ $deck | Add-TerminalSlide -Title &apos;Services&apos; -Content {
       <maml:description><maml:para>Specifies the OverflowBehavior value. Accepted values: Wrap, Truncate, Scroll.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
       <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>Wrap</dev:defaultValue>
     </command:parameter>
     </command:parameters>
     <command:inputTypes />
@@ -1181,21 +1181,21 @@ $deck | Add-TerminalSlide -Title &apos;Services&apos; -Content {
         <maml:description><maml:para>Specifies the Region value.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
         <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>Content</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Alignment</maml:name>
         <maml:description><maml:para>Specifies the Alignment value. Accepted values: Left, Center, Right.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
         <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>Center</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>RevealStep</maml:name>
         <maml:description><maml:para>Specifies the RevealStep value.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.Int32</command:parameterValue>
         <dev:type><maml:name>System.Int32</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>0</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>ForegroundColor</maml:name>
@@ -1219,21 +1219,21 @@ $deck | Add-TerminalSlide -Title &apos;Services&apos; -Content {
       <maml:description><maml:para>Specifies the Region value.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
       <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>Content</dev:defaultValue>
     </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
       <maml:name>Alignment</maml:name>
       <maml:description><maml:para>Specifies the Alignment value. Accepted values: Left, Center, Right.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
       <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>Center</dev:defaultValue>
     </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
       <maml:name>RevealStep</maml:name>
       <maml:description><maml:para>Specifies the RevealStep value.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.Int32</command:parameterValue>
       <dev:type><maml:name>System.Int32</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>0</dev:defaultValue>
     </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
       <maml:name>ForegroundColor</maml:name>
@@ -1308,7 +1308,7 @@ $deck | Add-TerminalSlide -Title &apos;Services&apos; -Content {
         <maml:description><maml:para>Specifies the Metadata value.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.Collections.Hashtable</command:parameterValue>
         <dev:type><maml:name>System.Collections.Hashtable</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>@{}</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Hidden</maml:name>
@@ -1365,7 +1365,7 @@ $deck | Add-TerminalSlide -Title &apos;Services&apos; -Content {
       <maml:description><maml:para>Specifies the Metadata value.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.Collections.Hashtable</command:parameterValue>
       <dev:type><maml:name>System.Collections.Hashtable</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>@{}</dev:defaultValue>
     </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
       <maml:name>Hidden</maml:name>
@@ -1427,7 +1427,7 @@ $deck | Add-TerminalSlide -Title &apos;Services&apos; -Content {
         <maml:description><maml:para>Specifies the DestinationIndex value.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.Int32</command:parameterValue>
         <dev:type><maml:name>System.Int32</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>-1</dev:defaultValue>
       </command:parameter>
     </command:syntaxItem>
     </command:syntax>
@@ -1451,7 +1451,7 @@ $deck | Add-TerminalSlide -Title &apos;Services&apos; -Content {
       <maml:description><maml:para>Specifies the DestinationIndex value.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.Int32</command:parameterValue>
       <dev:type><maml:name>System.Int32</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>-1</dev:defaultValue>
     </command:parameter>
     </command:parameters>
     <command:inputTypes />
@@ -1497,7 +1497,7 @@ $deck | Add-TerminalSlide -Title &apos;Services&apos; -Content {
         <maml:description><maml:para>Specifies the Format value. Accepted values: Ansi, PlainText, Markdown, Html, Psd1, Json.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
         <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>PlainText</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Force</maml:name>
@@ -1539,7 +1539,7 @@ $deck | Add-TerminalSlide -Title &apos;Services&apos; -Content {
       <maml:description><maml:para>Specifies the Format value. Accepted values: Ansi, PlainText, Markdown, Html, Psd1, Json.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
       <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>PlainText</dev:defaultValue>
     </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
       <maml:name>Force</maml:name>
@@ -1879,35 +1879,35 @@ $importedDeck = Import-TerminalPresentation -Path $jsonPath</dev:code>
         <maml:description><maml:para>Specifies the Theme value.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
         <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>Midnight</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Width</maml:name>
         <maml:description><maml:para>Specifies the Width value.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.Int32</command:parameterValue>
         <dev:type><maml:name>System.Int32</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>0</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Height</maml:name>
         <maml:description><maml:para>Specifies the Height value.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.Int32</command:parameterValue>
         <dev:type><maml:name>System.Int32</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>0</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>DefaultLayout</maml:name>
         <maml:description><maml:para>Specifies the DefaultLayout value.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
         <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>TitleAndContent</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Metadata</maml:name>
         <maml:description><maml:para>Specifies the Metadata value.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.Collections.Hashtable</command:parameterValue>
         <dev:type><maml:name>System.Collections.Hashtable</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>@{}</dev:defaultValue>
       </command:parameter>
     </command:syntaxItem>
     </command:syntax>
@@ -1945,35 +1945,35 @@ $importedDeck = Import-TerminalPresentation -Path $jsonPath</dev:code>
       <maml:description><maml:para>Specifies the Theme value.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
       <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>Midnight</dev:defaultValue>
     </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
       <maml:name>Width</maml:name>
       <maml:description><maml:para>Specifies the Width value.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.Int32</command:parameterValue>
       <dev:type><maml:name>System.Int32</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>0</dev:defaultValue>
     </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
       <maml:name>Height</maml:name>
       <maml:description><maml:para>Specifies the Height value.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.Int32</command:parameterValue>
       <dev:type><maml:name>System.Int32</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>0</dev:defaultValue>
     </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
       <maml:name>DefaultLayout</maml:name>
       <maml:description><maml:para>Specifies the DefaultLayout value.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
       <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>TitleAndContent</dev:defaultValue>
     </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
       <maml:name>Metadata</maml:name>
       <maml:description><maml:para>Specifies the Metadata value.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.Collections.Hashtable</command:parameterValue>
       <dev:type><maml:name>System.Collections.Hashtable</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>@{}</dev:defaultValue>
     </command:parameter>
     </command:parameters>
     <command:inputTypes />
@@ -2035,84 +2035,84 @@ $importedDeck = Import-TerminalPresentation -Path $jsonPath</dev:code>
         <maml:description><maml:para>Specifies the Accent value.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
         <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>$Primary</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="5" aliases="none">
         <maml:name>Muted</maml:name>
         <maml:description><maml:para>Specifies the Muted value.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
         <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>$Foreground</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="6" aliases="none">
         <maml:name>Heading</maml:name>
         <maml:description><maml:para>Specifies the Heading value.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
         <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>$Primary</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="7" aliases="none">
         <maml:name>Border</maml:name>
         <maml:description><maml:para>Specifies the Border value.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
         <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>$Primary</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="8" aliases="none">
         <maml:name>BulletSymbol</maml:name>
         <maml:description><maml:para>Specifies the BulletSymbol value.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
         <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>•</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="9" aliases="none">
         <maml:name>BoxDrawingStyle</maml:name>
         <maml:description><maml:para>Specifies the BoxDrawingStyle value. Accepted values: unicode, ascii, double, rounded, single.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
         <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>unicode</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="10" aliases="none">
         <maml:name>HeadingStyle</maml:name>
         <maml:description><maml:para>Specifies the HeadingStyle value. Accepted values: plain, bold, banner.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
         <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>bold</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="11" aliases="none">
         <maml:name>ChartPalette</maml:name>
         <maml:description><maml:para>Specifies the ChartPalette value.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.String[]</command:parameterValue>
         <dev:type><maml:name>System.String[]</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>@()</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="12" aliases="none">
         <maml:name>ErrorColor</maml:name>
         <maml:description><maml:para>Specifies the ErrorColor value.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
         <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>#FF0000</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="13" aliases="none">
         <maml:name>WarningColor</maml:name>
         <maml:description><maml:para>Specifies the WarningColor value.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
         <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>#FFFF00</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="14" aliases="none">
         <maml:name>SuccessColor</maml:name>
         <maml:description><maml:para>Specifies the SuccessColor value.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
         <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>#00FF00</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="15" aliases="none">
         <maml:name>Metadata</maml:name>
         <maml:description><maml:para>Specifies the Metadata value.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.Collections.Hashtable</command:parameterValue>
         <dev:type><maml:name>System.Collections.Hashtable</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>@{}</dev:defaultValue>
       </command:parameter>
     </command:syntaxItem>
     </command:syntax>
@@ -2150,84 +2150,84 @@ $importedDeck = Import-TerminalPresentation -Path $jsonPath</dev:code>
       <maml:description><maml:para>Specifies the Accent value.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
       <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>$Primary</dev:defaultValue>
     </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="5" aliases="none">
       <maml:name>Muted</maml:name>
       <maml:description><maml:para>Specifies the Muted value.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
       <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>$Foreground</dev:defaultValue>
     </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="6" aliases="none">
       <maml:name>Heading</maml:name>
       <maml:description><maml:para>Specifies the Heading value.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
       <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>$Primary</dev:defaultValue>
     </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="7" aliases="none">
       <maml:name>Border</maml:name>
       <maml:description><maml:para>Specifies the Border value.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
       <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>$Primary</dev:defaultValue>
     </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="8" aliases="none">
       <maml:name>BulletSymbol</maml:name>
       <maml:description><maml:para>Specifies the BulletSymbol value.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
       <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>•</dev:defaultValue>
     </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="9" aliases="none">
       <maml:name>BoxDrawingStyle</maml:name>
       <maml:description><maml:para>Specifies the BoxDrawingStyle value. Accepted values: unicode, ascii, double, rounded, single.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
       <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>unicode</dev:defaultValue>
     </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="10" aliases="none">
       <maml:name>HeadingStyle</maml:name>
       <maml:description><maml:para>Specifies the HeadingStyle value. Accepted values: plain, bold, banner.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
       <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>bold</dev:defaultValue>
     </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="11" aliases="none">
       <maml:name>ChartPalette</maml:name>
       <maml:description><maml:para>Specifies the ChartPalette value.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.String[]</command:parameterValue>
       <dev:type><maml:name>System.String[]</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>@()</dev:defaultValue>
     </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="12" aliases="none">
       <maml:name>ErrorColor</maml:name>
       <maml:description><maml:para>Specifies the ErrorColor value.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
       <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>#FF0000</dev:defaultValue>
     </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="13" aliases="none">
       <maml:name>WarningColor</maml:name>
       <maml:description><maml:para>Specifies the WarningColor value.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
       <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>#FFFF00</dev:defaultValue>
     </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="14" aliases="none">
       <maml:name>SuccessColor</maml:name>
       <maml:description><maml:para>Specifies the SuccessColor value.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
       <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>#00FF00</dev:defaultValue>
     </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="15" aliases="none">
       <maml:name>Metadata</maml:name>
       <maml:description><maml:para>Specifies the Metadata value.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.Collections.Hashtable</command:parameterValue>
       <dev:type><maml:name>System.Collections.Hashtable</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>@{}</dev:defaultValue>
     </command:parameter>
     </command:parameters>
     <command:inputTypes />
@@ -2447,6 +2447,13 @@ $deck = New-TerminalPresentation `
         <dev:type><maml:name>TerminalSlides.Schema.V1.TerminalPresentation</maml:name><maml:uri /></dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>ImageRenderer</maml:name>
+        <maml:description><maml:para>Specifies the ImageRenderer value. Accepted values: Blocks, Sixel.</maml:para></maml:description>
+        <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
+        <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
+        <dev:defaultValue>Blocks</dev:defaultValue>
+      </command:parameter>
     </command:syntaxItem>
     <command:syntaxItem>
       <maml:name>Show-TerminalPresentation</maml:name>
@@ -2457,22 +2464,36 @@ $deck = New-TerminalPresentation `
         <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>ImageRenderer</maml:name>
+        <maml:description><maml:para>Specifies the ImageRenderer value. Accepted values: Blocks, Sixel.</maml:para></maml:description>
+        <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
+        <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
+        <dev:defaultValue>Blocks</dev:defaultValue>
+      </command:parameter>
     </command:syntaxItem>
     </command:syntax>
     <command:parameters>
-    <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+    <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
       <maml:name>Presentation</maml:name>
       <maml:description><maml:para>Specifies the Presentation value.</maml:para></maml:description>
-      <command:parameterValue required="false" variableLength="false">TerminalSlides.Schema.V1.TerminalPresentation</command:parameterValue>
+      <command:parameterValue required="true" variableLength="false">TerminalSlides.Schema.V1.TerminalPresentation</command:parameterValue>
       <dev:type><maml:name>TerminalSlides.Schema.V1.TerminalPresentation</maml:name><maml:uri /></dev:type>
       <dev:defaultValue>None</dev:defaultValue>
     </command:parameter>
-    <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+    <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
       <maml:name>Path</maml:name>
       <maml:description><maml:para>Specifies the Path value.</maml:para></maml:description>
-      <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
+      <command:parameterValue required="true" variableLength="false">System.String</command:parameterValue>
       <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
       <dev:defaultValue>None</dev:defaultValue>
+    </command:parameter>
+    <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+      <maml:name>ImageRenderer</maml:name>
+      <maml:description><maml:para>Specifies the ImageRenderer value. Accepted values: Blocks, Sixel.</maml:para></maml:description>
+      <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
+      <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
+      <dev:defaultValue>Blocks</dev:defaultValue>
     </command:parameter>
     </command:parameters>
     <command:inputTypes />
@@ -2502,7 +2523,7 @@ $deck = New-TerminalPresentation `
         <maml:description><maml:para>Specifies the Name value. Accepted values: TerminalSlides, IntuneHydrationKit.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
         <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>TerminalSlides</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>PassThru</maml:name>
@@ -2518,7 +2539,7 @@ $deck = New-TerminalPresentation `
       <maml:description><maml:para>Specifies the Name value. Accepted values: TerminalSlides, IntuneHydrationKit.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
       <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>TerminalSlides</dev:defaultValue>
     </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
       <maml:name>PassThru</maml:name>
@@ -2566,7 +2587,7 @@ $demo = Start-TerminalSlidesDemo `
         <maml:description><maml:para>Specifies the Viewport value.</maml:para></maml:description>
         <command:parameterValue required="false" variableLength="false">System.String[]</command:parameterValue>
         <dev:type><maml:name>System.String[]</maml:name><maml:uri /></dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
+        <dev:defaultValue>@(&apos;80x24&apos;, &apos;120x35&apos;, &apos;160x45&apos;)</dev:defaultValue>
       </command:parameter>
     </command:syntaxItem>
     </command:syntax>
@@ -2583,7 +2604,7 @@ $demo = Start-TerminalSlidesDemo `
       <maml:description><maml:para>Specifies the Viewport value.</maml:para></maml:description>
       <command:parameterValue required="false" variableLength="false">System.String[]</command:parameterValue>
       <dev:type><maml:name>System.String[]</maml:name><maml:uri /></dev:type>
-      <dev:defaultValue>None</dev:defaultValue>
+      <dev:defaultValue>@(&apos;80x24&apos;, &apos;120x35&apos;, &apos;160x45&apos;)</dev:defaultValue>
     </command:parameter>
     </command:parameters>
     <command:inputTypes />

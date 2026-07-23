@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Create and register a reusable truecolor theme for the current session.">
+  <title>New-TerminalPresentationTheme | TerminalSlides</title>
+  <link rel="stylesheet" href="../../../guides.css">
+  <script src="../../../guides.js" defer></script>
+</head>
+<body data-root="../../../" data-current-command="New-TerminalPresentationTheme">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header class="docs-header">
+    <a class="docs-brand" href="../../../"><span>&gt;_</span> TerminalSlides</a>
+    <div class="docs-header-actions">
+      <button type="button" class="header-search" data-search-focus>Search <kbd>/</kbd></button>
+      <a href="https://github.com/jorgeasaurus/TerminalSlides">GitHub</a>
+      <button type="button" class="icon-button" data-theme-toggle aria-label="Switch color theme">◐</button>
+      <button type="button" class="icon-button menu-button" data-sidebar-toggle aria-label="Open guide navigation">Menu</button>
+    </div>
+  </header>
+  <div class="docs-shell">
+    <aside class="docs-sidebar" data-sidebar>
+      <label class="sidebar-search"><span>Search commands</span><input type="search" data-command-search placeholder="Filter commands"></label>
+      <nav data-command-navigation aria-label="Guide navigation"></nav>
+    </aside>
+    <main class="docs-article" id="content">
+      <p class="breadcrumb"><a href="../../">Guides</a> / Command reference</p>
+      <h1>New-TerminalPresentationTheme</h1>
+      <section id="description">
+        <h2>Description</h2>
+        <p>Create and register a reusable truecolor theme for the current session.</p>
+      </section>
+      <section id="examples">
+        <h2>Examples</h2>
+        <h3>Example 1</h3>
+        <pre><code>New-TerminalPresentationTheme `
+  -Name Ocean `
+  -Background &#39;#06131F&#39; `
+  -Foreground &#39;#E7F5FF&#39; `
+  -Primary &#39;#38BDF8&#39; `
+  -Accent &#39;#A78BFA&#39; | Out-Null
+
+$deck = New-TerminalPresentation `
+  -Title &#39;Ocean deck&#39; -Theme Ocean</code></pre>
+      </section>
+      <section id="parameters">
+        <h2>Parameters</h2>
+        <section class="parameter-card" id="parameter-accent">
+          <h3>-Accent</h3>
+          <p>Specifies the Accent value.</p>
+          
+          <dl>
+            <div><dt>Type</dt><dd><code>System.String</code></dd></div>
+            <div><dt>Required</dt><dd>false</dd></div>
+            <div><dt>Position</dt><dd>4</dd></div>
+            <div><dt>Pipeline input</dt><dd>false</dd></div>
+          </dl>
+        </section>
+        <section class="parameter-card" id="parameter-background">
+          <h3>-Background</h3>
+          <p>Specifies the Background value.</p>
+          
+          <dl>
+            <div><dt>Type</dt><dd><code>System.String</code></dd></div>
+            <div><dt>Required</dt><dd>true</dd></div>
+            <div><dt>Position</dt><dd>1</dd></div>
+            <div><dt>Pipeline input</dt><dd>false</dd></div>
+          </dl>
+        </section>
+        <section class="parameter-card" id="parameter-border">
+          <h3>-Border</h3>
+          <p>Specifies the Border value.</p>
+          
+          <dl>
+            <div><dt>Type</dt><dd><code>System.String</code></dd></div>
+            <div><dt>Required</dt><dd>false</dd></div>
+            <div><dt>Position</dt><dd>7</dd></div>
+            <div><dt>Pipeline input</dt><dd>false</dd></div>
+          </dl>
+        </section>
+        <section class="parameter-card" id="parameter-boxdrawingstyle">
+          <h3>-BoxDrawingStyle</h3>
+          <p>Specifies the BoxDrawingStyle value.</p>
+          <p><strong>Accepted values:</strong> unicode, ascii, double, rounded, single</p>
+          <dl>
+            <div><dt>Type</dt><dd><code>System.String</code></dd></div>
+            <div><dt>Required</dt><dd>false</dd></div>
+            <div><dt>Position</dt><dd>9</dd></div>
+            <div><dt>Pipeline input</dt><dd>false</dd></div>
+          </dl>
+        </section>
+        <section class="parameter-card" id="parameter-bulletsymbol">
+          <h3>-BulletSymbol</h3>
+          <p>Specifies the BulletSymbol value.</p>
+          
+          <dl>
+            <div><dt>Type</dt><dd><code>System.String</code></dd></div>
+            <div><dt>Required</dt><dd>false</dd></div>
+            <div><dt>Position</dt><dd>8</dd></div>
+            <div><dt>Pipeline input</dt><dd>false</dd></div>
+          </dl>
+        </section>
+        <section class="parameter-card" id="parameter-chartpalette">
+          <h3>-ChartPalette</h3>
+          <p>Specifies the ChartPalette value.</p>
+          
+          <dl>
+            <div><dt>Type</dt><dd><code>System.String[]</code></dd></div>
+            <div><dt>Required</dt><dd>false</dd></div>
+            <div><dt>Position</dt><dd>11</dd></div>
+            <div><dt>Pipeline input</dt><dd>false</dd></div>
+          </dl>
+        </section>
+        <section class="parameter-card" id="parameter-errorcolor">
+          <h3>-ErrorColor</h3>
+          <p>Specifies the ErrorColor value.</p>
+          
+          <dl>
+            <div><dt>Type</dt><dd><code>System.String</code></dd></div>
+            <div><dt>Required</dt><dd>false</dd></div>
+            <div><dt>Position</dt><dd>12</dd></div>
+            <div><dt>Pipeline input</dt><dd>false</dd></div>
+          </dl>
+        </section>
+        <section class="parameter-card" id="parameter-foreground">
+          <h3>-Foreground</h3>
+          <p>Specifies the Foreground value.</p>
+          
+          <dl>
+            <div><dt>Type</dt><dd><code>System.String</code></dd></div>
+            <div><dt>Required</dt><dd>true</dd></div>
+            <div><dt>Position</dt><dd>2</dd></div>
+            <div><dt>Pipeline input</dt><dd>false</dd></div>
+          </dl>
+        </section>
+        <section class="parameter-card" id="parameter-heading">
+          <h3>-Heading</h3>
+          <p>Specifies the Heading value.</p>
+          
+          <dl>
+            <div><dt>Type</dt><dd><code>System.String</code></dd></div>
+            <div><dt>Required</dt><dd>false</dd></div>
+            <div><dt>Position</dt><dd>6</dd></div>
+            <div><dt>Pipeline input</dt><dd>false</dd></div>
+          </dl>
+        </section>
+        <section class="parameter-card" id="parameter-headingstyle">
+          <h3>-HeadingStyle</h3>
+          <p>Specifies the HeadingStyle value.</p>
+          <p><strong>Accepted values:</strong> plain, bold, banner</p>
+          <dl>
+            <div><dt>Type</dt><dd><code>System.String</code></dd></div>
+            <div><dt>Required</dt><dd>false</dd></div>
+            <div><dt>Position</dt><dd>10</dd></div>
+            <div><dt>Pipeline input</dt><dd>false</dd></div>
+          </dl>
+        </section>
+        <section class="parameter-card" id="parameter-metadata">
+          <h3>-Metadata</h3>
+          <p>Specifies the Metadata value.</p>
+          
+          <dl>
+            <div><dt>Type</dt><dd><code>System.Collections.Hashtable</code></dd></div>
+            <div><dt>Required</dt><dd>false</dd></div>
+            <div><dt>Position</dt><dd>15</dd></div>
+            <div><dt>Pipeline input</dt><dd>false</dd></div>
+          </dl>
+        </section>
+        <section class="parameter-card" id="parameter-muted">
+          <h3>-Muted</h3>
+          <p>Specifies the Muted value.</p>
+          
+          <dl>
+            <div><dt>Type</dt><dd><code>System.String</code></dd></div>
+            <div><dt>Required</dt><dd>false</dd></div>
+            <div><dt>Position</dt><dd>5</dd></div>
+            <div><dt>Pipeline input</dt><dd>false</dd></div>
+          </dl>
+        </section>
+        <section class="parameter-card" id="parameter-name">
+          <h3>-Name</h3>
+          <p>Specifies the Name value.</p>
+          
+          <dl>
+            <div><dt>Type</dt><dd><code>System.String</code></dd></div>
+            <div><dt>Required</dt><dd>true</dd></div>
+            <div><dt>Position</dt><dd>0</dd></div>
+            <div><dt>Pipeline input</dt><dd>false</dd></div>
+          </dl>
+        </section>
+        <section class="parameter-card" id="parameter-primary">
+          <h3>-Primary</h3>
+          <p>Specifies the Primary value.</p>
+          
+          <dl>
+            <div><dt>Type</dt><dd><code>System.String</code></dd></div>
+            <div><dt>Required</dt><dd>true</dd></div>
+            <div><dt>Position</dt><dd>3</dd></div>
+            <div><dt>Pipeline input</dt><dd>false</dd></div>
+          </dl>
+        </section>
+        <section class="parameter-card" id="parameter-successcolor">
+          <h3>-SuccessColor</h3>
+          <p>Specifies the SuccessColor value.</p>
+          
+          <dl>
+            <div><dt>Type</dt><dd><code>System.String</code></dd></div>
+            <div><dt>Required</dt><dd>false</dd></div>
+            <div><dt>Position</dt><dd>14</dd></div>
+            <div><dt>Pipeline input</dt><dd>false</dd></div>
+          </dl>
+        </section>
+        <section class="parameter-card" id="parameter-warningcolor">
+          <h3>-WarningColor</h3>
+          <p>Specifies the WarningColor value.</p>
+          
+          <dl>
+            <div><dt>Type</dt><dd><code>System.String</code></dd></div>
+            <div><dt>Required</dt><dd>false</dd></div>
+            <div><dt>Position</dt><dd>13</dd></div>
+            <div><dt>Pipeline input</dt><dd>false</dd></div>
+          </dl>
+        </section>
+      </section>
+      <section id="syntax">
+        <h2>Syntax</h2>
+        <pre><code>New-TerminalPresentationTheme -Name &lt;String&gt; -Background &lt;String&gt; -Foreground &lt;String&gt; -Primary &lt;String&gt; [-Accent &lt;String&gt;] [-Muted &lt;String&gt;] [-Heading &lt;String&gt;] [-Border &lt;String&gt;] [-BulletSymbol &lt;String&gt;] [-BoxDrawingStyle &lt;String&gt;] [-HeadingStyle &lt;String&gt;] [-ChartPalette &lt;String[]&gt;] [-ErrorColor &lt;String&gt;] [-WarningColor &lt;String&gt;] [-SuccessColor &lt;String&gt;] [-Metadata &lt;Hashtable&gt;]</code></pre>
+      </section>
+      <nav class="pagination" aria-label="Command pagination"><a href="../new-terminalpresentation/"><span>Previous</span>New-TerminalPresentation</a><a class="next" href="../remove-terminalslide/"><span>Next</span>Remove-TerminalSlide</a></nav>
+    </main>
+    <aside class="page-toc">
+      <strong>On this page</strong>
+      <a href="#description">Description</a>
+      <a href="#examples">Examples</a>
+      <a href="#parameters">Parameters</a>
+      <a href="#syntax">Syntax</a>
+    </aside>
+  </div>
+</body>
+</html>

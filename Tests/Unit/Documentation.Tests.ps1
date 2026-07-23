@@ -71,31 +71,70 @@ Describe 'Generated command documentation' {
             Where-Object Name -in 'Content', 'Diagram')
 
         $summaryParameters | Should -HaveCount 2
-        @($summaryParameters | Where-Object Required -eq 'false') | Should -HaveCount 2
+        @($summaryParameters | Where-Object Required -eq 'true') | Should -HaveCount 2
         @($syntaxParameters | Where-Object Required -eq 'true') | Should -HaveCount 2
     }
 
-    It 'exposes an accessible searchable command reference' {
-        $index = Get-Content (Join-Path $script:RepositoryRoot 'docs/index.html') -Raw
-        $clientScript = Get-Content (Join-Path $script:RepositoryRoot 'docs/script.js') -Raw
+    It 'publishes declared defaults and parameter-set requiredness' {
+        $help = Get-Help Show-TerminalPresentation -Full
+        $imageRenderer = $help.Parameters.Parameter |
+            Where-Object Name -eq 'ImageRenderer'
+        $guide = Get-Content (
+            Join-Path $script:RepositoryRoot 'docs/guides/commands/show-terminalpresentation/index.html'
+        ) -Raw
 
-        $index | Should -Match 'id="commands"'
-        $index | Should -Match 'id="command-search"'
-        $index | Should -Match 'id="command-grid"'
-        $index | Should -Not -Match 'TerminalSlides\.psd1'
-        $clientScript | Should -Match ([regex]::Escape('fetch("./commands.json")'))
-        $clientScript | Should -Match 'function isInteractiveTarget\(target\)'
-        @([regex]::Matches($clientScript, 'if \(isInteractiveTarget\(event\.target\)\) return;')) |
-            Should -HaveCount 1
+        $imageRenderer.DefaultValue | Should -Be 'Blocks'
+        $guide | Should -Match '(?s)<h3>-Path</h3>.*?<dt>Required</dt><dd>true</dd>'
+        $guide | Should -Match '(?s)<h3>-Presentation</h3>.*?<dt>Required</dt><dd>true</dd>'
     }
 
-    It 'uses PSGallery-first onboarding in every user-facing entry point' {
+    It 'publishes a minimal landing page and a searchable guides hierarchy' {
         $index = Get-Content (Join-Path $script:RepositoryRoot 'docs/index.html') -Raw
+        $guidesIndex = Get-Content (Join-Path $script:RepositoryRoot 'docs/guides/index.html') -Raw
+        $clientScript = Get-Content (Join-Path $script:RepositoryRoot 'docs/guides.js') -Raw
+
+        $index | Should -Match 'Present without leaving the terminal'
+        $index | Should -Match 'href="guides/"'
+        $index | Should -Not -Match 'id="command-grid"'
+        $index | Should -Not -Match 'TerminalSlides\.psd1'
+        $guidesIndex | Should -Match 'TerminalSlides guides'
+        $guidesIndex | Should -Match 'data-command-navigation'
+        $clientScript | Should -Match 'commands\.json'
+        $clientScript | Should -Match 'data-sidebar-toggle'
+        $clientScript | Should -Match 'data-command-search'
+    }
+
+    It 'generates a syntax and example guide for every exported command' {
+        $catalog = @(Get-Content -LiteralPath $script:CatalogPath -Raw | ConvertFrom-Json)
+        $commandRoot = Join-Path $script:RepositoryRoot 'docs/guides/commands'
+        $pages = @(Get-ChildItem -LiteralPath $commandRoot -Filter index.html -File -Recurse)
+
+        $pages | Should -HaveCount $script:Manifest.FunctionsToExport.Count
+        foreach ($entry in $catalog) {
+            $slug = $entry.Name.ToLowerInvariant()
+            $pagePath = Join-Path $commandRoot $slug 'index.html'
+            $pagePath | Should -Exist
+            $page = Get-Content -LiteralPath $pagePath -Raw
+
+            $page | Should -Match ([regex]::Escape("<h1>$($entry.Name)</h1>"))
+            $page | Should -Match 'id="description"'
+            $page | Should -Match 'id="examples"'
+            $encodedExampleLine = [System.Net.WebUtility]::HtmlEncode($entry.Example.Split("`n")[0])
+            $page | Should -Match ([regex]::Escape($encodedExampleLine))
+            $page | Should -Match 'id="parameters"'
+            $page | Should -Match 'id="syntax"'
+            $page | Should -Match 'data-command-navigation'
+        }
+    }
+
+    It 'uses the canonical module install command in every user-facing entry point' {
+        $index = Get-Content (Join-Path $script:RepositoryRoot 'docs/index.html') -Raw
+        $installGuide = Get-Content (Join-Path $script:RepositoryRoot 'docs/guides/install/index.html') -Raw
         $readme = Get-Content (Join-Path $script:RepositoryRoot 'README.md') -Raw
         $contributing = Get-Content (Join-Path $script:RepositoryRoot 'CONTRIBUTING.md') -Raw
-        $installCommand = 'Install-PSResource -Name TerminalSlides -Repository PSGallery -Scope CurrentUser -TrustRepository'
+        $installCommand = 'Install-Module TerminalSlides'
 
-        foreach ($document in @($index, $readme, $contributing)) {
+        foreach ($document in @($index, $installGuide, $readme, $contributing)) {
             $document | Should -Match ([regex]::Escape($installCommand))
             $document | Should -Not -Match 'Import-Module\s+\./TerminalSlides\.psd1'
             $document | Should -Not -Match '(?i)clone the repository.+import'
@@ -103,6 +142,8 @@ Describe 'Generated command documentation' {
 
         $index | Should -Match 'PowerShell Gallery'
         $index | Should -Match 'powershellgallery\.com/packages/TerminalSlides'
+        $installGuide | Should -Match ([regex]::Escape('Update-Module TerminalSlides'))
+        $installGuide | Should -Not -Match 'Update-PSResource'
         $readme | Should -Match 'https://jorgeasaurus\.github\.io/TerminalSlides/'
     }
 
