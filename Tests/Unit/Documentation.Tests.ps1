@@ -90,7 +90,7 @@ Describe 'Generated command documentation' {
             Should -HaveCount 1
     }
 
-    It 'does not claim unpublished Gallery or Pages locations' {
+    It 'links the deployed Pages site without claiming an unpublished Gallery release' {
         $index = Get-Content (Join-Path $script:RepositoryRoot 'docs/index.html') -Raw
         $readme = Get-Content (Join-Path $script:RepositoryRoot 'README.md') -Raw
 
@@ -98,6 +98,7 @@ Describe 'Generated command documentation' {
         $index | Should -Not -Match 'PowerShell Gallery'
         $index | Should -Not -Match 'powershellgallery\.com'
         $index | Should -Not -Match 'jorgeasaurus\.github\.io'
+        $readme | Should -Match 'https://jorgeasaurus\.github\.io/TerminalSlides/'
         $readme | Should -Not -Match 'Install-Module\s+TerminalSlides'
         $readme | Should -Not -Match '(?m)^Import-Module\s+TerminalSlides\s*$'
     }
