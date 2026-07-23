@@ -173,6 +173,7 @@ h1 {
 .meta { margin-top: 1rem; color: var(--muted); font-size: .82rem; }
 
 .terminal-preview {
+  container-type: inline-size;
   max-width: 52rem;
   margin: 5rem auto 0;
   overflow: hidden;
@@ -191,7 +192,15 @@ h1 {
   font-size: .75rem;
 }
 
-.terminal-preview pre { margin: 0; padding: 1.4rem; overflow-x: auto; color: #dbe7f5; font: clamp(.66rem, 1.5vw, .9rem)/1.5 "SFMono-Regular", Consolas, monospace; }
+.terminal-preview pre {
+  margin: 0;
+  padding: 1.4rem;
+  overflow-x: clip;
+  color: #dbe7f5;
+  font: clamp(8px, 1.9cqi, .9rem)/1.5 "SFMono-Regular", Consolas, monospace;
+  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+}
 
 .terminal-preview strong,
 .terminal-preview .accent,
