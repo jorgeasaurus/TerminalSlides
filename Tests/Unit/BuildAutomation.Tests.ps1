@@ -48,7 +48,7 @@ Describe 'Build automation' {
         @([regex]::Matches($workflow, '(?m)^\s+run: \./build\.ps1(?:\s.*)?$')) |
             Should -HaveCount 2
         $workflow | Should -Not -Match '(?m)^\s+run: Invoke-Pester'
-        @([regex]::Matches($workflow, '(?m)^\s+if-no-files-found: warn$')) |
+        @([regex]::Matches($workflow, '(?m)^\s+if-no-files-found: warn\r?$')) |
             Should -HaveCount 2
     }
 
