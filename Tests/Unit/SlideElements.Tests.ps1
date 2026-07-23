@@ -25,7 +25,9 @@ Describe 'Slide element builders' {
                 Add-SlideDiagramEdge -From 'a' -To 'b'
             }
         } | Out-Null
-        $diagram = $deck.Slides[0].Elements | Where-Object { $_.Kind -eq 'Diagram' }
+        $diagram = $deck.Slides[0].Elements | Where-Object {
+            $_.Kind -eq [TerminalSlides.Schema.V1.ElementKind]::Diagram
+        }
         $diagram | Should -Not -BeNullOrEmpty
         $diagram.Payload.Nodes.Count | Should -Be 1
     }
