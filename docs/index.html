@@ -56,8 +56,8 @@
         </div>
         <div class="install-command" aria-label="Import command">
           <span class="prompt">PS&gt;</span>
-          <code>Import-Module ./TerminalSlides/TerminalSlides.psd1</code>
-          <button class="copy-button" type="button" data-copy="Import-Module ./TerminalSlides/TerminalSlides.psd1" aria-label="Copy import command">Copy</button>
+          <code>Import-Module ./TerminalSlides.psd1</code>
+          <button class="copy-button" type="button" data-copy="Import-Module ./TerminalSlides.psd1" aria-label="Copy import command">Copy</button>
         </div>
         <p class="compatibility">PowerShell 7.4+ <span></span> Windows, macOS, and Linux <span></span> MIT licensed</p>
       </div>
@@ -136,7 +136,7 @@
       </div>
       <div class="code-window">
         <div class="code-tabs"><span class="active">demo.ps1</span><button type="button" class="copy-button code-copy" data-copy-target="quick-code">Copy</button></div>
-        <pre id="quick-code"><code><span class="code-muted">Import-Module</span> ./TerminalSlides/TerminalSlides.psd1
+        <pre id="quick-code"><code><span class="code-muted">Import-Module</span> ./TerminalSlides.psd1
 
 <span class="code-variable">$deck</span> = <span class="code-command">New-TerminalPresentation</span> `
   -Title <span class="code-string">'Shipping the terminal way'</span> `

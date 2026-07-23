@@ -1,6 +1,6 @@
 import { createReadStream, statSync } from 'node:fs';
 import { createServer } from 'node:http';
-import { extname, join, normalize, relative, resolve } from 'node:path';
+import { extname, isAbsolute, join, normalize, relative, resolve, sep } from 'node:path';
 
 const root = resolve('docs');
 const contentTypes = new Map([
@@ -12,10 +12,18 @@ const contentTypes = new Map([
 ]);
 
 createServer((request, response) => {
-  const pathname = decodeURIComponent(new URL(request.url, 'http://localhost').pathname);
+  let pathname;
+  try {
+    pathname = decodeURIComponent(new URL(request.url, 'http://localhost').pathname);
+  } catch {
+    response.writeHead(400).end('Bad request');
+    return;
+  }
+
   const requestedPath = pathname === '/' ? '/index.html' : pathname;
   const filePath = normalize(join(root, requestedPath));
-  if (relative(root, filePath).startsWith('..')) {
+  const relativePath = relative(root, filePath);
+  if (relativePath === '..' || relativePath.startsWith(`..${sep}`) || isAbsolute(relativePath)) {
     response.writeHead(403).end('Forbidden');
     return;
   }

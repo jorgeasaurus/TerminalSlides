@@ -82,6 +82,17 @@ test('the presentation photo is a browser-renderable image', async ({ page, requ
   expect(dimensions.height).toBe(800);
 });
 
+test('the documentation server rejects malformed and traversing paths safely', async ({ request }) => {
+  const malformed = await request.get('/%E0%A4%A');
+  expect(malformed.status()).toBe(400);
+
+  const traversal = await request.get('/%2e%2e%2fpackage.json');
+  expect(traversal.status()).toBe(403);
+
+  const dottedFilename = await request.get('/..missing');
+  expect(dottedFilename.status()).toBe(404);
+});
+
 test('exported quote attribution preserves logical rows in Chromium', async ({ page }) => {
   const outputDirectory = mkdtempSync(join(tmpdir(), 'terminalslides-browser-'));
   const outputPath = join(outputDirectory, 'quote.html');

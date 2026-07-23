@@ -67,4 +67,11 @@ Describe 'Build automation' {
         $buildScript | Should -Match 'Where-Object Version -ne \$Version'
         $buildScript | Should -Match 'Remove-Module -Force'
     }
+
+    It 'does not expose an inert code coverage switch' {
+        $buildScript = Get-Content -LiteralPath $script:BuildPath -Raw
+        $coverageSwitchReferences = @([regex]::Matches($buildScript, '\$SkipCodeCoverage')).Count
+
+        $coverageSwitchReferences | Should -Not -Be 1
+    }
 }

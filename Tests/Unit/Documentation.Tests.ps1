@@ -70,6 +70,8 @@ Describe 'Generated command documentation' {
         $index | Should -Match 'id="commands"'
         $index | Should -Match 'id="command-search"'
         $index | Should -Match 'id="command-grid"'
+        @([regex]::Matches($index, './TerminalSlides\.psd1')) | Should -HaveCount 3
+        $index | Should -Not -Match 'TerminalSlides/TerminalSlides\.psd1'
         $clientScript | Should -Match ([regex]::Escape('fetch("./commands.json")'))
         $clientScript | Should -Match 'function isInteractiveTarget\(target\)'
         @([regex]::Matches($clientScript, 'if \(isInteractiveTarget\(event\.target\)\) return;')) |

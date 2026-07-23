@@ -2,7 +2,6 @@
 param(
     [string[]]$TestPath = @('Tests'),
     [string]$TestResultPath = 'build/TestResults/TestResults.xml',
-    [switch]$SkipCodeCoverage,
     [switch]$SkipScriptAnalyzer
 )
 
