@@ -110,6 +110,36 @@ Describe 'Generated command documentation' {
         $readme | Should -Not -Match 'actions/workflows/ci\.yml/badge\.svg'
     }
 
+    It 'publishes a distinct terminal capture for every built-in theme' {
+        $readme = Get-Content (Join-Path $script:RepositoryRoot 'README.md') -Raw
+        $themeFiles = @(Get-ChildItem (Join-Path $script:RepositoryRoot 'Themes') -Filter '*.psd1')
+        $hashes = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+
+        $themeFiles | Should -HaveCount 8
+        @([regex]::Matches($readme, '(?m)^## Built-in themes$')) | Should -HaveCount 1
+        foreach ($themeFile in $themeFiles) {
+            $slug = [regex]::Replace(
+                $themeFile.BaseName,
+                '(?<=[a-z0-9])(?=[A-Z])',
+                '-'
+            ).ToLowerInvariant()
+            $relativePath = "docs/theme-previews/$slug.png"
+            $imagePath = Join-Path $script:RepositoryRoot $relativePath
+
+            $imagePath | Should -Exist
+            $bytes = [IO.File]::ReadAllBytes($imagePath)
+            $bytes[0..7] | Should -Be @(137, 80, 78, 71, 13, 10, 26, 10)
+            [BitConverter]::ToInt32([byte[]]@($bytes[19], $bytes[18], $bytes[17], $bytes[16]), 0) |
+                Should -Be 1600
+            [BitConverter]::ToInt32([byte[]]@($bytes[23], $bytes[22], $bytes[21], $bytes[20]), 0) |
+                Should -Be 900
+            $hashes.Add((Get-FileHash -LiteralPath $imagePath -Algorithm SHA256).Hash) |
+                Should -BeTrue
+            @([regex]::Matches($readme, [regex]::Escape($relativePath))) |
+                Should -HaveCount 1
+        }
+    }
+
     It 'uses the exact demo slide photo as its social preview image' {
         $demo = Start-TerminalSlidesDemo -PassThru
         $slideImage = $demo.Slides.Elements |

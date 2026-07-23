@@ -17,6 +17,20 @@ TerminalSlides is a cross-platform PowerShell module for building and delivering
 - Import/export for PSD1, JSON, Markdown, HTML, ANSI, and plain text
 - Built-in themes and simple custom theme authoring
 
+## Built-in themes
+
+Each preview is captured from the live ANSI renderer at the same 128×32 terminal viewport.
+
+| Midnight | PowerShell |
+| --- | --- |
+| ![Midnight theme showing an incident-response service-health chart](docs/theme-previews/midnight.png) | ![PowerShell theme showing an automated release pipeline](docs/theme-previews/power-shell.png) |
+| Solarized Dark | Solarized Light |
+| ![Solarized Dark theme showing a terminal-native presentation](docs/theme-previews/solarized-dark.png) | ![Solarized Light theme showing a release-readiness table](docs/theme-previews/solarized-light.png) |
+| Retro Terminal | Minimal |
+| ![Retro Terminal theme showing a system boot sequence](docs/theme-previews/retro-terminal.png) | ![Minimal theme showing a focused editorial quote](docs/theme-previews/minimal.png) |
+| Monochrome | High Contrast |
+| ![Monochrome theme showing a plain-text architecture diagram](docs/theme-previews/monochrome.png) | ![High Contrast theme showing an accessibility checklist](docs/theme-previews/high-contrast.png) |
+
 ## Installation
 
 Import the module from a local clone:
@@ -102,17 +116,6 @@ Images are scaled to their layout region and rendered as truecolor terminal cell
 | T | Toggle timer |
 | H / ? | Help overlay |
 | Q / Escape | Quit |
-
-## Built-in themes
-
-- Midnight
-- PowerShell
-- Monochrome
-- SolarizedDark
-- SolarizedLight
-- HighContrast
-- RetroTerminal
-- Minimal
 
 ## Layouts
 
