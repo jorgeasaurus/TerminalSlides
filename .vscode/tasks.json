@@ -225,6 +225,22 @@
             "problemMatcher": []
         },
         {
+            "label": "Render Social Demo",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-File",
+                "${workspaceFolder}/Scripts/Render-SocialDemo.ps1"
+            ],
+            "group": "none",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            },
+            "problemMatcher": []
+        },
+        {
             "label": "Get Module Version",
             "type": "shell",
             "command": "pwsh",

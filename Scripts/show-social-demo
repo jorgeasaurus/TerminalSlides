@@ -1,0 +1,7 @@
+#!/bin/zsh
+
+repository_root=${0:A:h:h}
+
+exec env -u NO_COLOR TERM=xterm-256color COLORTERM=truecolor \
+    pwsh -NoLogo -NoProfile -Command \
+    "\$ErrorActionPreference = 'Stop'; Import-Module '$repository_root/TerminalSlides.psd1' -Force; Start-TerminalSlidesDemo"
