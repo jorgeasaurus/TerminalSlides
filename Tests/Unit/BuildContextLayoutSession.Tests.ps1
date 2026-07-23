@@ -474,4 +474,23 @@ Describe 'Build context, layout plan, and presentation session' {
             { Invoke-TerminalPresentationAction -Session $blank -Action None -Presentation $deck } | Should -Throw '*display mode*'
         }
     }
+
+    It 'rejects invalid session navigation state before reducing an action' {
+        InModuleScope TerminalSlides {
+            $deck = New-TerminalPresentation -Title 'Session bounds'
+            $deck | Add-TerminalSlide -Title 'One' | Out-Null
+
+            foreach ($slideIndex in -1, 1) {
+                $session = New-TerminalPresentationSession
+                $session.SlideIndex = $slideIndex
+                { Invoke-TerminalPresentationAction -Session $session -Action None -Presentation $deck } |
+                    Should -Throw "*slide index*$slideIndex*out of range*"
+            }
+
+            $session = New-TerminalPresentationSession
+            $session.RevealStep = -1
+            { Invoke-TerminalPresentationAction -Session $session -Action NextStep -Presentation $deck } |
+                Should -Throw '*reveal step*-1*non-negative*'
+        }
+    }
 }

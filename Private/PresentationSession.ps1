@@ -50,6 +50,12 @@ function Invoke-TerminalPresentationAction {
     if ($Session.DisplayMode -notin @('Slide', 'Overview', 'Help', 'Blank')) {
         throw "Unknown presentation display mode '$($Session.DisplayMode)'."
     }
+    if ($Session.SlideIndex -lt 0 -or $Session.SlideIndex -ge $Presentation.Slides.Count) {
+        throw "Session slide index '$($Session.SlideIndex)' is out of range."
+    }
+    if ($Session.RevealStep -lt 0) {
+        throw "Session reveal step '$($Session.RevealStep)' must be non-negative."
+    }
 
     $next = [pscustomobject]@{
         SlideIndex   = $Session.SlideIndex
