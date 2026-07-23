@@ -35,13 +35,19 @@ function Get-TerminalNativeImageOverlay {
         [Parameter(Mandatory)][int]$SlideIndex,
         [Parameter(Mandatory)][int]$RevealStep,
         [Parameter(Mandatory)][ValidateSet('Slide', 'Overview', 'Help', 'Blank')][string]$DisplayMode,
-        [Parameter(Mandatory)][TerminalSlides.Schema.V1.TerminalCapability]$Capability
+        [Parameter(Mandatory)][TerminalSlides.Schema.V1.TerminalCapability]$Capability,
+        [object]$LayoutPlan
     )
 
     if ($DisplayMode -ne 'Slide') { return }
 
-    $plan = Get-TerminalSlideLayoutPlan -Presentation $Presentation -SlideIndex $SlideIndex `
-        -RevealStep $RevealStep -Capability $Capability
+    $plan = if ($LayoutPlan) {
+        $LayoutPlan
+    }
+    else {
+        Get-TerminalSlideLayoutPlan -Presentation $Presentation -SlideIndex $SlideIndex `
+            -RevealStep $RevealStep -Capability $Capability
+    }
     $overlays = [System.Text.StringBuilder]::new()
 
     foreach ($placement in $plan.Placements) {
@@ -78,7 +84,7 @@ function Get-TerminalNativeImageOverlay {
         }
         catch {
             Write-Verbose "Sixel image renderer error: $($_.Exception.Message)"
-            Write-Warning "Sixel rendering is unavailable for '$($element.Payload.Path)'; keeping the block image fallback."
+            Write-Warning "Sixel rendering is unavailable for '$($element.Payload.Path)'; keeping the existing image fallback."
         }
     }
 

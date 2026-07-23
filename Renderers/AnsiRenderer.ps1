@@ -320,7 +320,8 @@ function Get-RenderedSlideFrame {
         [ValidateSet('Slide','Overview','Help','Blank')][string]$DisplayMode = 'Slide',
         [timespan]$Elapsed = [timespan]::Zero,
         [switch]$ShowTimer,
-        [TerminalSlides.Schema.V1.TerminalCapability]$Capability = $script:Capabilities
+        [TerminalSlides.Schema.V1.TerminalCapability]$Capability = $script:Capabilities,
+        [object]$LayoutPlan
     )
 
     $theme = Resolve-TerminalPresentationTheme -Presentation $Presentation
@@ -362,7 +363,13 @@ function Get-RenderedSlideFrame {
         return $frame
     }
 
-    $plan = Get-TerminalSlideLayoutPlan -Presentation $Presentation -SlideIndex $SlideIndex -RevealStep $RevealStep -Capability $Capability
+    $plan = if ($LayoutPlan) {
+        $LayoutPlan
+    }
+    else {
+        Get-TerminalSlideLayoutPlan -Presentation $Presentation -SlideIndex $SlideIndex `
+            -RevealStep $RevealStep -Capability $Capability
+    }
     $slide = $plan.Slide
     if ($slide.Background) {
         Fill-FrameRegion -FrameBuffer $frame -Background $slide.Background -Foreground $theme.Foreground
@@ -409,9 +416,12 @@ function Render-TerminalPresentationToString {
         [ValidateSet('Slide','Overview','Help','Blank')][string]$DisplayMode = 'Slide',
         [timespan]$Elapsed = [timespan]::Zero,
         [switch]$ShowTimer,
-        [TerminalSlides.Schema.V1.TerminalCapability]$Capability = $script:Capabilities
+        [TerminalSlides.Schema.V1.TerminalCapability]$Capability = $script:Capabilities,
+        [object]$LayoutPlan
     )
-    $frame = Get-RenderedSlideFrame -Presentation $Presentation -SlideIndex $SlideIndex -RevealStep $RevealStep -ShowNotes:$ShowNotes -DisplayMode $DisplayMode -Elapsed $Elapsed -ShowTimer:$ShowTimer -Capability $Capability
+    $frame = Get-RenderedSlideFrame -Presentation $Presentation -SlideIndex $SlideIndex `
+        -RevealStep $RevealStep -ShowNotes:$ShowNotes -DisplayMode $DisplayMode `
+        -Elapsed $Elapsed -ShowTimer:$ShowTimer -Capability $Capability -LayoutPlan $LayoutPlan
     if ($PlainText) {
         $rows = [System.Collections.Generic.List[string]]::new()
         for ($r = 0; $r -lt $frame.Height; $r++) {

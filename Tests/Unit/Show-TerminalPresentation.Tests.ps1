@@ -247,6 +247,8 @@ Describe 'Show-TerminalPresentation' {
     It 'writes opted-in Sixel overlays after the ANSI frame' {
         InModuleScope TerminalSlides {
             $script:Writes = [System.Collections.Generic.List[string]]::new()
+            $script:SharedPlan = [pscustomobject]@{ Placements = @() }
+            Mock Get-TerminalSlideLayoutPlan { $script:SharedPlan }
             Mock Get-TerminalNativeImageOverlay { 'native-image' }
             Mock Write-Host {
                 param($Object)
@@ -259,8 +261,13 @@ Describe 'Show-TerminalPresentation' {
             Show-TerminalPresentation -Presentation $script:KeyboardDeck -ImageRenderer Sixel
 
             Should -Invoke Get-TerminalNativeImageOverlay -Times 1 -Exactly -ParameterFilter {
-                $SlideIndex -eq 0 -and $RevealStep -eq 0 -and $DisplayMode -eq 'Slide'
+                $SlideIndex -eq 0 -and $RevealStep -eq 0 -and $DisplayMode -eq 'Slide' -and
+                $LayoutPlan -eq $script:SharedPlan
             }
+            Should -Invoke Render-TerminalPresentationToString -Times 1 -Exactly -ParameterFilter {
+                $LayoutPlan -eq $script:SharedPlan
+            }
+            Should -Invoke Get-TerminalSlideLayoutPlan -Times 1 -Exactly
             $frameIndex = $script:Writes.IndexOf('frame')
             $overlayIndex = $script:Writes.IndexOf('native-image')
             $frameIndex | Should -BeGreaterOrEqual 0
@@ -294,7 +301,7 @@ Describe 'Native terminal image overlays' {
         Import-Module (Join-Path $script:RepositoryRoot 'TerminalSlides.psd1') -Force
     }
 
-    It 'emits the PwshSpectreConsole Sixel control stream at the planned image position' {
+    It 'shares one layout plan between the cell and Sixel renderers' {
         InModuleScope TerminalSlides -Parameters @{ RepositoryRoot = $script:RepositoryRoot } {
             param($RepositoryRoot)
             $path = Join-Path $RepositoryRoot 'Assets/presentation-team-photo.jpg'
@@ -313,14 +320,21 @@ Describe 'Native terminal image overlays' {
                 IsRedirected = $false
             }
             $pixelImage = Get-SpectreImage -ImagePath $path -Format Sixel -Force
+            $layoutPlan = Get-TerminalSlideLayoutPlan -Presentation $deck -SlideIndex 0 `
+                -RevealStep 0 -Capability $capability
             Mock Get-SpectreImage { $pixelImage }
+            Mock Get-TerminalSlideLayoutPlan { throw 'Layout plan should be reused.' }
 
+            $frame = Get-RenderedSlideFrame -Presentation $deck -SlideIndex 0 `
+                -RevealStep 0 -Capability $capability -LayoutPlan $layoutPlan
             $overlay = Get-TerminalNativeImageOverlay -Presentation $deck -SlideIndex 0 `
-                -RevealStep 0 -DisplayMode Slide -Capability $capability
+                -RevealStep 0 -DisplayMode Slide -Capability $capability -LayoutPlan $layoutPlan
 
+            $frame | Should -Not -BeNullOrEmpty
             $overlay | Should -Match ([regex]::Escape("`e["))
             $overlay | Should -Match ([regex]::Escape("`eP"))
             $pixelImage.MaxWidth | Should -BeLessOrEqual 36
+            Should -Not -Invoke Get-TerminalSlideLayoutPlan
             Should -Invoke Get-SpectreImage -Times 1 -Exactly -ParameterFilter {
                 [IO.Path]::GetFullPath($ImagePath) -eq [IO.Path]::GetFullPath($path) -and
                 [string]$Format -eq 'Sixel' -and -not $Force
@@ -382,7 +396,7 @@ Describe 'Native terminal image overlays' {
 
             $overlay | Should -BeNullOrEmpty
             $warnings | Should -HaveCount 1
-            $warnings[0].Message | Should -Match 'block image fallback'
+            $warnings[0].Message | Should -Match 'Sixel rendering is unavailable'
         }
     }
 
@@ -421,7 +435,7 @@ Describe 'Native terminal image overlays' {
             Get-TerminalNativeImageOverlay -Presentation $missingDeck -SlideIndex 0 `
                 -RevealStep 0 -DisplayMode Slide -Capability $capability `
                 -WarningAction SilentlyContinue -WarningVariable warnings | Should -BeNullOrEmpty
-            $warnings[-1].Message | Should -Match 'block image fallback'
+            $warnings[-1].Message | Should -Match 'Sixel rendering is unavailable'
 
             $path = Join-Path $RepositoryRoot 'Assets/presentation-team-photo.jpg'
             $blockDeck = New-TerminalPresentation -Title 'Cell image' -Width 40 -Height 18
@@ -435,7 +449,7 @@ Describe 'Native terminal image overlays' {
             Get-TerminalNativeImageOverlay -Presentation $blockDeck -SlideIndex 0 `
                 -RevealStep 0 -DisplayMode Slide -Capability $capability `
                 -WarningAction SilentlyContinue -WarningVariable warnings | Should -BeNullOrEmpty
-            $warnings[-1].Message | Should -Match 'block image fallback'
+            $warnings[-1].Message | Should -Match 'Sixel rendering is unavailable'
         }
     }
 }

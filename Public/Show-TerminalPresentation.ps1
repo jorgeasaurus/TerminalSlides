@@ -45,13 +45,23 @@ function Show-TerminalPresentation {
         else { Write-Host -NoNewline $hideCursor }
         do {
             $elapsed = [datetime]::UtcNow - $startTime
-            $rendered = Render-TerminalPresentationToString -Presentation $Presentation -SlideIndex $session.SlideIndex -RevealStep $session.RevealStep -ShowNotes:$session.ShowNotes -DisplayMode $session.DisplayMode -Elapsed $elapsed -ShowTimer:$session.ShowTimer -Capability $capability
+            $layoutPlan = if ($ImageRenderer -eq 'Sixel' -and $session.DisplayMode -eq 'Slide') {
+                Get-TerminalSlideLayoutPlan -Presentation $Presentation `
+                    -SlideIndex $session.SlideIndex -RevealStep $session.RevealStep `
+                    -Capability $capability
+            }
+            $rendered = Render-TerminalPresentationToString -Presentation $Presentation `
+                -SlideIndex $session.SlideIndex -RevealStep $session.RevealStep `
+                -ShowNotes:$session.ShowNotes -DisplayMode $session.DisplayMode `
+                -Elapsed $elapsed -ShowTimer:$session.ShowTimer -Capability $capability `
+                -LayoutPlan $layoutPlan
             Write-Host -NoNewline $rendered
             if ($ImageRenderer -eq 'Sixel') {
                 $overlayWarnings = @()
                 $imageOverlay = Get-TerminalNativeImageOverlay -Presentation $Presentation `
                     -SlideIndex $session.SlideIndex -RevealStep $session.RevealStep `
                     -DisplayMode $session.DisplayMode -Capability $capability `
+                    -LayoutPlan $layoutPlan `
                     -WarningAction SilentlyContinue -WarningVariable overlayWarnings
                 foreach ($warning in $overlayWarnings) {
                     [void]$imageWarnings.Add([string]$warning.Message)
