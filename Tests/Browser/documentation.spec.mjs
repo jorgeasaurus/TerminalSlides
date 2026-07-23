@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, symlinkSync, unlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -14,6 +14,15 @@ test('the landing page stays focused and links into the guides', async ({ page }
     'Install-Module TerminalSlides'
   );
   await expect(page.locator('#command-grid')).toHaveCount(0);
+});
+
+test('invalid saved themes do not escape the supported theme set', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('terminalslides-theme', 'corrupted'));
+
+  await page.goto('/');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await page.goto('/guides/');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
 });
 
 test('the guides expose every command and filter the sidebar locally', async ({ page }, testInfo) => {
@@ -122,6 +131,17 @@ test('the documentation server resolves directory routes and rejects unsafe path
   expect((await request.get('/%E0%A4%A')).status()).toBe(400);
   expect((await request.get('/%2e%2e%2fpackage.json')).status()).toBe(403);
   expect((await request.get('/..missing')).status()).toBe(404);
+});
+
+test('the documentation server rejects symlinks that escape the documentation root', async ({ request }, testInfo) => {
+  const linkPath = join(process.cwd(), 'docs', `.outside-${testInfo.project.name}.json`);
+  const targetPath = join(process.cwd(), 'package.json');
+  try {
+    symlinkSync(targetPath, linkPath);
+    expect((await request.get(`/.outside-${testInfo.project.name}.json`)).status()).toBe(403);
+  } finally {
+    try { unlinkSync(linkPath); } catch {}
+  }
 });
 
 test('exported quote attribution preserves logical rows in Chromium', async ({ page }) => {

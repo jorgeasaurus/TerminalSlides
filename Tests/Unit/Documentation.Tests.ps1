@@ -129,6 +129,8 @@ Describe 'Generated command documentation' {
 
         $index | Should -Match 'PowerShell Gallery'
         $index | Should -Match 'powershellgallery\.com/packages/TerminalSlides'
+        $installGuide | Should -Match ([regex]::Escape('Update-Module TerminalSlides'))
+        $installGuide | Should -Not -Match 'Update-PSResource'
         $readme | Should -Match 'https://jorgeasaurus\.github\.io/TerminalSlides/'
     }
 

@@ -7,7 +7,7 @@ const navigation = document.querySelector('[data-command-navigation]');
 const search = document.querySelector('[data-command-search]');
 
 const savedTheme = localStorage.getItem('terminalslides-theme');
-if (savedTheme) html.dataset.theme = savedTheme;
+if (savedTheme === 'light' || savedTheme === 'dark') html.dataset.theme = savedTheme;
 
 document.querySelector('[data-theme-toggle]')?.addEventListener('click', () => {
   html.dataset.theme = html.dataset.theme === 'light' ? 'dark' : 'light';
