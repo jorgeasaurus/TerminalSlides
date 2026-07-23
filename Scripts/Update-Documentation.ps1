@@ -86,6 +86,32 @@ function Get-ParameterDescription {
     return $description
 }
 
+function Get-ParameterDefaultValue {
+    param(
+        [Parameter(Mandatory)]$Command,
+        [Parameter(Mandatory)][string]$Name
+    )
+
+    $parameterBlock = if (
+        $Command.ScriptBlock.Ast -is [System.Management.Automation.Language.FunctionDefinitionAst]
+    ) {
+        $Command.ScriptBlock.Ast.Body.ParamBlock
+    }
+    else {
+        $Command.ScriptBlock.Ast.ParamBlock
+    }
+    $parameterAst = $parameterBlock.Parameters |
+        Where-Object { $_.Name.VariablePath.UserPath -eq $Name } |
+        Select-Object -First 1
+    if (-not $parameterAst.DefaultValue) { return 'None' }
+    if ($parameterAst.DefaultValue -is [System.Management.Automation.Language.StringConstantExpressionAst] -or
+        $parameterAst.DefaultValue -is [System.Management.Automation.Language.ExpandableStringExpressionAst] -or
+        $parameterAst.DefaultValue -is [System.Management.Automation.Language.ConstantExpressionAst]) {
+        return [string]$parameterAst.DefaultValue.Value
+    }
+    return $parameterAst.DefaultValue.Extent.Text
+}
+
 function New-ParameterXml {
     param(
         [Parameter(Mandatory)]$Command,
@@ -101,6 +127,7 @@ function New-ParameterXml {
     $aliases = ConvertTo-XmlText $aliases
     $typeName = ConvertTo-XmlText $Parameter.ParameterType.FullName
     $description = ConvertTo-XmlText (Get-ParameterDescription -Command $Command -Name $Parameter.Name)
+    $defaultValue = ConvertTo-XmlText (Get-ParameterDefaultValue -Command $Command -Name $Parameter.Name)
     $indent = if ($Syntax) { '      ' } else { '    ' }
     $parameterValue = if ($Parameter.ParameterType -ne [System.Management.Automation.SwitchParameter]) {
         "`n$indent  <command:parameterValue required=`"$required`" variableLength=`"false`">$typeName</command:parameterValue>"
@@ -113,7 +140,7 @@ $indent<command:parameter required="$required" variableLength="false" globbing="
 $indent  <maml:name>$name</maml:name>
 $indent  <maml:description><maml:para>$description</maml:para></maml:description>$parameterValue
 $indent  <dev:type><maml:name>$typeName</maml:name><maml:uri /></dev:type>
-$indent  <dev:defaultValue>None</dev:defaultValue>
+$indent  <dev:defaultValue>$defaultValue</dev:defaultValue>
 $indent</command:parameter>
 "@
 }
@@ -149,8 +176,7 @@ function New-CommandParametersXml {
         $positions = @($instances.Position | Where-Object { $_ -ge 0 } | Sort-Object -Unique)
         $parameter = [pscustomobject]@{
             Name                            = $name
-            IsMandatory                     = $instances.Count -eq $parameterSets.Count -and
-                                              @($instances | Where-Object { -not $_.IsMandatory }).Count -eq 0
+            IsMandatory                     = @($instances | Where-Object IsMandatory).Count -gt 0
             Position                        = if ($positions.Count -eq 1) { $positions[0] } else { -1 }
             ValueFromPipeline                = @($instances | Where-Object ValueFromPipeline).Count -gt 0
             ValueFromPipelineByPropertyName  = @($instances | Where-Object ValueFromPipelineByPropertyName).Count -gt 0
@@ -256,8 +282,7 @@ function Get-CommandParameterDocumentation {
         [pscustomobject]@{
             Name = $name
             Type = $parameter.ParameterType.FullName
-            Required = $instances.Count -eq $parameterSets.Count -and
-                @($instances | Where-Object { -not $_.IsMandatory }).Count -eq 0
+            Required = @($instances | Where-Object IsMandatory).Count -gt 0
             Position = if ($positions.Count -eq 1) { [string]$positions[0] } else { 'Named' }
             Pipeline = Get-PipelineInputText -Parameter ([pscustomobject]@{
                 ValueFromPipeline = @($instances | Where-Object ValueFromPipeline).Count -gt 0

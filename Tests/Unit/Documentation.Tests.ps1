@@ -71,8 +71,21 @@ Describe 'Generated command documentation' {
             Where-Object Name -in 'Content', 'Diagram')
 
         $summaryParameters | Should -HaveCount 2
-        @($summaryParameters | Where-Object Required -eq 'false') | Should -HaveCount 2
+        @($summaryParameters | Where-Object Required -eq 'true') | Should -HaveCount 2
         @($syntaxParameters | Where-Object Required -eq 'true') | Should -HaveCount 2
+    }
+
+    It 'publishes declared defaults and parameter-set requiredness' {
+        $help = Get-Help Show-TerminalPresentation -Full
+        $imageRenderer = $help.Parameters.Parameter |
+            Where-Object Name -eq 'ImageRenderer'
+        $guide = Get-Content (
+            Join-Path $script:RepositoryRoot 'docs/guides/commands/show-terminalpresentation/index.html'
+        ) -Raw
+
+        $imageRenderer.DefaultValue | Should -Be 'Blocks'
+        $guide | Should -Match '(?s)<h3>-Path</h3>.*?<dt>Required</dt><dd>true</dd>'
+        $guide | Should -Match '(?s)<h3>-Presentation</h3>.*?<dt>Required</dt><dd>true</dd>'
     }
 
     It 'publishes a minimal landing page and a searchable guides hierarchy' {
