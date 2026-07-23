@@ -103,6 +103,13 @@ Describe 'Generated command documentation' {
         $readme | Should -Not -Match '(?m)^Import-Module\s+TerminalSlides\s*$'
     }
 
+    It 'uses public README badge endpoints' {
+        $readme = Get-Content (Join-Path $script:RepositoryRoot 'README.md') -Raw
+
+        $readme | Should -Match 'img\.shields\.io/powershellgallery/v/TerminalSlides'
+        $readme | Should -Not -Match 'actions/workflows/ci\.yml/badge\.svg'
+    }
+
     It 'uses the exact demo slide photo as its social preview image' {
         $demo = Start-TerminalSlidesDemo -PassThru
         $slideImage = $demo.Slides.Elements |

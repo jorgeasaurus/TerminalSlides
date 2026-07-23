@@ -1,6 +1,6 @@
 # TerminalSlides
 
-[![CI](https://github.com/jorgeasaurus/TerminalSlides/actions/workflows/ci.yml/badge.svg)](https://github.com/jorgeasaurus/TerminalSlides/actions/workflows/ci.yml)
+[![PowerShell Gallery](https://img.shields.io/powershellgallery/v/TerminalSlides?label=PowerShell%20Gallery)](https://www.powershellgallery.com/packages/TerminalSlides)
 [![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-0969DA)](https://jorgeasaurus.github.io/TerminalSlides/)
 [![PowerShell 7.4+](https://img.shields.io/badge/PowerShell-7.4%2B-5391FE)](https://github.com/PowerShell/PowerShell)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
