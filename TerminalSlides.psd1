@@ -1,6 +1,6 @@
 @{
     RootModule = 'TerminalSlides.psm1'
-    ModuleVersion = '0.3.0'
+    ModuleVersion = '0.3.1'
     GUID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
     Author = 'Jorge'
     CompanyName = 'TerminalSlides'

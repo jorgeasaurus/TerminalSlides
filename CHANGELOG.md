@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.1
+
+- Corrected the copyright year to 2026
+
 ## 0.3.0
 
 - Added Sixel rendering to built-in demos with an explicit block-image fallback
