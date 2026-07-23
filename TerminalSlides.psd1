@@ -29,6 +29,7 @@
         'Add-SlideBox'
         'Add-SlideNotes'
         'Show-TerminalPresentation'
+        'Start-TerminalSlidesDemo'
         'Export-TerminalPresentation'
         'Import-TerminalPresentation'
         'Get-TerminalPresentationTheme'

@@ -1,0 +1,176 @@
+[
+  {
+    "name": "New-TerminalPresentation",
+    "category": "Create decks",
+    "description": "Create an empty presentation and set its title, author, theme, and viewport defaults.",
+    "example": "$deck = New-TerminalPresentation `\n  -Title 'Quarterly engineering review' `\n  -Subtitle 'Platform reliability' `\n  -Author 'Engineering' `\n  -Theme Midnight"
+  },
+  {
+    "name": "Add-TerminalSlide",
+    "category": "Create decks",
+    "description": "Append a slide through the pipeline and compose its elements with the slide DSL.",
+    "example": "$deck | Add-TerminalSlide `\n  -Title 'Agenda' `\n  -Layout TitleAndContent `\n  -Content {\n    Add-SlideBullet 'Architecture'\n    Add-SlideBullet 'Delivery plan'\n  } | Out-Null"
+  },
+  {
+    "name": "Add-SlideText",
+    "category": "Slide content",
+    "description": "Add wrapped prose with alignment, color, reveal, and overflow options.",
+    "example": "$deck | Add-TerminalSlide -Title 'Context' -Content {\n  Add-SlideText `\n    'TerminalSlides keeps presentations beside the code.' `\n    -Alignment Center\n} | Out-Null"
+  },
+  {
+    "name": "Add-SlideTitle",
+    "category": "Slide content",
+    "description": "Add a prominent title element inside a slide region.",
+    "example": "$deck | Add-TerminalSlide -Title 'Opening' -Content {\n  Add-SlideTitle 'Build. Present. Automate.' `\n    -Alignment Center\n} | Out-Null"
+  },
+  {
+    "name": "Add-SlideSubtitle",
+    "category": "Slide content",
+    "description": "Add supporting subtitle text with optional alignment and progressive reveal.",
+    "example": "$deck | Add-TerminalSlide -Title 'Opening' -Content {\n  Add-SlideSubtitle 'A PowerShell-native deck' `\n    -RevealStep 1\n} | Out-Null"
+  },
+  {
+    "name": "Add-SlideBullet",
+    "category": "Slide content",
+    "description": "Add a bullet and optionally reveal it after earlier content.",
+    "example": "$deck | Add-TerminalSlide -Title 'Benefits' -Content {\n  Add-SlideBullet 'Version presentations with code'\n  Add-SlideBullet 'Present from any terminal' `\n    -RevealStep 1\n} | Out-Null"
+  },
+  {
+    "name": "Add-SlideCode",
+    "category": "Slide content",
+    "description": "Render a syntax-highlighted code block with an optional border.",
+    "example": "$deck | Add-TerminalSlide -Title 'Code' -Layout CodeFocus -Content {\n  Add-SlideCode `\n    -Code \"Get-Process | Sort-Object CPU -Descending\" `\n    -Language powershell `\n    -Region Code `\n    -Border\n} | Out-Null"
+  },
+  {
+    "name": "Add-SlideTable",
+    "category": "Slide content",
+    "description": "Format PowerShell objects as a table within the selected slide region.",
+    "example": "$rows = @(\n  [pscustomobject]@{ Service = 'API'; Status = 'Healthy' }\n  [pscustomobject]@{ Service = 'Worker'; Status = 'Healthy' }\n)\n$deck | Add-TerminalSlide -Title 'Services' -Content {\n  Add-SlideTable -Data $rows -Border\n} | Out-Null"
+  },
+  {
+    "name": "Add-SlideChart",
+    "category": "Slide content",
+    "description": "Visualize labeled values as bars, a line, sparkline, or gauge.",
+    "example": "$data = @(\n  [pscustomobject]@{ Label = 'Build'; Value = 82 }\n  [pscustomobject]@{ Label = 'Test'; Value = 96 }\n)\n$deck | Add-TerminalSlide -Title 'Pipeline' -Content {\n  Add-SlideChart -Data $data `\n    -ChartType HorizontalBar `\n    -Title 'Success rate'\n} | Out-Null"
+  },
+  {
+    "name": "Add-SlideDiagram",
+    "category": "Slide content",
+    "description": "Build a lightweight node-and-edge diagram with the diagram DSL.",
+    "example": "$deck | Add-TerminalSlide -Title 'Flow' -Content {\n  Add-SlideDiagram -Content {\n    Add-SlideDiagramNode -Id source -Label 'Source'\n    Add-SlideDiagramNode -Id deploy -Label 'Deploy'\n    Add-SlideDiagramEdge -From source -To deploy -Label 'publish'\n  }\n} | Out-Null"
+  },
+  {
+    "name": "Add-SlideDiagramNode",
+    "category": "Slide content",
+    "description": "Declare a labeled node inside an Add-SlideDiagram content block.",
+    "example": "$deck | Add-TerminalSlide -Title 'Components' -Content {\n  Add-SlideDiagram -Content {\n    Add-SlideDiagramNode -Id api -Label 'API'\n    Add-SlideDiagramNode -Id data -Label 'Data store'\n    Add-SlideDiagramEdge -From api -To data\n  }\n} | Out-Null"
+  },
+  {
+    "name": "Add-SlideDiagramEdge",
+    "category": "Slide content",
+    "description": "Connect two declared diagram nodes and optionally label their relationship.",
+    "example": "$deck | Add-TerminalSlide -Title 'Request flow' -Content {\n  Add-SlideDiagram -Content {\n    Add-SlideDiagramNode -Id client -Label 'Client'\n    Add-SlideDiagramNode -Id api -Label 'API'\n    Add-SlideDiagramEdge -From client -To api -Label 'HTTPS'\n  }\n} | Out-Null"
+  },
+  {
+    "name": "Add-SlideImage",
+    "category": "Slide content",
+    "description": "Render a local image as truecolor terminal cells with accessible fallback text.",
+    "example": "$imagePath = Join-Path `\n  (Get-Module TerminalSlides).ModuleBase `\n  'Assets/presentation-team-photo.jpg'\n\n$deck | Add-TerminalSlide `\n  -Title 'Team rehearsal' `\n  -Layout ImageFocus `\n  -Content {\n    Add-SlideImage `\n      -Path $imagePath `\n      -AltText 'Three engineers rehearsing a presentation' `\n      -Region Image\n  } | Out-Null"
+  },
+  {
+    "name": "Add-SlideQuote",
+    "category": "Slide content",
+    "description": "Add a centered quotation with optional attribution.",
+    "example": "$deck | Add-TerminalSlide -Title 'Principle' -Layout Quote -Content {\n  Add-SlideQuote `\n    -Text 'Make the change easy, then make the easy change.' `\n    -Attribution 'Kent Beck' `\n    -Region Quote\n} | Out-Null"
+  },
+  {
+    "name": "Add-SlideBox",
+    "category": "Slide content",
+    "description": "Emphasize a takeaway or warning inside a bordered callout.",
+    "example": "$deck | Add-TerminalSlide -Title 'Decision' -Content {\n  Add-SlideBox `\n    -Text 'Ship behind a feature flag.' `\n    -RevealStep 1\n} | Out-Null"
+  },
+  {
+    "name": "Add-SlideNotes",
+    "category": "Slide content",
+    "description": "Attach private speaker notes to the slide currently being composed.",
+    "example": "$deck | Add-TerminalSlide -Title 'Roadmap' -Content {\n  Add-SlideText 'Three milestones lead to launch.'\n  Add-SlideNotes `\n    'Pause here and ask for questions.'\n} | Out-Null"
+  },
+  {
+    "name": "Show-TerminalPresentation",
+    "category": "Present and validate",
+    "description": "Present a deck interactively, or render it sequentially when output is redirected.",
+    "example": "Show-TerminalPresentation -Presentation $deck"
+  },
+  {
+    "name": "Start-TerminalSlidesDemo",
+    "category": "Present and validate",
+    "description": "Launch the built-in feature tour or return its presentation object for inspection.",
+    "example": "Start-TerminalSlidesDemo\n\n# Inspect the deck without presenting it:\n$demo = Start-TerminalSlidesDemo -PassThru"
+  },
+  {
+    "name": "Test-TerminalPresentation",
+    "category": "Present and validate",
+    "description": "Check every slide for overflow at one or more terminal viewport sizes.",
+    "example": "$results = Test-TerminalPresentation `\n  -Presentation $deck `\n  -Viewport '80x24', '120x35'\n\n$results | Format-Table Viewport, Slide, Fits"
+  },
+  {
+    "name": "Export-TerminalPresentation",
+    "category": "Import and export",
+    "description": "Write a deck as ANSI, plain text, Markdown, HTML, PSD1, or JSON.",
+    "example": "$exportPath = Join-Path `\n  ([IO.Path]::GetTempPath()) 'terminalslides-deck.html'\n\nExport-TerminalPresentation `\n  -Presentation $deck `\n  -Format Html `\n  -Path $exportPath"
+  },
+  {
+    "name": "Import-TerminalPresentation",
+    "category": "Import and export",
+    "description": "Load a presentation from PSD1, JSON, Markdown, or Markdown-compatible content.",
+    "example": "$jsonPath = Join-Path `\n  ([IO.Path]::GetTempPath()) 'terminalslides-deck.json'\nExport-TerminalPresentation `\n  -Presentation $deck -Format Json -Path $jsonPath | Out-Null\n\n$importedDeck = Import-TerminalPresentation -Path $jsonPath"
+  },
+  {
+    "name": "Get-TerminalPresentationTheme",
+    "category": "Themes and terminal",
+    "description": "List every registered theme or retrieve one theme by name.",
+    "example": "Get-TerminalPresentationTheme\n\n$midnight = Get-TerminalPresentationTheme `\n  -Name Midnight"
+  },
+  {
+    "name": "New-TerminalPresentationTheme",
+    "category": "Themes and terminal",
+    "description": "Create and register a reusable truecolor theme for the current session.",
+    "example": "New-TerminalPresentationTheme `\n  -Name Ocean `\n  -Background '#06131F' `\n  -Foreground '#E7F5FF' `\n  -Primary '#38BDF8' `\n  -Accent '#A78BFA' | Out-Null\n\n$deck = New-TerminalPresentation `\n  -Title 'Ocean deck' -Theme Ocean"
+  },
+  {
+    "name": "Get-TerminalPresentationCapability",
+    "category": "Themes and terminal",
+    "description": "Inspect terminal dimensions, color, Unicode, graphics, redirection, and interactivity support.",
+    "example": "Get-TerminalPresentationCapability |\n  Format-List HostName, Width, Height, `\n    TrueColorSupport, UnicodeSupport, Interactive"
+  },
+  {
+    "name": "Get-TerminalSlide",
+    "category": "Manage slides",
+    "description": "Retrieve every slide or select one by one-based index or exact title.",
+    "example": "$allSlides = $deck | Get-TerminalSlide\n$first = $deck | Get-TerminalSlide -Index 1\n$agenda = $deck | Get-TerminalSlide -Title 'Agenda'"
+  },
+  {
+    "name": "Set-TerminalSlide",
+    "category": "Manage slides",
+    "description": "Update the title, layout, notes, background, or hidden state of a slide.",
+    "example": "$deck | Set-TerminalSlide `\n  -Index 2 `\n  -Title 'Updated roadmap' `\n  -Notes 'Call out the revised date.' | Out-Null"
+  },
+  {
+    "name": "Copy-TerminalSlide",
+    "category": "Manage slides",
+    "description": "Clone a slide and append it or insert it at a requested position.",
+    "example": "$deck | Copy-TerminalSlide `\n  -Index 2 `\n  -DestinationIndex 4 | Out-Null"
+  },
+  {
+    "name": "Move-TerminalSlide",
+    "category": "Manage slides",
+    "description": "Move a slide to a new one-based position and reindex the deck.",
+    "example": "$deck | Move-TerminalSlide `\n  -Index 4 `\n  -DestinationIndex 2 | Out-Null"
+  },
+  {
+    "name": "Remove-TerminalSlide",
+    "category": "Manage slides",
+    "description": "Remove a slide by one-based index and keep remaining indices contiguous.",
+    "example": "$deck | Remove-TerminalSlide `\n  -Index 3 | Out-Null"
+  }
+]

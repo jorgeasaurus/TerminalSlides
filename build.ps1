@@ -2,6 +2,8 @@
 param(
     [string[]]$TestPath = @('Tests'),
     [string]$TestResultPath = 'build/TestResults/TestResults.xml',
+    [string]$CoverageResultPath = 'build/TestResults/Coverage.xml',
+    [switch]$SkipCodeCoverage,
     [switch]$SkipScriptAnalyzer
 )
 
@@ -28,8 +30,7 @@ function Import-ExactModule {
         Select-Object -First 1
     if (-not $installedModule) {
         Write-Host "Installing $Name $Version..." -ForegroundColor Yellow
-        Install-Module -Name $Name -RequiredVersion $Version -Repository PSGallery `
-            -Scope CurrentUser -Force -AllowClobber
+        Install-Module -Name $Name -RequiredVersion $Version -Repository PSGallery -Scope CurrentUser -Force -AllowClobber
     }
 
     Get-Module -Name $Name |
@@ -45,19 +46,19 @@ function Resolve-RepositoryPath {
     return Join-Path $PSScriptRoot $Path
 }
 
-if ($env:TERMINALSLIDES_RUN_TMUX_TESTS -eq '1' -and
-    -not (Get-Command tmux -ErrorAction SilentlyContinue)) {
+if ($env:TERMINALSLIDES_RUN_TMUX_TESTS -eq '1' -and -not (Get-Command tmux -ErrorAction SilentlyContinue)) {
     throw 'TERMINALSLIDES_RUN_TMUX_TESTS=1 requires tmux to be installed and available on PATH.'
 }
 
-& (Join-Path $PSScriptRoot 'Scripts/Build-SchemaAssembly.ps1') -Check
 Import-ExactModule -Name PwshSpectreConsole -Version $spectreVersion
+& (Join-Path $PSScriptRoot 'Scripts/Build-SchemaAssembly.ps1') -Check
+& (Join-Path $PSScriptRoot 'Scripts/Update-Documentation.ps1') -Check
 
 if (-not $SkipScriptAnalyzer) {
     Import-ExactModule -Name PSScriptAnalyzer -Version $scriptAnalyzerVersion
     $analysisPaths = @(
-        'Classes', 'Layouts', 'Private', 'Public', 'Renderers', 'Themes', 'Tests',
-        'TestInfrastructure', 'build.ps1', 'TerminalSlides.psm1'
+        'Classes', 'Layouts', 'Private', 'Public', 'Renderers', 'Themes', 'Scripts', 'Tests', 'TestInfrastructure',
+        'build.ps1', 'TerminalSlides.psm1'
     )
     $analysisIssues = foreach ($analysisPath in $analysisPaths) {
         $resolvedAnalysisPath = Resolve-RepositoryPath -Path $analysisPath
@@ -69,17 +70,17 @@ if (-not $SkipScriptAnalyzer) {
         }
     }
     if ($analysisIssues) {
-        $analysisIssues | Format-Table RuleName, ScriptName, Line, Message -Wrap |
-            Out-String | Write-Host
+        $analysisIssues | Format-Table RuleName, ScriptName, Line, Message -Wrap | Out-String | Write-Host
         throw "PSScriptAnalyzer reported $(@($analysisIssues).Count) error(s)."
     }
+    Write-Host 'PSScriptAnalyzer completed successfully.' -ForegroundColor Green
 }
 
 Import-ExactModule -Name Pester -Version $pesterVersion
 $resolvedTestPaths = @($TestPath | ForEach-Object { Resolve-RepositoryPath -Path $_ })
 $resolvedTestResultPath = Resolve-RepositoryPath -Path $TestResultPath
-New-Item -Path (Split-Path -Parent $resolvedTestResultPath) -ItemType Directory -Force |
-    Out-Null
+$testResultDirectory = Split-Path -Parent $resolvedTestResultPath
+New-Item -Path $testResultDirectory -ItemType Directory -Force | Out-Null
 if (Test-Path -LiteralPath $resolvedTestResultPath) {
     Remove-Item -LiteralPath $resolvedTestResultPath -Force
 }
@@ -92,12 +93,42 @@ $config.TestResult.Enabled = $true
 $config.TestResult.OutputPath = $resolvedTestResultPath
 $config.TestResult.OutputFormat = 'NUnitXml'
 
+if (-not $SkipCodeCoverage) {
+    $resolvedCoverageResultPath = Resolve-RepositoryPath -Path $CoverageResultPath
+    $coverageResultDirectory = Split-Path -Parent $resolvedCoverageResultPath
+    New-Item -Path $coverageResultDirectory -ItemType Directory -Force | Out-Null
+    if (Test-Path -LiteralPath $resolvedCoverageResultPath) {
+        Remove-Item -LiteralPath $resolvedCoverageResultPath -Force
+    }
+
+    $coverageDirectories = 'Classes', 'Layouts', 'Private', 'Public', 'Renderers', 'Themes'
+    $coverageFiles = @(
+        foreach ($coverageDirectory in $coverageDirectories) {
+            Get-ChildItem -LiteralPath (Join-Path $PSScriptRoot $coverageDirectory) -Filter '*.ps1' -File -Recurse
+        }
+        Get-Item -LiteralPath (Join-Path $PSScriptRoot 'TerminalSlides.psm1')
+    )
+    $config.CodeCoverage.Enabled = $true
+    $config.CodeCoverage.Path = @($coverageFiles.FullName)
+    $config.CodeCoverage.CoveragePercentTarget = 100
+    $config.CodeCoverage.OutputPath = $resolvedCoverageResultPath
+    $config.CodeCoverage.OutputFormat = 'JaCoCo'
+}
+
 $result = Invoke-Pester -Configuration $config
 if ($null -eq $result) {
     throw 'Pester did not return a test result object.'
 }
 if ($result.Result -ne 'Passed' -or $result.FailedCount -gt 0) {
     throw "Pester reported result '$($result.Result)' with $($result.FailedCount) failing test(s)."
+}
+if (-not $SkipCodeCoverage) {
+    if ($null -eq $result.CodeCoverage) {
+        throw 'Pester did not return code coverage results.'
+    }
+    if ($result.CodeCoverage.CoveragePercent -lt 100) {
+        throw "PowerShell line coverage is $($result.CodeCoverage.CoveragePercent)%; 100% is required."
+    }
 }
 
 Write-Host 'Build completed successfully.' -ForegroundColor Green

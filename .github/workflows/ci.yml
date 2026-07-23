@@ -1,10 +1,18 @@
-name: CI
+name: CI/CD Pipeline
 
 on:
   push:
     branches: ['**']
+    tags:
+      - 'v*.*.*'
+    paths-ignore:
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/PULL_REQUEST_TEMPLATE/**'
   pull_request:
     branches: ['**']
+    paths-ignore:
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/PULL_REQUEST_TEMPLATE/**'
   workflow_dispatch:
 
 permissions:
@@ -12,7 +20,7 @@ permissions:
 
 jobs:
   quality:
-    name: Analyze and test
+    name: Analyze, test, and cover
     runs-on: ubuntu-latest
 
     steps:
@@ -24,16 +32,18 @@ jobs:
         with:
           dotnet-version: '10.0.301'
 
-      - name: Run authoritative quality gate
+      - name: Analyze, test, and enforce coverage
         shell: pwsh
         run: ./build.ps1
 
-      - name: Upload test results
+      - name: Upload test and coverage results
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: test-results-quality-linux
-          path: build/TestResults/TestResults.xml
+          path: |
+            build/TestResults/TestResults.xml
+            build/TestResults/Coverage.xml
           if-no-files-found: warn
 
   compatibility:
@@ -53,9 +63,9 @@ jobs:
         with:
           dotnet-version: '10.0.301'
 
-      - name: Run platform tests
+      - name: Run platform functional tests
         shell: pwsh
-        run: ./build.ps1 -SkipScriptAnalyzer
+        run: ./build.ps1 -SkipCodeCoverage -SkipScriptAnalyzer
 
       - name: Upload test results
         if: always()
@@ -65,8 +75,21 @@ jobs:
           path: build/TestResults/TestResults.xml
           if-no-files-found: warn
 
+      - name: Stage module artifact
+        if: success() && matrix.os == 'windows-latest'
+        shell: pwsh
+        run: ./Scripts/Stage-Module.ps1 -Destination build/TerminalSlides
+
+      - name: Upload module artifact
+        if: success() && matrix.os == 'windows-latest'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: module-build
+          path: build/TerminalSlides/
+          if-no-files-found: error
+
   keyboard-controls:
-    name: Keyboard controls (Linux tmux)
+    name: Keyboard Controls (Linux tmux)
     runs-on: ubuntu-latest
 
     steps:
@@ -91,6 +114,7 @@ jobs:
           ./build.ps1
           -TestPath Tests/Integration/KeyboardControls.Tmux.Tests.ps1
           -TestResultPath build/TestResults/Tmux.xml
+          -SkipCodeCoverage
           -SkipScriptAnalyzer
 
       - name: Upload tmux test results
@@ -100,3 +124,148 @@ jobs:
           name: test-results-tmux-linux
           path: build/TestResults/Tmux.xml
           if-no-files-found: warn
+
+  workflow-validation:
+    name: Validate GitHub Actions workflows
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Set up Go
+        uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5.5.0
+        with:
+          go-version: '1.24.5'
+          cache: false
+
+      - name: Run actionlint
+        run: >-
+          go run
+          github.com/rhysd/actionlint/cmd/actionlint@a443f344ff32813837fa49f7aa6cbc478d770e62
+          .github/workflows/*.yml
+
+  documentation-browser:
+    name: Documentation (Chromium)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Install module rendering dependency
+        shell: pwsh
+        run: |
+          $manifest = Import-PowerShellDataFile ./TerminalSlides.psd1
+          $dependency = $manifest.RequiredModules |
+            Where-Object ModuleName -eq 'PwshSpectreConsole' |
+            Select-Object -First 1
+          Install-Module -Name $dependency.ModuleName `
+            -RequiredVersion $dependency.RequiredVersion `
+            -Repository PSGallery -Scope CurrentUser -Force
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '24.4.1'
+          cache: npm
+
+      - name: Install JavaScript dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Test rendered documentation
+        run: npm run test:docs
+
+      - name: Upload browser diagnostics
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+
+  release:
+    name: Publish and release
+    needs: [quality, compatibility, keyboard-controls, workflow-validation, documentation-browser]
+    runs-on: windows-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Download module artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: module-build
+          path: build/release/TerminalSlides/
+
+      - name: Validate tag matches module version
+        shell: pwsh
+        run: |
+          $manifestPath = './build/release/TerminalSlides/TerminalSlides.psd1'
+          $manifest = Import-PowerShellDataFile -Path $manifestPath
+          $tagVersion = '${{ github.ref_name }}' -replace '^v', ''
+          if ($manifest.ModuleVersion -ne $tagVersion) {
+            throw "Tag version ($tagVersion) does not match module version ($($manifest.ModuleVersion))."
+          }
+
+      - name: Create release archive
+        id: archive
+        shell: pwsh
+        run: |
+          $version = '${{ github.ref_name }}' -replace '^v', ''
+          $archive = "build/release/TerminalSlides-v$version.zip"
+          Compress-Archive -Path ./build/release/TerminalSlides/* -DestinationPath $archive -Force
+          "path=$archive" >> $env:GITHUB_OUTPUT
+
+      - name: Create or update draft GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $tag = '${{ github.ref_name }}'
+          $archive = '${{ steps.archive.outputs.path }}'
+          $draftState = (& gh release view $tag --json isDraft --jq .isDraft 2>$null)
+          if ($LASTEXITCODE -ne 0) {
+            $notes = "TerminalSlides $tag. Install from PowerShell Gallery with: Install-Module TerminalSlides -Scope CurrentUser"
+            & gh release create $tag $archive --draft --title $tag --notes $notes
+          }
+          elseif (($draftState | Out-String).Trim() -eq 'true') {
+            & gh release upload $tag $archive --clobber
+          }
+          else {
+            Write-Output "GitHub release $tag is already public."
+          }
+          if ($LASTEXITCODE -ne 0) { throw "Could not prepare GitHub release $tag." }
+
+      - name: Publish to PowerShell Gallery
+        shell: pwsh
+        env:
+          PSGALLERY_API_KEY: ${{ secrets.PSGALLERY_API_KEY }}
+        run: |
+          if (-not $env:PSGALLERY_API_KEY) { throw 'PSGALLERY_API_KEY secret is not set.' }
+          ./Scripts/Publish-ModuleVersion.ps1 -ModulePath ./build/release/TerminalSlides -ApiKey $env:PSGALLERY_API_KEY
+
+      - name: Finalize GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $tag = '${{ github.ref_name }}'
+          $draftState = (& gh release view $tag --json isDraft --jq .isDraft)
+          if ($LASTEXITCODE -ne 0) { throw "Could not read GitHub release $tag." }
+          if (($draftState | Out-String).Trim() -eq 'true') {
+            & gh release edit $tag --draft=false
+            if ($LASTEXITCODE -ne 0) { throw "Could not finalize GitHub release $tag." }
+          }
+          else {
+            Write-Output "GitHub release $tag is already public."
+          }
