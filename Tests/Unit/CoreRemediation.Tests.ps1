@@ -680,4 +680,15 @@ Describe 'Core review remediation' {
         $deck.GetType().FullName | Should -Be 'TerminalSlides.Schema.V1.TerminalPresentation'
         $deck.GetType().Assembly.GetName().Version | Should -Be ([version]'1.0.0.0')
     }
+
+    It 'uses one display mode for every interactive rendering state' {
+        $showCommand = Get-Content -LiteralPath (
+            Join-Path (Split-Path $script:ModulePath -Parent) 'Public/Show-TerminalPresentation.ps1'
+        ) -Raw
+
+        $showCommand | Should -Match '-DisplayMode \$displayMode'
+        $showCommand | Should -Not -Match '-OverviewMode|-ShowHelp|-Blank:'
+        @([regex]::Matches($showCommand, '\$displayMode -eq ''(Overview|Help|Blank)''')) |
+            Should -HaveCount 4
+    }
 }

@@ -29,9 +29,7 @@ function Show-TerminalPresentation {
     $slideIndex = 0
     $revealStep = 0
     $showNotes = $false
-    $overviewMode = $false
-    $showHelp = $false
-    $blank = $false
+    $displayMode = 'Slide'
     $showTimer = $false
     $startTime = [datetime]::UtcNow
     $escAltOn = "`e[?1049h"
@@ -44,7 +42,7 @@ function Show-TerminalPresentation {
         else { Write-Host -NoNewline $hideCursor }
         do {
             $elapsed = [datetime]::UtcNow - $startTime
-            $rendered = Render-TerminalPresentationToString -Presentation $Presentation -SlideIndex $slideIndex -RevealStep $revealStep -ShowNotes:$showNotes -OverviewMode:$overviewMode -ShowHelp:$showHelp -Blank:$blank -Elapsed $elapsed -ShowTimer:$showTimer -Capability $capability
+            $rendered = Render-TerminalPresentationToString -Presentation $Presentation -SlideIndex $slideIndex -RevealStep $revealStep -ShowNotes:$showNotes -DisplayMode $displayMode -Elapsed $elapsed -ShowTimer:$showTimer -Capability $capability
             Write-Host -NoNewline $rendered
             $key = [Console]::ReadKey($true)
             switch ($key.Key) {
@@ -59,14 +57,17 @@ function Show-TerminalPresentation {
                 'Home' { $slideIndex = 0; $revealStep = 0 }
                 'End' { $slideIndex = $Presentation.Slides.Count - 1; $revealStep = $Presentation.Slides[$slideIndex].MaxRevealStep }
                 'S' { $showNotes = -not $showNotes }
-                'O' { $overviewMode = -not $overviewMode }
-                'B' { $blank = -not $blank }
+                'O' { $displayMode = if ($displayMode -eq 'Overview') { 'Slide' } else { 'Overview' } }
+                'B' { $displayMode = if ($displayMode -eq 'Blank') { 'Slide' } else { 'Blank' } }
                 'T' { $showTimer = -not $showTimer }
-                'H' { $showHelp = -not $showHelp }
+                'H' { $displayMode = if ($displayMode -eq 'Help') { 'Slide' } else { 'Help' } }
                 'Escape' { break }
                 default {
                     if ($key.KeyChar -in @('q','Q','?')) {
-                        if ($key.KeyChar -eq '?') { $showHelp = -not $showHelp } else { break }
+                        if ($key.KeyChar -eq '?') {
+                            $displayMode = if ($displayMode -eq 'Help') { 'Slide' } else { 'Help' }
+                        }
+                        else { break }
                     }
                 }
             }
