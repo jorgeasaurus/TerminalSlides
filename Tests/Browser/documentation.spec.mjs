@@ -16,10 +16,13 @@ test('the landing page stays focused and links into the guides', async ({ page }
   await expect(page.locator('#command-grid')).toHaveCount(0);
 });
 
-test('the guides expose every command and filter the sidebar locally', async ({ page }) => {
+test('the guides expose every command and filter the sidebar locally', async ({ page }, testInfo) => {
   await page.goto('/guides/');
 
   await expect(page.getByRole('heading', { name: 'TerminalSlides guides' })).toBeVisible();
+  if (testInfo.project.name === 'mobile-chromium') {
+    await page.getByRole('button', { name: 'Open guide navigation' }).click();
+  }
   const commands = page.locator('[data-command-name]');
   await expect(commands).toHaveCount(29);
 
