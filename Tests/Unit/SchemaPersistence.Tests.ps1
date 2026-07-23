@@ -37,10 +37,9 @@ Describe 'Typed schema and persistence boundary' {
             'TextPayload','TextPayload','TextPayload','TextPayload','CodePayload','TablePayload',
             'ChartPayload','DiagramPayload','ImagePayload','QuotePayload','TextPayload'
         )
-        # Read-only legacy projections bridge the old renderer until the next stacked PR.
-        $deck.Slides[0].Elements[0].PSObject.Properties.Name | Should -Contain Type
-        $deck.Slides[0].Elements[0].PSObject.Properties.Name | Should -Contain Content
-        $deck.Slides[0].Elements[0].PSObject.Properties.Name | Should -Contain Properties
+        $deck.Slides[0].Elements[0].PSObject.Properties.Name | Should -Not -Contain Type
+        $deck.Slides[0].Elements[0].PSObject.Properties.Name | Should -Not -Contain Content
+        $deck.Slides[0].Elements[0].PSObject.Properties.Name | Should -Not -Contain Properties
     }
 
     It 'enforces payload-kind invariants and immutable payload collections' {

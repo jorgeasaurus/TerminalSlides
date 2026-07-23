@@ -8,6 +8,14 @@ param(
 $ErrorActionPreference = 'Stop'
 $pesterVersion = [version]'5.8.0'
 $scriptAnalyzerVersion = [version]'1.25.0'
+$manifestData = Import-PowerShellDataFile (Join-Path $PSScriptRoot 'TerminalSlides.psd1')
+$spectreDependency = $manifestData.RequiredModules |
+    Where-Object ModuleName -eq 'PwshSpectreConsole' |
+    Select-Object -First 1
+if (-not $spectreDependency.RequiredVersion) {
+    throw 'TerminalSlides.psd1 must pin PwshSpectreConsole with RequiredVersion.'
+}
+$spectreVersion = [version]$spectreDependency.RequiredVersion
 
 function Import-ExactModule {
     param(
@@ -43,6 +51,7 @@ if ($env:TERMINALSLIDES_RUN_TMUX_TESTS -eq '1' -and
 }
 
 & (Join-Path $PSScriptRoot 'Scripts/Build-SchemaAssembly.ps1') -Check
+Import-ExactModule -Name PwshSpectreConsole -Version $spectreVersion
 
 if (-not $SkipScriptAnalyzer) {
     Import-ExactModule -Name PSScriptAnalyzer -Version $scriptAnalyzerVersion

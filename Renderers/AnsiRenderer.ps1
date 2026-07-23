@@ -1,8 +1,63 @@
+function ConvertTo-TerminalTableRowLine {
+    param(
+        [Parameter(Mandatory)][AllowEmptyCollection()][AllowEmptyString()][string[]]$Values,
+        [Parameter(Mandatory)][AllowEmptyCollection()][int[]]$Widths,
+        [ValidateRange(0, [int]::MaxValue)][int]$StartColumn = 0
+    )
+
+    $cells = [System.Collections.Generic.List[string]]::new()
+    $cellStartColumn = $StartColumn + 2
+    for ($columnIndex = 0; $columnIndex -lt $Values.Count; $columnIndex++) {
+        $cells.Add((Pad-TerminalText -Text $Values[$columnIndex] -Width $Widths[$columnIndex] -StartColumn $cellStartColumn))
+        $cellStartColumn += $Widths[$columnIndex] + 3
+    }
+    return '| ' + ($cells -join ' | ') + ' |'
+}
+
+function ConvertTo-TerminalTableCellLines {
+    param(
+        [AllowNull()][string]$Text,
+        [ValidateRange(0, [int]::MaxValue)][int]$StartColumn = 0
+    )
+
+    $lines = [System.Collections.Generic.List[string]]::new()
+    foreach ($logicalLine in (Split-TerminalLogicalRows -Text $Text)) {
+        $lines.Add((Expand-TerminalTabs -Text $logicalLine -StartColumn $StartColumn))
+    }
+    return ,$lines.ToArray()
+}
+
+function ConvertTo-TerminalTablePhysicalLines {
+    param(
+        [Parameter(Mandatory)][AllowEmptyCollection()][string[][]]$Cells,
+        [Parameter(Mandatory)][AllowEmptyCollection()][int[]]$Widths,
+        [ValidateRange(0, [int]::MaxValue)][int]$StartColumn = 0
+    )
+
+    $lineCount = 1
+    foreach ($cell in $Cells) { $lineCount = [Math]::Max($lineCount, $cell.Count) }
+    $lines = [System.Collections.Generic.List[string]]::new()
+    for ($lineIndex = 0; $lineIndex -lt $lineCount; $lineIndex++) {
+        $values = [string[]]::new($Cells.Count)
+        for ($columnIndex = 0; $columnIndex -lt $Cells.Count; $columnIndex++) {
+            $values[$columnIndex] = if ($lineIndex -lt $Cells[$columnIndex].Count) {
+                $Cells[$columnIndex][$lineIndex]
+            }
+            else { '' }
+        }
+        $lines.Add((ConvertTo-TerminalTableRowLine -Values $values -Widths $Widths -StartColumn $StartColumn))
+    }
+    return ,$lines.ToArray()
+}
+
 function ConvertTo-TableLines {
-    param([object]$Content)
+    param(
+        [object]$Content,
+        [ValidateRange(0, [int]::MaxValue)][int]$StartColumn = 0
+    )
     $rows = @()
     if ($Content -is [System.Collections.IDictionary]) {
-        $rows = @([pscustomobject]$Content)
+        $rows = [object[]]@($Content)
     }
     elseif ($Content -is [System.Collections.IEnumerable] -and $Content -isnot [string]) {
         $rows = @($Content)
@@ -11,26 +66,47 @@ function ConvertTo-TableLines {
         return ,@([string]$Content)
     }
     if (-not $rows.Count) { return ,@('') }
-    $first = $rows[0]
-    $headers = if ($first -is [System.Collections.IDictionary]) { @($first.Keys) } else { @($first.PSObject.Properties.Name) }
-    $widths = @{}
-    foreach ($header in $headers) { $widths[$header] = [Math]::Max($header.Length, 3) }
-    foreach ($row in $rows) {
-        foreach ($header in $headers) {
-            $value = if ($row -is [System.Collections.IDictionary]) { [string]$row[$header] } else { [string]$row.$header }
-            $widths[$header] = [Math]::Max($widths[$header], (Measure-TextWidth -Text $value))
+    $shape = Get-TerminalExportTableShape -Data $rows
+    $headers = [string[]]@($shape.Columns)
+    $widths = [int[]]::new($headers.Count)
+    $normalizedHeaders = [string[][]]::new($headers.Count)
+    $normalizedRows = [System.Collections.Generic.List[string[][]]]::new()
+    foreach ($row in $rows) { $normalizedRows.Add([string[][]]::new($headers.Count)) }
+
+    $cellStartColumn = $StartColumn + 2
+    for ($columnIndex = 0; $columnIndex -lt $headers.Count; $columnIndex++) {
+        $header = $headers[$columnIndex]
+        $normalizedHeaders[$columnIndex] = ConvertTo-TerminalTableCellLines -Text $header -StartColumn $cellStartColumn
+        $widths[$columnIndex] = 3
+        foreach ($headerLine in $normalizedHeaders[$columnIndex]) {
+            $widths[$columnIndex] = [Math]::Max(
+                $widths[$columnIndex],
+                (Measure-TextWidth -Text $headerLine -StartColumn $cellStartColumn)
+            )
         }
+        for ($rowIndex = 0; $rowIndex -lt $rows.Count; $rowIndex++) {
+            $row = $rows[$rowIndex]
+            $value = [string](Get-TerminalSemanticProperty -InputObject $row -Name $header)
+            $normalizedRows[$rowIndex][$columnIndex] = ConvertTo-TerminalTableCellLines -Text $value -StartColumn $cellStartColumn
+            foreach ($valueLine in $normalizedRows[$rowIndex][$columnIndex]) {
+                $widths[$columnIndex] = [Math]::Max(
+                    $widths[$columnIndex],
+                    (Measure-TextWidth -Text $valueLine -StartColumn $cellStartColumn)
+                )
+            }
+        }
+        $cellStartColumn += $widths[$columnIndex] + 3
     }
-    $headerLine = '| ' + (($headers | ForEach-Object { $_.PadRight($widths[$_]) }) -join ' | ') + ' |'
-    $separator = '|-' + (($headers | ForEach-Object { ''.PadLeft($widths[$_], '-') }) -join '-|-') + '-|'
+
     $output = [System.Collections.Generic.List[string]]::new()
-    $output.Add($headerLine)
-    $output.Add($separator)
-    foreach ($row in $rows) {
-        $output.Add('| ' + (($headers | ForEach-Object {
-            $value = if ($row -is [System.Collections.IDictionary]) { [string]$row[$_] } else { [string]$row.$_ }
-            $value.PadRight($widths[$_])
-        }) -join ' | ') + ' |')
+    foreach ($headerLine in (ConvertTo-TerminalTablePhysicalLines -Cells $normalizedHeaders -Widths $widths -StartColumn $StartColumn)) {
+        $output.Add($headerLine)
+    }
+    $output.Add('|-' + (($widths | ForEach-Object { ''.PadLeft($_, '-') }) -join '-|-') + '-|')
+    foreach ($normalizedRow in $normalizedRows) {
+        foreach ($rowLine in (ConvertTo-TerminalTablePhysicalLines -Cells $normalizedRow -Widths $widths -StartColumn $StartColumn)) {
+            $output.Add($rowLine)
+        }
     }
     return ,$output.ToArray()
 }
@@ -40,12 +116,18 @@ function ConvertTo-ChartLines {
     $items = @($Content)
     if (-not $items.Count) { return ,@('No chart data') }
     $chartType = ($Properties.ChartType ?? 'HorizontalBar')
+    $palette = @($Theme.ChartPalette)
+    if (-not $palette.Count) { $palette = @($Theme.Primary, $Theme.Accent, $Theme.Foreground) }
+    $output = [System.Collections.Generic.List[object]]::new()
+    if ($Properties.Title) {
+        $output.Add((New-TerminalStyledLine -Text ([string]$Properties.Title) -Foreground $Theme.Heading -Bold))
+    }
     switch ($chartType) {
         'Gauge' {
             $value = [double]($items[0].Value)
             $filled = [Math]::Round(($Width - 10) * ($value / 100))
             $filled = [Math]::Max(0, [Math]::Min($Width - 10, $filled))
-            return ,@("[$(('█' * $filled) + ('░' * ([Math]::Max(0, ($Width - 10 - $filled)))))] $value%")
+            $output.Add((New-TerminalStyledLine -Text "[$(('█' * $filled) + ('░' * ([Math]::Max(0, ($Width - 10 - $filled)))))] $value%" -Foreground $palette[0]))
         }
         'Sparkline' {
             $values = @($items | ForEach-Object { [double]$_.Value })
@@ -57,37 +139,39 @@ function ConvertTo-ChartLines {
                 $idx = [int][Math]::Round((($_ - $min) / ($max - $min)) * ($blocks.Length - 1))
                 $blocks[$idx]
             })
-            return ,@($spark)
+            $output.Add((New-TerminalStyledLine -Text $spark -Foreground $palette[0]))
         }
         'Bar' {
             $max = [double](($items | ForEach-Object { $_.Value } | Measure-Object -Maximum).Maximum)
             if ($max -le 0) { $max = 1 }
-            $rows = [System.Collections.Generic.List[string]]::new()
-            foreach ($item in $items) {
-                $count = [Math]::Max(1, [Math]::Round((([double]$item.Value) / $max) * ([Math]::Max(1, $Width - 12))))
-                $rows.Add(('{0,-10} {1}' -f $item.Label, ('█' * $count)))
+            for ($index = 0; $index -lt $items.Count; $index++) {
+                $item = $items[$index]
+                $count = [Math]::Max(0, [Math]::Round((([double]$item.Value) / $max) * ([Math]::Max(1, $Width - 12))))
+                $label = Pad-TerminalText -Text ([string]$item.Label) -Width 10
+                $color = $palette[$index % $palette.Count]
+                $output.Add((New-TerminalStyledLine -Text "$label $('█' * $count)" -Foreground $color))
             }
-            return ,$rows.ToArray()
         }
         'Line' {
             $values = @($items | ForEach-Object { [double]$_.Value })
-            $rows = [System.Collections.Generic.List[string]]::new()
-            $rows.Add((ConvertTo-ChartLines -Content $Content -Properties @{ ChartType='Sparkline' } -Theme $Theme -Width $Width)[0])
-            $rows.Add(($items | ForEach-Object { "{0}: {1}" -f $_.Label, $_.Value }) -join '  ')
-            return ,$rows.ToArray()
+            $sparkline = ConvertTo-ChartLines -Content $Content -Properties @{ ChartType='Sparkline' } -Theme $Theme -Width $Width
+            foreach ($line in $sparkline) { $output.Add($line) }
+            $output.Add(($items | ForEach-Object { "{0}: {1}" -f $_.Label, $_.Value }) -join '  ')
         }
         default {
             $max = [double](($items | ForEach-Object { $_.Value } | Measure-Object -Maximum).Maximum)
             if ($max -le 0) { $max = 1 }
-            $rows = [System.Collections.Generic.List[string]]::new()
-            foreach ($item in $items) {
+            for ($index = 0; $index -lt $items.Count; $index++) {
+                $item = $items[$index]
                 $label = [string]$item.Label
-                $count = [Math]::Max(1, [Math]::Round((([double]$item.Value) / $max) * ([Math]::Max(1, $Width - 20))))
-                $rows.Add(('{0,-12} {1} {2}' -f $label, ('█' * $count), $item.Value))
+                $count = [Math]::Max(0, [Math]::Round((([double]$item.Value) / $max) * ([Math]::Max(1, $Width - 20))))
+                $label = Pad-TerminalText -Text $label -Width 12
+                $color = $palette[$index % $palette.Count]
+                $output.Add((New-TerminalStyledLine -Text "$label $('█' * $count) $($item.Value)" -Foreground $color))
             }
-            return ,$rows.ToArray()
         }
     }
+    return ,$output.ToArray()
 }
 
 function ConvertTo-DiagramLines {
@@ -112,67 +196,72 @@ function ConvertTo-DiagramLines {
 }
 
 function ConvertTo-ElementLines {
-    param([TerminalSlides.Schema.V1.SlideElement]$Element, [TerminalSlides.Schema.V1.ThemeDefinition]$Theme, [int]$Width)
-    $contentText = if ($Element.Content -is [string]) { $Element.Content } else { $null }
-    switch ($Element.Type) {
-        'Title' { return ,(Format-WordWrap -Text $contentText -Width $Width) }
-        'Subtitle' { return ,(Format-WordWrap -Text $contentText -Width $Width) }
-        'Text' { return ,(Format-WordWrap -Text $contentText -Width $Width -OverflowBehavior $Element.OverflowBehavior) }
+    param(
+        [TerminalSlides.Schema.V1.SlideElement]$Element,
+        [TerminalSlides.Schema.V1.ThemeDefinition]$Theme,
+        [int]$Width,
+        [int]$Height = 0,
+        [TerminalSlides.Schema.V1.TerminalCapability]$Capability,
+        [ValidateRange(0, [int]::MaxValue)][int]$StartColumn = 0
+    )
+    $payload = Get-TerminalElementPayload -Element $Element
+    switch ($payload.Kind) {
+        'Title' {
+            $title = if ($Theme.HeadingStyle -eq 'banner') { $payload.Text.ToUpperInvariant() } else { $payload.Text }
+            return ,(Format-WordWrap -Text $title -Width $Width -StartColumn $StartColumn)
+        }
+        'Subtitle' { return ,(Format-WordWrap -Text $payload.Text -Width $Width -StartColumn $StartColumn) }
+        'Text' { return ,(Format-WordWrap -Text $payload.Text -Width $Width -OverflowBehavior $Element.OverflowBehavior -StartColumn $StartColumn) }
         'Bullet' {
             $prefix = "$($Theme.BulletSymbol) "
-            $wrapped = Format-WordWrap -Text $contentText -Width ([Math]::Max(1, $Width - $prefix.Length))
+            $prefixWidth = Measure-TextWidth -Text $prefix
+            $wrapped = Format-WordWrap -Text $payload.Text -Width ([Math]::Max(1, $Width - $prefixWidth)) -StartColumn ($StartColumn + $prefixWidth)
             $result = [System.Collections.Generic.List[string]]::new()
             for ($i = 0; $i -lt $wrapped.Count; $i++) {
                 if ($i -eq 0) { $result.Add($prefix + $wrapped[$i]) }
-                else { $result.Add((' ' * $prefix.Length) + $wrapped[$i]) }
+                else { $result.Add((' ' * $prefixWidth) + $wrapped[$i]) }
             }
             return ,$result.ToArray()
         }
         'Code' {
-            $code = if ($Element.Content -is [string]) {
-                $Element.Content
+            $lines = [System.Collections.Generic.List[TerminalStyledLine]]::new()
+            foreach ($highlightedLine in (Get-SyntaxHighlight -Code $payload.Code -Language $payload.Language -Theme $Theme)) {
+                foreach ($wrappedLine in (Split-TerminalStyledLineByCellWidth -Line $highlightedLine -Width $Width -StartColumn $StartColumn)) {
+                    $lines.Add($wrappedLine)
+                }
             }
-            elseif ($Element.Content -is [System.Collections.IDictionary]) {
-                [string]$Element.Content['Code']
-            }
-            else {
-                [string]$Element.Content.Code
-            }
-            $language = if ($Element.Content -is [System.Collections.IDictionary]) { [string]$Element.Content['Language'] } elseif ($Element.Content -isnot [string]) { [string]$Element.Content.Language } else { '' }
-            $wrapped = Format-WordWrap -Text ($code -replace "`r", '') -Width $Width -OverflowBehavior 'Scroll'
-            if ($language) {
-                return ,(Get-SyntaxHighlight -Code ($wrapped -join "`n") -Language $language -Theme $Theme)
-            }
-            return ,$wrapped
+            return ,$lines.ToArray()
         }
-        'Table' { return ,(ConvertTo-TableLines -Content $Element.Content) }
-        'Chart' { return ,(ConvertTo-ChartLines -Content $Element.Content -Properties $Element.Properties -Theme $Theme -Width $Width) }
-        'Diagram' { return ,(ConvertTo-DiagramLines -Content $Element.Content) }
+        'Table' { return ,(ConvertTo-TableLines -Content $payload.Rows -StartColumn $StartColumn) }
+        'Chart' {
+            $properties = @{ ChartType = $payload.ChartType; Title = $payload.Title }
+            return ,(ConvertTo-ChartLines -Content $payload.Rows -Properties $properties -Theme $Theme -Width $Width)
+        }
+        'Diagram' { return ,(ConvertTo-DiagramLines -Content @{ Nodes=$payload.Nodes; Edges=$payload.Edges }) }
         'Image' {
-            $path = if ($Element.Content -is [hashtable]) { $Element.Content.Path } else { [string]$Element.Content }
-            $alt = if ($Element.Content -is [hashtable]) { [string]($Element.Content.AltText ?? '') } else { '' }
-            return ,@("Image: $path", $alt)
+            $imageLines = ConvertTo-TerminalImageLines -Path $payload.Path -Width $Width -Height $Height -SourceDirectory $payload.SourceDirectory -Capability $Capability
+            if ($null -ne $imageLines -and $imageLines.Count -gt 0) {
+                return ,$imageLines
+            }
+            return ,@("Image: $($payload.Path)", $payload.AltText)
         }
         'Quote' {
             $lines = [System.Collections.Generic.List[string]]::new()
-            foreach ($line in (Format-WordWrap -Text ('“' + $Element.Content.Text + '”') -Width $Width)) { $lines.Add($line) }
-            if ($Element.Content.Attribution) { $lines.Add("— $($Element.Content.Attribution)") }
+            foreach ($line in (Format-WordWrap -Text ('“' + $payload.Text + '”') -Width $Width -StartColumn $StartColumn)) { $lines.Add($line) }
+            if ($payload.Attribution) { $lines.Add("— $($payload.Attribution)") }
             return ,$lines.ToArray()
         }
         'Box' {
             $boxChars = Get-BoxCharacters -Style $Theme.BoxDrawingStyle
-            $inner = Format-WordWrap -Text $contentText -Width ([Math]::Max(1, $Width - 4))
+            $innerStartColumn = $StartColumn + 2
+            $inner = Format-WordWrap -Text $payload.Text -Width ([Math]::Max(1, $Width - 4)) -StartColumn $innerStartColumn
             $border = $boxChars.Tl + ($boxChars.H * ([Math]::Max(1, $Width - 2))) + $boxChars.Tr
             $bottom = $boxChars.Bl + ($boxChars.H * ([Math]::Max(1, $Width - 2))) + $boxChars.Br
             $lines = [System.Collections.Generic.List[string]]::new()
             $lines.Add($border)
-            foreach ($line in $inner) { $lines.Add($boxChars.V + ' ' + $line.PadRight([Math]::Max(1, $Width - 4)) + ' ' + $boxChars.V) }
+            foreach ($line in $inner) { $lines.Add($boxChars.V + ' ' + (Pad-TerminalText -Text $line -Width ([Math]::Max(1, $Width - 4)) -StartColumn $innerStartColumn) + ' ' + $boxChars.V) }
             $lines.Add($bottom)
             return ,$lines.ToArray()
-        }
-        default {
-            if ($Element.Content -is [string]) { return ,(Format-WordWrap -Text $Element.Content -Width $Width) }
-            return ,@([string]$Element.Content)
         }
     }
 }
@@ -180,43 +269,34 @@ function ConvertTo-ElementLines {
 function Write-LinesToFrame {
     param(
         [FrameBuffer]$FrameBuffer,
-        [string[]]$Lines,
+        [object[]]$Lines,
         [hashtable]$Region,
         [TerminalSlides.Schema.V1.ThemeDefinition]$Theme,
         [TerminalSlides.Schema.V1.SlideElement]$Element,
         [int]$StartY
     )
+    $elementKind = (Get-TerminalElementPayload -Element $Element).Kind
     $fg = if ($Element.ForegroundColor) { $Element.ForegroundColor }
-          elseif ($Element.Type -eq 'Code' -and $Theme.CodeForeground) { $Theme.CodeForeground }
+          elseif ($elementKind -eq 'Code' -and $Theme.CodeForeground) { $Theme.CodeForeground }
           else { $Theme.Foreground }
     $bg = if ($Element.BackgroundColor) { $Element.BackgroundColor }
-          elseif ($Element.Type -eq 'Code' -and $Theme.CodeBackground) { $Theme.CodeBackground }
+          elseif ($elementKind -eq 'Code' -and $Theme.CodeBackground) { $Theme.CodeBackground }
           else { $null }
     $y = $StartY
     $usableWidth = [Math]::Max(1, $Region.Width - ($Element.Padding * 2))
-    foreach ($line in $Lines) {
+    $contentStartColumn = $Region.X + $Element.Padding
+    $preparedLines = ConvertTo-TerminalPreparedLines -Lines $Lines -StartColumn $contentStartColumn -MaxWidth $usableWidth -Alignment $Element.Alignment
+    foreach ($preparedLine in $preparedLines) {
         if ($y -ge ($Region.Y + $Region.Height)) { break }
-        $text = Strip-AnsiSequences -Text $line
-        $display = if ((Measure-TextWidth -Text $text) -gt $usableWidth) { $text.Substring(0, $usableWidth) } else { $text }
-        $x = $Region.X + $Element.Padding
-        switch ($Element.Alignment) {
-            'Center' { $x = $Region.X + [Math]::Max(0, [Math]::Floor(($Region.Width - (Measure-TextWidth -Text $display)) / 2)) }
-            'Right' { $x = $Region.X + [Math]::Max(0, $Region.Width - (Measure-TextWidth -Text $display) - $Element.Padding) }
-        }
-        $baseBold = ($Element.Type -eq 'Title')
-        $baseItalic = ($Element.Type -eq 'Subtitle')
-        if ($line -match "`e\[") {
-            $segments = ConvertFrom-AnsiToSegments -Text $display
-            if (-not $segments.Count) { $segments = @([pscustomobject]@{ Text = $display; Foreground = $null; Bold = $false }) }
-            $col = $x
-            foreach ($segment in $segments) {
-                $segmentFg = if ($segment.Foreground) { $segment.Foreground } else { $fg }
-                Set-FrameText -FrameBuffer $FrameBuffer -X $col -Y $y -Text $segment.Text -Foreground $segmentFg -Background $bg -Bold:($baseBold -or $segment.Bold) -Italic:$baseItalic
-                $col += (Measure-TextWidth -Text $segment.Text)
-            }
-        }
-        else {
-            Set-FrameText -FrameBuffer $FrameBuffer -X $x -Y $y -Text $display -Foreground $fg -Background $bg -Bold:$baseBold -Italic:$baseItalic
+        $x = $preparedLine.StartColumn
+        $baseBold = ($elementKind -eq 'Title' -and $Theme.HeadingStyle -ne 'plain')
+        $baseItalic = ($elementKind -eq 'Subtitle')
+        $col = $x
+        foreach ($run in $preparedLine.Runs) {
+            $runForeground = if ($run.Foreground) { $run.Foreground } else { $fg }
+            $runBackground = if ($run.Background) { $run.Background } else { $bg }
+            Set-FrameText -FrameBuffer $FrameBuffer -X $col -Y $y -Text $run.Text -Foreground $runForeground -Background $runBackground -Bold:($baseBold -or $run.Bold) -Italic:($baseItalic -or $run.Italic) -Underline:$run.Underline
+            $col += $run.Width
         }
         $y++
     }
@@ -227,7 +307,7 @@ function Get-SlideRenderDimensions {
     param([TerminalSlides.Schema.V1.TerminalPresentation]$Presentation, [TerminalSlides.Schema.V1.TerminalCapability]$Capability)
     $width = if ($Presentation.Width -gt 0) { $Presentation.Width } elseif ($Capability.Width -gt 0) { $Capability.Width } else { 80 }
     $height = if ($Presentation.Height -gt 0) { $Presentation.Height } elseif ($Capability.Height -gt 0) { $Capability.Height } else { 24 }
-    return @{ Width = $width; Height = $height }
+    return Resolve-TerminalViewport -Width $width -Height $height
 }
 
 function Get-RenderedSlideFrame {
@@ -237,9 +317,7 @@ function Get-RenderedSlideFrame {
         [Parameter(Mandatory)][int]$SlideIndex,
         [int]$RevealStep = 0,
         [switch]$ShowNotes,
-        [switch]$OverviewMode,
-        [switch]$ShowHelp,
-        [switch]$Blank,
+        [ValidateSet('Slide','Overview','Help','Blank')][string]$DisplayMode = 'Slide',
         [timespan]$Elapsed = [timespan]::Zero,
         [switch]$ShowTimer,
         [TerminalSlides.Schema.V1.TerminalCapability]$Capability = $script:Capabilities
@@ -249,28 +327,31 @@ function Get-RenderedSlideFrame {
     $dims = Get-SlideRenderDimensions -Presentation $Presentation -Capability $Capability
     $frame = [FrameBuffer]::new($dims.Width, $dims.Height)
     Fill-FrameRegion -FrameBuffer $frame -Background $theme.Background -Foreground $theme.Foreground
-    if ($Blank) { return $frame }
+    if ($DisplayMode -eq 'Blank') { return $frame }
 
-    if ($ShowHelp) {
+    if ($DisplayMode -eq 'Help') {
         $help = @(
             'TerminalSlides Help',
             '',
-            'Right / Space / N / PgDn  Next reveal or slide',
-            'Left / Backspace / P / PgUp Previous reveal or slide',
+            'Right / Space / N           Next reveal or slide',
+            'PageDown                   Next slide',
+            'Left / Backspace / P       Previous reveal or slide',
+            'PageUp                     Previous slide',
             'Home / End                 First / last slide',
             'S                          Toggle notes',
             'O                          Toggle overview',
             'B                          Blank screen',
             'T                          Toggle timer',
+            'H / ?                      Toggle help',
             'Q / Esc                    Quit'
         )
         $region = @{ X = 2; Y = 2; Width = $dims.Width - 4; Height = $dims.Height - 4 }
         Draw-FrameBox -FrameBuffer $frame -X $region.X -Y $region.Y -Width $region.Width -Height $region.Height -Foreground $theme.Border -Background $theme.Background -Style $theme.BoxDrawingStyle
-        Write-LinesToFrame -FrameBuffer $frame -Lines $help -Region @{ X = 4; Y = 4; Width = $dims.Width - 8; Height = $dims.Height - 8 } -Theme $theme -Element (New-InternalSlideElement -Kind Text -Payload ([TerminalSlides.Schema.V1.TextPayload]::new('')) -ForegroundColor $theme.Foreground) -StartY 4 | Out-Null
+        Write-LinesToFrame -FrameBuffer $frame -Lines $help -Region @{ X = 4; Y = 3; Width = $dims.Width - 8; Height = $dims.Height - 6 } -Theme $theme -Element (New-InternalSlideElement -Kind Text -Payload ([TerminalSlides.Schema.V1.TextPayload]::new('')) -ForegroundColor $theme.Foreground) -StartY 3 | Out-Null
         return $frame
     }
 
-    if ($OverviewMode) {
+    if ($DisplayMode -eq 'Overview') {
         Set-FrameText -FrameBuffer $frame -X 2 -Y 1 -Text $Presentation.Title -Foreground $theme.Heading -Background $theme.Background -Bold
         $y = 3
         for ($i = 0; $i -lt $Presentation.Slides.Count -and $y -lt $dims.Height - 2; $i++) {
@@ -281,54 +362,23 @@ function Get-RenderedSlideFrame {
         return $frame
     }
 
-    $slide = $Presentation.Slides[$SlideIndex]
-    $regions = Get-LayoutRegions -Layout $slide.Layout -Width $dims.Width -Height $dims.Height
+    $plan = Get-TerminalSlideLayoutPlan -Presentation $Presentation -SlideIndex $SlideIndex -RevealStep $RevealStep -Capability $Capability
+    $slide = $plan.Slide
     if ($slide.Background) {
         Fill-FrameRegion -FrameBuffer $frame -Background $slide.Background -Foreground $theme.Foreground
     }
-    if ($regions.ContainsKey('Title') -and $slide.Title) {
-        $titleElement = New-InternalSlideElement -Kind Title -Payload ([TerminalSlides.Schema.V1.TextPayload]::new($slide.Title)) -ForegroundColor $theme.Heading
-        $titleLines = Format-WordWrap -Text $slide.Title -Width $regions.Title.Width
-        Write-LinesToFrame -FrameBuffer $frame -Lines $titleLines -Region $regions.Title -Theme $theme -Element $titleElement -StartY $regions.Title.Y | Out-Null
-        if ($Presentation.Subtitle -and $slide.Layout -eq 'Title') {
-            $subEl = New-InternalSlideElement -Kind Subtitle -Payload ([TerminalSlides.Schema.V1.TextPayload]::new($Presentation.Subtitle)) -ForegroundColor $theme.Muted
-            $subLines = Format-WordWrap -Text $Presentation.Subtitle -Width $regions.Title.Width
-            Write-LinesToFrame -FrameBuffer $frame -Lines $subLines -Region @{ X=$regions.Title.X; Y=($regions.Title.Y+2); Width=$regions.Title.Width; Height=2 } -Theme $theme -Element $subEl -StartY ($regions.Title.Y+2) | Out-Null
+
+    foreach ($placement in $plan.Placements) {
+        if ($placement.Border) {
+            $border = $placement.BorderRegion
+            $borderFg = if ($placement.Element.ForegroundColor) { $placement.Element.ForegroundColor } else { $theme.Border }
+            $borderBg = if ($placement.Element.BackgroundColor) { $placement.Element.BackgroundColor } else { $theme.Background }
+            Draw-FrameBox -FrameBuffer $frame -X $border.X -Y $border.Y -Width $border.Width -Height $border.Height -Foreground $borderFg -Background $borderBg -Style $placement.Element.BorderStyle
         }
-    }
-    $contentRegions = @{}
-    foreach ($entry in $regions.GetEnumerator()) { $contentRegions[$entry.Key] = $entry.Value }
-    if (-not $contentRegions.ContainsKey('Content') -and $regions.ContainsKey('Body')) { $contentRegions['Content'] = $regions['Body'] }
-    foreach ($regionName in @('Content','Left','Center','Right','Image','Code','Quote')) {
-        if ($contentRegions.ContainsKey($regionName)) {
-            $region = $contentRegions[$regionName]
-            $y = $region.Y
-            $elements = $slide.Elements | Where-Object {
-                $_.RevealStep -le $RevealStep -and (($_.Region ?? 'Content') -eq $regionName -or ($regionName -eq 'Content' -and [string]::IsNullOrWhiteSpace($_.Region)))
-            }
-            foreach ($element in $elements) {
-                if ($element.Border) {
-                    $contentWidth = [Math]::Max(1, $region.Width - 2 - ($element.Padding * 2))
-                    $lines = ConvertTo-ElementLines -Element $element -Theme $theme -Width $contentWidth
-                    $availableHeight = [Math]::Max(3, $region.Height - ($y - $region.Y))
-                    $borderHeight = [Math]::Min($availableHeight, [Math]::Max(3, $lines.Count + 2))
-                    $borderFg = if ($element.ForegroundColor) { $element.ForegroundColor } else { $theme.Border }
-                    $borderBg = if ($element.BackgroundColor) { $element.BackgroundColor } else { $theme.Background }
-                    Draw-FrameBox -FrameBuffer $frame -X $region.X -Y $y -Width $region.Width -Height $borderHeight -Foreground $borderFg -Background $borderBg -Style $element.BorderStyle
-                    $innerRegion = @{ X = $region.X + 1; Y = $y + 1; Width = $region.Width - 2; Height = $borderHeight - 2 }
-                    Write-LinesToFrame -FrameBuffer $frame -Lines $lines -Region $innerRegion -Theme $theme -Element $element -StartY ($y + 1) | Out-Null
-                    $y += $borderHeight + 1
-                }
-                else {
-                    $lines = ConvertTo-ElementLines -Element $element -Theme $theme -Width ([Math]::Max(1, $region.Width - ($element.Padding * 2)))
-                    $y = Write-LinesToFrame -FrameBuffer $frame -Lines $lines -Region $region -Theme $theme -Element $element -StartY $y
-                    $y++
-                }
-            }
-        }
+        Write-LinesToFrame -FrameBuffer $frame -Lines $placement.Lines -Region $placement.Region -Theme $theme -Element $placement.Element -StartY $placement.StartY | Out-Null
     }
     $progressWidth = [Math]::Max(10, $dims.Width - 24)
-    $ratio = if ($Presentation.Slides.Count -gt 0) { ($SlideIndex + 1) / $Presentation.Slides.Count } else { 0 }
+    $ratio = ($SlideIndex + 1) / $Presentation.Slides.Count
     $filled = [Math]::Round($progressWidth * $ratio)
     $progressBar = ('█' * $filled).PadRight($progressWidth, '░')
     $status = "Slide {0} of {1} {2}" -f ($SlideIndex + 1), $Presentation.Slides.Count, $progressBar
@@ -356,21 +406,19 @@ function Render-TerminalPresentationToString {
         [int]$RevealStep = 0,
         [switch]$PlainText,
         [switch]$ShowNotes,
-        [switch]$OverviewMode,
-        [switch]$ShowHelp,
-        [switch]$Blank,
+        [ValidateSet('Slide','Overview','Help','Blank')][string]$DisplayMode = 'Slide',
         [timespan]$Elapsed = [timespan]::Zero,
         [switch]$ShowTimer,
         [TerminalSlides.Schema.V1.TerminalCapability]$Capability = $script:Capabilities
     )
-    $frame = Get-RenderedSlideFrame -Presentation $Presentation -SlideIndex $SlideIndex -RevealStep $RevealStep -ShowNotes:$ShowNotes -OverviewMode:$OverviewMode -ShowHelp:$ShowHelp -Blank:$Blank -Elapsed $Elapsed -ShowTimer:$ShowTimer -Capability $Capability
+    $frame = Get-RenderedSlideFrame -Presentation $Presentation -SlideIndex $SlideIndex -RevealStep $RevealStep -ShowNotes:$ShowNotes -DisplayMode $DisplayMode -Elapsed $Elapsed -ShowTimer:$ShowTimer -Capability $Capability
     if ($PlainText) {
         $rows = [System.Collections.Generic.List[string]]::new()
         for ($r = 0; $r -lt $frame.Height; $r++) {
-            $text = -join ($frame.Cells[$r] | ForEach-Object { $_.Char })
+            $text = $frame.GetRowText($r)
             $rows.Add($text.TrimEnd())
         }
         return ($rows -join [Environment]::NewLine)
     }
-    return $frame.Render($false)
+    return $frame.Render($Capability.TrueColorSupport, $Capability.Color256Support)
 }

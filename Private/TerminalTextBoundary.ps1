@@ -1,14 +1,5 @@
 $script:TerminalSlidesStrictUtf8 = [Text.UTF8Encoding]::new($false, $true)
 
-function Split-TerminalLogicalRows {
-    [CmdletBinding()]
-    param([AllowNull()][string]$Text)
-
-    $value = $Text ?? ''
-    Assert-TerminalValidUtf16 -Value $value
-    return ,([regex]::Split($value, '\r\n|\r|\n'))
-}
-
 function Assert-TerminalValidUtf16 {
     param([Parameter(Mandatory)][AllowEmptyString()][string]$Value)
 
