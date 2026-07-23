@@ -8,7 +8,7 @@
 Install the published baseline from PowerShell Gallery:
 
 ```powershell
-Install-PSResource -Name TerminalSlides -Repository PSGallery -Scope CurrentUser -TrustRepository
+Install-Module TerminalSlides
 ```
 
 ## Workflow

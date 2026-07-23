@@ -11,7 +11,7 @@ test('the landing page stays focused and links into the guides', async ({ page }
   await expect(page.getByRole('link', { name: 'Get started' })).toHaveAttribute('href', 'guides/get-started/');
   await expect(page.getByRole('link', { name: 'Read the guides' })).toHaveAttribute('href', 'guides/');
   await expect(page.getByLabel('Install command').locator('code')).toHaveText(
-    'Install-PSResource -Name TerminalSlides -Repository PSGallery -Scope CurrentUser -TrustRepository'
+    'Install-Module TerminalSlides'
   );
   await expect(page.locator('#command-grid')).toHaveCount(0);
 });

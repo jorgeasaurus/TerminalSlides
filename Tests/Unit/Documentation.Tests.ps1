@@ -114,12 +114,12 @@ Describe 'Generated command documentation' {
         }
     }
 
-    It 'uses PSGallery-first onboarding in every user-facing entry point' {
+    It 'uses the canonical module install command in every user-facing entry point' {
         $index = Get-Content (Join-Path $script:RepositoryRoot 'docs/index.html') -Raw
         $installGuide = Get-Content (Join-Path $script:RepositoryRoot 'docs/guides/install/index.html') -Raw
         $readme = Get-Content (Join-Path $script:RepositoryRoot 'README.md') -Raw
         $contributing = Get-Content (Join-Path $script:RepositoryRoot 'CONTRIBUTING.md') -Raw
-        $installCommand = 'Install-PSResource -Name TerminalSlides -Repository PSGallery -Scope CurrentUser -TrustRepository'
+        $installCommand = 'Install-Module TerminalSlides'
 
         foreach ($document in @($index, $installGuide, $readme, $contributing)) {
             $document | Should -Match ([regex]::Escape($installCommand))

@@ -34,13 +34,13 @@ Each preview is captured from the live ANSI renderer at the same 128×32 termina
 ## Installation
 
 ```powershell
-Install-PSResource -Name TerminalSlides -Repository PSGallery -Scope CurrentUser -TrustRepository
+Install-Module TerminalSlides
 ```
 
 ## Quick start
 
 ```powershell
-Install-PSResource -Name TerminalSlides -Repository PSGallery -Scope CurrentUser -TrustRepository
+Install-Module TerminalSlides
 $deck = New-TerminalPresentation -Title 'Demo'
 $deck |
     Add-TerminalSlide -Title 'Hello' -Content {
