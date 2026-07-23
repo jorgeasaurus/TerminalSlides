@@ -4,74 +4,66 @@ import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-test('users can navigate the preview and search the complete command reference', async ({ page }) => {
+test('the landing page stays focused and links into the guides', async ({ page }) => {
   await page.goto('/');
 
-  await expect(page.getByRole('heading', { name: /Present without leaving the terminal/i })).toBeVisible();
-  await expect(page.getByText('Showing 29 of 29')).toBeVisible();
-  await expect(page.getByText('Slide 1 of 5')).toBeVisible();
-
-  await page.getByRole('button', { name: 'Next demo slide' }).click();
-  await expect(page.getByText('Slide 2 of 5')).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Built for live delivery' })).toBeVisible();
-
-  const search = page.getByRole('searchbox', { name: 'Search public commands' });
-  await search.fill('Add-SlideImage');
-  await expect(page.getByText('Showing 1 of 29')).toBeVisible();
-  await expect(page.getByText('Add-SlideImage', { exact: true })).toBeVisible();
-
-  await search.press('n');
-  await expect(search).toHaveValue('Add-SlideImagen');
-  await expect(page.getByText('Slide 2 of 5')).toBeVisible();
-});
-
-test('the styled layout adapts between desktop and mobile viewports', async ({ page }, testInfo) => {
-  await page.goto('/');
-
-  const heading = page.getByRole('heading', { level: 1, name: /Present without leaving the terminal/i });
-  const preview = page.getByLabel('Interactive TerminalSlides preview');
-  const installCommand = page.getByLabel('Install command', { exact: true });
-  await expect(heading).toBeVisible();
-  await expect(preview).toBeVisible();
-  await expect(installCommand.locator('code')).toHaveText(
+  await expect(page.getByRole('heading', { name: 'Present without leaving the terminal' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Get started' })).toHaveAttribute('href', 'guides/get-started/');
+  await expect(page.getByRole('link', { name: 'Read the guides' })).toHaveAttribute('href', 'guides/');
+  await expect(page.getByLabel('Install command').locator('code')).toHaveText(
     'Install-PSResource -Name TerminalSlides -Repository PSGallery -Scope CurrentUser -TrustRepository'
   );
+  await expect(page.locator('#command-grid')).toHaveCount(0);
+});
 
-  const styleContract = await preview.evaluate((element) => {
-    const style = getComputedStyle(element);
-    return {
-      backgroundColor: style.backgroundColor,
-      borderRadius: style.borderRadius,
-      loadedRuleCount: [...document.styleSheets].reduce((count, sheet) => count + sheet.cssRules.length, 0),
-      horizontalOverflow: document.documentElement.scrollWidth - window.innerWidth,
-    };
-  });
-  expect(styleContract.loadedRuleCount).toBeGreaterThan(100);
-  expect(styleContract.backgroundColor).toBe('rgb(5, 10, 17)');
-  expect(styleContract.borderRadius).toBe('14px');
-  expect(styleContract.horizontalOverflow).toBeLessThanOrEqual(1);
+test('the guides expose every command and filter the sidebar locally', async ({ page }) => {
+  await page.goto('/guides/');
 
-  const installCodeLayout = await installCommand.locator('code').evaluate((element) => ({
-    clientWidth: element.clientWidth,
-    scrollWidth: element.scrollWidth,
+  await expect(page.getByRole('heading', { name: 'TerminalSlides guides' })).toBeVisible();
+  const commands = page.locator('[data-command-name]');
+  await expect(commands).toHaveCount(29);
+
+  const search = page.locator('[data-command-search]');
+  await search.fill('Add-SlideImage');
+  await expect(page.locator('[data-command-name]:visible')).toHaveCount(1);
+  await expect(page.getByRole('link', { name: 'Add-SlideImage' })).toBeVisible();
+  await page.getByRole('link', { name: 'Add-SlideImage' }).click();
+  await expect(page).toHaveURL(/\/guides\/commands\/add-slideimage\/$/);
+});
+
+test('each command guide presents description, examples, parameters, and syntax', async ({ page }) => {
+  await page.goto('/guides/commands/show-terminalpresentation/');
+
+  await expect(page.getByRole('heading', { level: 1, name: 'Show-TerminalPresentation' })).toBeVisible();
+  for (const heading of ['Description', 'Examples', 'Parameters', 'Syntax']) {
+    await expect(page.getByRole('heading', { level: 2, name: heading })).toBeVisible();
+  }
+  await expect(page.getByText('-ImageRenderer', { exact: true })).toBeVisible();
+  await expect(page.getByText('Blocks, Sixel', { exact: false })).toBeVisible();
+  await expect(page.locator('#syntax')).toContainText('Show-TerminalPresentation -Presentation');
+});
+
+test('the documentation layout is responsive without horizontal page overflow', async ({ page }, testInfo) => {
+  await page.goto('/guides/commands/add-slideimage/');
+
+  const article = page.locator('.docs-article');
+  await expect(article).toBeVisible();
+  const layout = await page.evaluate(() => ({
+    overflow: document.documentElement.scrollWidth - window.innerWidth,
+    rules: [...document.styleSheets].reduce((count, sheet) => count + sheet.cssRules.length, 0),
   }));
-  expect(installCodeLayout.scrollWidth).toBeLessThanOrEqual(installCodeLayout.clientWidth + 1);
+  expect(layout.overflow).toBeLessThanOrEqual(1);
+  expect(layout.rules).toBeGreaterThan(60);
 
-  const headingBox = await heading.boundingBox();
-  const previewBox = await preview.boundingBox();
-  const installBox = await installCommand.boundingBox();
-  expect(headingBox).not.toBeNull();
-  expect(previewBox).not.toBeNull();
-  expect(installBox).not.toBeNull();
-
-  const featuresLink = page.getByRole('link', { name: 'Features', exact: true });
+  const sidebar = page.locator('[data-sidebar]');
   if (testInfo.project.name === 'mobile-chromium') {
-    await expect(featuresLink).toBeHidden();
-    expect(previewBox.y).toBeGreaterThan(installBox.y + installBox.height);
+    await expect(sidebar).not.toBeInViewport();
+    await page.getByRole('button', { name: 'Open guide navigation' }).click();
+    await expect(sidebar).toBeInViewport();
+    await expect(page.locator('[data-command-search]')).toBeVisible();
   } else {
-    await expect(featuresLink).toBeVisible();
-    expect(previewBox.x).toBeGreaterThan(headingBox.x + headingBox.width);
-    expect(previewBox.y).toBeLessThan(headingBox.y + headingBox.height);
+    await expect(sidebar).toBeInViewport();
+    await expect(page.locator('.page-toc')).toBeVisible();
   }
 });
 
@@ -81,56 +73,34 @@ test('the presentation photo is a browser-renderable image', async ({ page, requ
   expect(response.headers()['content-type']).toBe('image/jpeg');
 
   await page.goto('/presentation-team-photo.jpg');
-  const image = page.getByRole('img');
-  await expect(image).toBeVisible();
-  const dimensions = await image.evaluate((element) => ({
+  const dimensions = await page.getByRole('img').evaluate((element) => ({
     width: element.naturalWidth,
     height: element.naturalHeight,
   }));
-  expect(dimensions.width).toBe(1200);
-  expect(dimensions.height).toBe(800);
+  expect(dimensions).toEqual({ width: 1200, height: 800 });
 });
 
-test('the theme gallery presents every built-in theme with a rendered terminal capture', async ({ page }) => {
-  await page.goto('/#themes');
+test('the themes guide presents every built-in terminal capture', async ({ page }) => {
+  await page.goto('/guides/themes/');
 
   const expectedThemes = [
-    'Midnight',
-    'PowerShell',
-    'Solarized Dark',
-    'Solarized Light',
-    'Retro Terminal',
-    'Minimal',
-    'Monochrome',
-    'High Contrast',
+    'Midnight', 'PowerShell', 'Solarized Dark', 'Solarized Light',
+    'Retro Terminal', 'Minimal', 'Monochrome', 'High Contrast',
   ];
   const gallery = page.getByLabel('Built-in terminal theme previews');
   const cards = gallery.locator('.theme-card');
-
-  await expect(gallery).toBeVisible();
   await expect(cards).toHaveCount(expectedThemes.length);
-  await expect(cards.locator('img')).toHaveCount(expectedThemes.length);
-
   for (const theme of expectedThemes) {
     await expect(cards.filter({ hasText: theme })).toHaveCount(1);
   }
-
-  const images = cards.locator('img');
-  for (let index = 0; index < expectedThemes.length; index += 1) {
-    await images.nth(index).scrollIntoViewIfNeeded();
-    await expect(images.nth(index)).toBeVisible();
-  }
-
-  const captures = await images.evaluateAll((elements) =>
-    elements.map((image) => ({
+  const captures = await cards.locator('img').evaluateAll((images) =>
+    images.map((image) => ({
       alt: image.alt,
       complete: image.complete,
       height: image.naturalHeight,
-      src: image.getAttribute('src'),
       width: image.naturalWidth,
     }))
   );
-  expect(new Set(captures.map(({ src }) => src)).size).toBe(expectedThemes.length);
   for (const capture of captures) {
     expect(capture.alt).not.toBe('');
     expect(capture.complete).toBeTruthy();
@@ -139,15 +109,16 @@ test('the theme gallery presents every built-in theme with a rendered terminal c
   }
 });
 
-test('the documentation server rejects malformed and traversing paths safely', async ({ request }) => {
-  const malformed = await request.get('/%E0%A4%A');
-  expect(malformed.status()).toBe(400);
+test('the documentation server resolves directory routes and rejects unsafe paths', async ({ request }) => {
+  for (const route of ['/guides/', '/guides/install/', '/guides/commands/add-slideimage/']) {
+    const response = await request.get(route);
+    expect(response.ok(), `${route} should resolve`).toBeTruthy();
+    expect(response.headers()['content-type']).toContain('text/html');
+  }
 
-  const traversal = await request.get('/%2e%2e%2fpackage.json');
-  expect(traversal.status()).toBe(403);
-
-  const dottedFilename = await request.get('/..missing');
-  expect(dottedFilename.status()).toBe(404);
+  expect((await request.get('/%E0%A4%A')).status()).toBe(400);
+  expect((await request.get('/%2e%2e%2fpackage.json')).status()).toBe(403);
+  expect((await request.get('/..missing')).status()).toBe(404);
 });
 
 test('exported quote attribution preserves logical rows in Chromium', async ({ page }) => {
@@ -183,25 +154,29 @@ test('exported quote attribution preserves logical rows in Chromium', async ({ p
   }
 });
 
-test('all internal links and fragments resolve', async ({ page, request }) => {
-  await page.goto('/');
-  const hrefs = await page.getByRole('link').evaluateAll((links) =>
-    [...new Set(links.map((link) => link.getAttribute('href')).filter(Boolean))]
-  );
+test('all published guide routes and internal links resolve', async ({ request }) => {
+  const commandResponse = await request.get('/commands.json');
+  const commands = await commandResponse.json();
+  const routes = [
+    '/',
+    '/guides/',
+    '/guides/install/',
+    '/guides/get-started/',
+    '/guides/themes/',
+    '/guides/media/',
+    ...commands.map(({ name }) => `/guides/commands/${name.toLowerCase()}/`),
+  ];
 
-  for (const href of hrefs) {
-    const url = new URL(href, page.url());
-    if (url.origin !== new URL(page.url()).origin) continue;
-
-    const response = await request.get(url.pathname);
-    expect(response.ok(), `Internal link ${href} should resolve`).toBeTruthy();
-    if (url.hash) {
-      await page.goto(url.href);
-      const targetExists = await page.evaluate(
-        (id) => Boolean(document.getElementById(id)),
-        decodeURIComponent(url.hash.slice(1))
-      );
-      expect(targetExists, `Fragment ${href} should resolve`).toBeTruthy();
+  for (const route of routes) {
+    const response = await request.get(route);
+    expect(response.ok(), `${route} should resolve`).toBeTruthy();
+    const html = await response.text();
+    const hrefs = [...html.matchAll(/href="([^"]+)"/g)].map((match) => match[1]);
+    for (const href of hrefs) {
+      const target = new URL(href, `http://127.0.0.1:4173${route}`);
+      if (target.origin !== 'http://127.0.0.1:4173' || target.hash) continue;
+      const linked = await request.get(target.pathname);
+      expect(linked.ok(), `${route} links to missing ${href}`).toBeTruthy();
     }
   }
 });

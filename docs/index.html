@@ -17,265 +17,54 @@
   <meta name="twitter:image" content="https://raw.githubusercontent.com/jorgeasaurus/TerminalSlides/main/docs/presentation-team-photo.jpg">
   <meta name="twitter:image:alt" content="Three software engineers collaborating around a laptop during a presentation rehearsal.">
   <title>TerminalSlides — Present without leaving PowerShell</title>
-  <link rel="stylesheet" href="./styles.css">
-  <script src="./script.js" defer></script>
+  <link rel="stylesheet" href="styles.css">
+  <script src="script.js" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
-
   <header class="site-header">
-    <nav class="nav-shell" aria-label="Primary navigation">
-      <a class="brand" href="#top" aria-label="TerminalSlides home">
-        <span class="brand-mark" aria-hidden="true">&gt;_</span>
-        <span>TerminalSlides</span>
-      </a>
-      <div class="nav-links">
-        <a href="#features">Features</a>
-        <a href="#quick-start">Quick start</a>
-        <a href="#commands">Commands</a>
-        <a href="#themes">Themes</a>
-        <a href="#controls">Controls</a>
-        <a href="https://github.com/jorgeasaurus/TerminalSlides">GitHub</a>
-      </div>
-      <button class="theme-toggle" type="button" aria-label="Switch color theme" title="Switch color theme">
-        <span aria-hidden="true">◐</span>
-      </button>
+    <a class="brand" href="./"><span>&gt;_</span> TerminalSlides</a>
+    <nav aria-label="Primary navigation">
+      <a href="guides/">Guides</a>
+      <a href="https://github.com/jorgeasaurus/TerminalSlides">GitHub</a>
+      <button type="button" data-theme-toggle aria-label="Switch color theme">◐</button>
     </nav>
   </header>
-
   <main id="main">
-    <section class="hero" id="top">
-      <div class="hero-glow hero-glow-one" aria-hidden="true"></div>
-      <div class="hero-glow hero-glow-two" aria-hidden="true"></div>
-      <div class="hero-copy">
-        <p class="eyebrow"><span class="pulse"></span> PowerShell-native presentations</p>
-        <h1>Present without<br><span>leaving the terminal.</span></h1>
-        <p class="hero-summary">Build expressive, keyboard-driven slide decks with a fluent PowerShell API. Render text, code, charts, diagrams, and speaker notes anywhere ANSI runs.</p>
-        <div class="hero-actions">
-          <a class="button button-primary" href="#quick-start">Get started <span aria-hidden="true">→</span></a>
-          <a class="button button-secondary" href="https://github.com/jorgeasaurus/TerminalSlides">View on GitHub</a>
-        </div>
-        <div class="install-command" aria-label="Install command">
-          <span class="prompt">PS&gt;</span>
-          <code>Install-PSResource -Name TerminalSlides -Repository PSGallery -Scope CurrentUser -TrustRepository</code>
-          <button class="copy-button" type="button" data-copy="Install-PSResource -Name TerminalSlides -Repository PSGallery -Scope CurrentUser -TrustRepository" aria-label="Copy install command">Copy</button>
-        </div>
-        <p class="compatibility">PowerShell 7.4+ <span></span> Windows, macOS, and Linux <span></span> MIT licensed</p>
+    <section class="hero">
+      <div class="mark" aria-hidden="true">&gt;_</div>
+      <p class="eyebrow">PowerShell-native presentations</p>
+      <h1>Present without leaving the terminal</h1>
+      <p class="summary">Build keyboard-driven slide decks with text, code, charts, diagrams, images, and speaker notes anywhere ANSI runs.</p>
+      <div class="actions">
+        <a class="button primary" href="guides/get-started/">Get started</a>
+        <a class="button" href="guides/">Read the guides</a>
       </div>
-
-      <div class="terminal-demo" aria-label="Interactive TerminalSlides preview">
-        <div class="terminal-titlebar">
-          <div class="window-dots" aria-hidden="true"><i></i><i></i><i></i></div>
-          <span>pwsh — TerminalSlides</span>
-          <span class="terminal-meta">80 × 24</span>
-        </div>
-        <div class="terminal-screen" aria-live="polite">
-          <div class="terminal-command"><span>PS&gt;</span> Start-TerminalSlidesDemo</div>
-          <div class="slide-frame">
-            <p class="slide-kicker" id="slide-kicker"></p>
-            <h2 id="slide-title"></h2>
-            <div class="slide-rule"></div>
-            <div id="slide-content"></div>
-            <div class="slide-footer">
-              <span id="slide-count"></span>
-              <span class="progress-track"><i id="slide-progress"></i></span>
-            </div>
-          </div>
-          <div class="terminal-controls">
-            <button type="button" id="previous-slide" aria-label="Previous demo slide">← Prev</button>
-            <span>Use arrow keys</span>
-            <button type="button" id="next-slide" aria-label="Next demo slide">Next →</button>
-          </div>
-        </div>
+      <div class="install" aria-label="Install command">
+        <span>PS&gt;</span>
+        <code>Install-PSResource -Name TerminalSlides -Repository PSGallery -Scope CurrentUser -TrustRepository</code>
+        <button type="button" data-copy="Install-PSResource -Name TerminalSlides -Repository PSGallery -Scope CurrentUser -TrustRepository">Copy</button>
       </div>
+      <p class="meta">PowerShell 7.4+ · Windows, macOS, and Linux · MIT licensed</p>
     </section>
+    <section class="terminal-preview" aria-label="TerminalSlides example">
+      <div class="terminal-bar"><span>pwsh</span><span>TerminalSlides</span></div>
+      <pre><code><span class="prompt">PS&gt;</span> Start-TerminalSlidesDemo
 
-    <section class="section" id="features">
-      <div class="section-heading">
-        <p class="eyebrow">Built for the command line</p>
-        <h2>Everything a deck needs.<br>Nothing it doesn’t.</h2>
-        <p>Compose slides from familiar PowerShell commands and let TerminalSlides handle layout, ANSI rendering, navigation, and export.</p>
-      </div>
-      <div class="feature-grid">
-        <article class="feature-card feature-card-wide">
-          <span class="feature-number">01</span>
-          <h3>A fluent slide DSL</h3>
-          <p>Chain slides through the pipeline and compose each frame with text, bullets, code, tables, charts, diagrams, quotes, boxes, images, and notes.</p>
-          <div class="mini-code"><span>$deck</span> | Add-TerminalSlide -Title <b>'Architecture'</b> -Content { ... }</div>
-        </article>
-        <article class="feature-card">
-          <span class="feature-number">02</span>
-          <h3>Keyboard first</h3>
-          <p>Reveal ideas progressively, jump between slides, show notes, open an overview, blank the screen, or start a timer without touching a mouse.</p>
-        </article>
-        <article class="feature-card">
-          <span class="feature-number">03</span>
-          <h3>Made for every terminal</h3>
-          <p>Viewport-aware layouts and capability detection provide a rich truecolor experience with graceful plain-text fallback.</p>
-        </article>
-        <article class="feature-card feature-card-wide">
-          <span class="feature-number">04</span>
-          <h3>Present once. Publish anywhere.</h3>
-          <p>Export the same deck to HTML, Markdown, PSD1, JSON, ANSI, or plain text for documentation, CI artifacts, and sharing.</p>
-          <div class="format-row" aria-label="Supported export formats">
-            <span>HTML</span><span>Markdown</span><span>JSON</span><span>PSD1</span><span>ANSI</span><span>Text</span>
-          </div>
-        </article>
-      </div>
-    </section>
-
-    <section class="section quick-start" id="quick-start">
-      <div class="quick-copy">
-        <p class="eyebrow">Quick start</p>
-        <h2>From blank prompt<br>to first slide.</h2>
-        <p>Install TerminalSlides from <a href="https://www.powershellgallery.com/packages/TerminalSlides">PowerShell Gallery</a> and start presenting. The fluent API keeps the structure readable as your story grows.</p>
-        <ol class="steps">
-          <li><span>1</span><div><strong>Install</strong><p>Install the module from PSGallery for your current user.</p></div></li>
-          <li><span>2</span><div><strong>Compose</strong><p>Build slides with ordinary PowerShell.</p></div></li>
-          <li><span>3</span><div><strong>Present</strong><p>Run the deck in any modern terminal.</p></div></li>
-        </ol>
-      </div>
-      <div class="code-window">
-        <div class="code-tabs"><span class="active">demo.ps1</span><button type="button" class="copy-button code-copy" data-copy-target="quick-code">Copy</button></div>
-        <pre id="quick-code"><code><span class="code-command">Install-PSResource</span> -Name TerminalSlides -Repository PSGallery -Scope CurrentUser -TrustRepository
-
-<span class="code-variable">$deck</span> = <span class="code-command">New-TerminalPresentation</span> `
-  -Title <span class="code-string">'Shipping the terminal way'</span> `
-  -Theme <span class="code-type">Midnight</span>
-
-<span class="code-variable">$deck</span> | <span class="code-command">Add-TerminalSlide</span> `
-  -Title <span class="code-string">'Why TerminalSlides?'</span> `
-  -Content {
-    <span class="code-command">Add-SlideBullet</span> <span class="code-string">'No context switching'</span>
-    <span class="code-command">Add-SlideBullet</span> <span class="code-string">'Built for automation'</span> `
-      -RevealStep <span class="code-number">1</span>
-  }
-
-<span class="code-command">Show-TerminalPresentation</span> -Presentation <span class="code-variable">$deck</span></code></pre>
-      </div>
-    </section>
-
-    <section class="section command-reference" id="commands">
-      <div class="command-reference-heading">
-        <div>
-          <p class="eyebrow">Public command reference</p>
-          <h2>One example for<br>every command.</h2>
-          <p>Search the complete TerminalSlides API, filter by workflow, then copy a focused PowerShell example.</p>
-        </div>
-        <div class="command-count" id="command-count" aria-live="polite">Loading 29 commands…</div>
-      </div>
-
-      <div class="command-toolbar" aria-label="Command reference filters">
-        <label class="command-search" for="command-search">
-          <span class="sr-only">Search public commands</span>
-          <span aria-hidden="true">⌕</span>
-          <input id="command-search" type="search" placeholder="Search commands or examples" autocomplete="off">
-          <kbd>/</kbd>
-        </label>
-        <div class="command-filters" id="command-filters" aria-label="Filter commands by category"></div>
-      </div>
-
-      <div class="command-grid" id="command-grid" aria-live="polite" aria-busy="true"></div>
-      <p class="command-empty" id="command-empty" hidden>No commands match that search.</p>
-    </section>
-
-    <section class="section themes-section" id="themes">
-      <div class="section-heading compact">
-        <p class="eyebrow">Eight themes. Eight stories.</p>
-        <h2>See the real terminal output.</h2>
-        <p>Every preview is captured from TerminalSlides at 1600 × 900 with different presentation content. Open any frame to inspect it full size.</p>
-      </div>
-      <div class="theme-gallery" aria-label="Built-in terminal theme previews">
-        <figure class="theme-card">
-          <a class="theme-preview" href="./theme-previews/midnight.png" aria-label="Open Midnight theme preview full size">
-            <img src="./theme-previews/midnight.png" width="1600" height="900" loading="lazy" decoding="async" alt="Midnight theme showing an incident-response service-health chart in the terminal">
-            <span class="theme-open" aria-hidden="true">Full size</span>
-          </a>
-          <figcaption><span class="theme-index">01</span><span><strong>Midnight</strong><small>Incident response · chart</small></span></figcaption>
-        </figure>
-        <figure class="theme-card">
-          <a class="theme-preview" href="./theme-previews/power-shell.png" aria-label="Open PowerShell theme preview full size">
-            <img src="./theme-previews/power-shell.png" width="1600" height="900" loading="lazy" decoding="async" alt="PowerShell theme showing an automated release pipeline in the terminal">
-            <span class="theme-open" aria-hidden="true">Full size</span>
-          </a>
-          <figcaption><span class="theme-index">02</span><span><strong>PowerShell</strong><small>Release pipeline · code</small></span></figcaption>
-        </figure>
-        <figure class="theme-card">
-          <a class="theme-preview" href="./theme-previews/solarized-dark.png" aria-label="Open Solarized Dark theme preview full size">
-            <img src="./theme-previews/solarized-dark.png" width="1600" height="900" loading="lazy" decoding="async" alt="Solarized Dark theme showing a terminal-native presentation with bullets and code">
-            <span class="theme-open" aria-hidden="true">Full size</span>
-          </a>
-          <figcaption><span class="theme-index">03</span><span><strong>Solarized Dark</strong><small>Terminal native · bullets + code</small></span></figcaption>
-        </figure>
-        <figure class="theme-card">
-          <a class="theme-preview" href="./theme-previews/solarized-light.png" aria-label="Open Solarized Light theme preview full size">
-            <img src="./theme-previews/solarized-light.png" width="1600" height="900" loading="lazy" decoding="async" alt="Solarized Light theme showing a release-readiness table in the terminal">
-            <span class="theme-open" aria-hidden="true">Full size</span>
-          </a>
-          <figcaption><span class="theme-index">04</span><span><strong>Solarized Light</strong><small>Release readiness · table</small></span></figcaption>
-        </figure>
-        <figure class="theme-card">
-          <a class="theme-preview" href="./theme-previews/retro-terminal.png" aria-label="Open Retro Terminal theme preview full size">
-            <img src="./theme-previews/retro-terminal.png" width="1600" height="900" loading="lazy" decoding="async" alt="Retro Terminal theme showing a green system boot sequence in the terminal">
-            <span class="theme-open" aria-hidden="true">Full size</span>
-          </a>
-          <figcaption><span class="theme-index">05</span><span><strong>Retro Terminal</strong><small>System boot · status output</small></span></figcaption>
-        </figure>
-        <figure class="theme-card">
-          <a class="theme-preview" href="./theme-previews/minimal.png" aria-label="Open Minimal theme preview full size">
-            <img src="./theme-previews/minimal.png" width="1600" height="900" loading="lazy" decoding="async" alt="Minimal theme showing a focused editorial quote in the terminal">
-            <span class="theme-open" aria-hidden="true">Full size</span>
-          </a>
-          <figcaption><span class="theme-index">06</span><span><strong>Minimal</strong><small>Editorial focus · quote</small></span></figcaption>
-        </figure>
-        <figure class="theme-card">
-          <a class="theme-preview" href="./theme-previews/monochrome.png" aria-label="Open Monochrome theme preview full size">
-            <img src="./theme-previews/monochrome.png" width="1600" height="900" loading="lazy" decoding="async" alt="Monochrome theme showing a plain-text architecture diagram in the terminal">
-            <span class="theme-open" aria-hidden="true">Full size</span>
-          </a>
-          <figcaption><span class="theme-index">07</span><span><strong>Monochrome</strong><small>System design · diagram</small></span></figcaption>
-        </figure>
-        <figure class="theme-card">
-          <a class="theme-preview" href="./theme-previews/high-contrast.png" aria-label="Open High Contrast theme preview full size">
-            <img src="./theme-previews/high-contrast.png" width="1600" height="900" loading="lazy" decoding="async" alt="High Contrast theme showing an accessibility checklist in the terminal">
-            <span class="theme-open" aria-hidden="true">Full size</span>
-          </a>
-          <figcaption><span class="theme-index">08</span><span><strong>High Contrast</strong><small>Accessibility · checklist</small></span></figcaption>
-        </figure>
-      </div>
-    </section>
-
-    <section class="section controls-section" id="controls">
-      <div class="controls-copy">
-        <p class="eyebrow">Presenter controls</p>
-        <h2>Stay in flow.</h2>
-        <p>Every action is one keystroke away. The controls are designed to disappear until you need them.</p>
-      </div>
-      <div class="key-grid">
-        <div><span><kbd>→</kbd><kbd>Space</kbd><kbd>N</kbd></span><strong>Next reveal or slide</strong></div>
-        <div><span><kbd>←</kbd><kbd>Backspace</kbd><kbd>P</kbd></span><strong>Previous reveal or slide</strong></div>
-        <div><span><kbd>Home</kbd><kbd>End</kbd></span><strong>First or last slide</strong></div>
-        <div><span><kbd>S</kbd><kbd>O</kbd><kbd>T</kbd></span><strong>Notes, overview, timer</strong></div>
-        <div><span><kbd>B</kbd></span><strong>Blank the screen</strong></div>
-        <div><span><kbd>H</kbd><kbd>?</kbd><kbd>Q</kbd></span><strong>Help or quit</strong></div>
-      </div>
-    </section>
-
-    <section class="section final-cta">
-      <p class="eyebrow">Your next deck starts here</p>
-      <h2>Trade the slide editor<br>for a prompt.</h2>
-      <p>Install TerminalSlides from PowerShell Gallery and turn the terminal you already use into a focused presentation environment.</p>
-      <div class="hero-actions centered">
-        <a class="button button-primary" href="#quick-start">Build your first deck <span aria-hidden="true">→</span></a>
-        <a class="button button-secondary" href="https://github.com/jorgeasaurus/TerminalSlides">Star on GitHub</a>
-      </div>
+┌────────────────────────────────────────────────────────┐
+│ <strong>TerminalSlides</strong>                                         │
+│                                                        │
+│ Present polished PowerShell decks without context      │
+│ switching.                                             │
+│                                                        │
+│ <span class="accent">text · code · charts · diagrams · images</span>             │
+└────────────────────────────────────────────────────────┘</code></pre>
     </section>
   </main>
-
   <footer>
-    <a class="brand" href="#top"><span class="brand-mark" aria-hidden="true">&gt;_</span><span>TerminalSlides</span></a>
-    <p>Built for presenters who live in PowerShell.</p>
-    <div><a href="https://github.com/jorgeasaurus/TerminalSlides">GitHub</a><a href="https://github.com/jorgeasaurus/TerminalSlides/blob/main/LICENSE">MIT License</a></div>
+    <span>TerminalSlides</span>
+    <a href="https://www.powershellgallery.com/packages/TerminalSlides">PowerShell Gallery</a>
+    <a href="https://github.com/jorgeasaurus/TerminalSlides/blob/main/LICENSE">MIT License</a>
   </footer>
 </body>
 </html>

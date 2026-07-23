@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Add a centered quotation with optional attribution.">
+  <title>Add-SlideQuote | TerminalSlides</title>
+  <link rel="stylesheet" href="../../../guides.css">
+  <script src="../../../guides.js" defer></script>
+</head>
+<body data-root="../../../" data-current-command="Add-SlideQuote">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header class="docs-header">
+    <a class="docs-brand" href="../../../"><span>&gt;_</span> TerminalSlides</a>
+    <div class="docs-header-actions">
+      <button type="button" class="header-search" data-search-focus>Search <kbd>/</kbd></button>
+      <a href="https://github.com/jorgeasaurus/TerminalSlides">GitHub</a>
+      <button type="button" class="icon-button" data-theme-toggle aria-label="Switch color theme">◐</button>
+      <button type="button" class="icon-button menu-button" data-sidebar-toggle aria-label="Open guide navigation">Menu</button>
+    </div>
+  </header>
+  <div class="docs-shell">
+    <aside class="docs-sidebar" data-sidebar>
+      <label class="sidebar-search"><span>Search commands</span><input type="search" data-command-search placeholder="Filter commands"></label>
+      <nav data-command-navigation aria-label="Guide navigation"></nav>
+    </aside>
+    <main class="docs-article" id="content">
+      <p class="breadcrumb"><a href="../../">Guides</a> / Command reference</p>
+      <h1>Add-SlideQuote</h1>
+      <section id="description">
+        <h2>Description</h2>
+        <p>Add a centered quotation with optional attribution.</p>
+      </section>
+      <section id="examples">
+        <h2>Examples</h2>
+        <h3>Example 1</h3>
+        <pre><code>$deck | Add-TerminalSlide -Title &#39;Principle&#39; -Layout Quote -Content {
+  Add-SlideQuote `
+    -Text &#39;Make the change easy, then make the easy change.&#39; `
+    -Attribution &#39;Kent Beck&#39; `
+    -Region Quote
+} | Out-Null</code></pre>
+      </section>
+      <section id="parameters">
+        <h2>Parameters</h2>
+        <section class="parameter-card" id="parameter-attribution">
+          <h3>-Attribution</h3>
+          <p>Specifies the Attribution value.</p>
+          
+          <dl>
+            <div><dt>Type</dt><dd><code>System.String</code></dd></div>
+            <div><dt>Required</dt><dd>false</dd></div>
+            <div><dt>Position</dt><dd>1</dd></div>
+            <div><dt>Pipeline input</dt><dd>false</dd></div>
+          </dl>
+        </section>
+        <section class="parameter-card" id="parameter-region">
+          <h3>-Region</h3>
+          <p>Specifies the Region value.</p>
+          
+          <dl>
+            <div><dt>Type</dt><dd><code>System.String</code></dd></div>
+            <div><dt>Required</dt><dd>false</dd></div>
+            <div><dt>Position</dt><dd>2</dd></div>
+            <div><dt>Pipeline input</dt><dd>false</dd></div>
+          </dl>
+        </section>
+        <section class="parameter-card" id="parameter-revealstep">
+          <h3>-RevealStep</h3>
+          <p>Specifies the RevealStep value.</p>
+          
+          <dl>
+            <div><dt>Type</dt><dd><code>System.Int32</code></dd></div>
+            <div><dt>Required</dt><dd>false</dd></div>
+            <div><dt>Position</dt><dd>3</dd></div>
+            <div><dt>Pipeline input</dt><dd>false</dd></div>
+          </dl>
+        </section>
+        <section class="parameter-card" id="parameter-text">
+          <h3>-Text</h3>
+          <p>Specifies the Text value.</p>
+          
+          <dl>
+            <div><dt>Type</dt><dd><code>System.String</code></dd></div>
+            <div><dt>Required</dt><dd>true</dd></div>
+            <div><dt>Position</dt><dd>0</dd></div>
+            <div><dt>Pipeline input</dt><dd>false</dd></div>
+          </dl>
+        </section>
+      </section>
+      <section id="syntax">
+        <h2>Syntax</h2>
+        <pre><code>Add-SlideQuote -Text &lt;String&gt; [-Attribution &lt;String&gt;] [-Region &lt;String&gt;] [-RevealStep &lt;Int32&gt;]</code></pre>
+      </section>
+      <nav class="pagination" aria-label="Command pagination"><a href="../add-slidenotes/"><span>Previous</span>Add-SlideNotes</a><a class="next" href="../add-slidesubtitle/"><span>Next</span>Add-SlideSubtitle</a></nav>
+    </main>
+    <aside class="page-toc">
+      <strong>On this page</strong>
+      <a href="#description">Description</a>
+      <a href="#examples">Examples</a>
+      <a href="#parameters">Parameters</a>
+      <a href="#syntax">Syntax</a>
+    </aside>
+  </div>
+</body>
+</html>

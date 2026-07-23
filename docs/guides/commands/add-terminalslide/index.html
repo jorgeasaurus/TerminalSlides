@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Append a slide through the pipeline and compose its elements with the slide DSL.">
+  <title>Add-TerminalSlide | TerminalSlides</title>
+  <link rel="stylesheet" href="../../../guides.css">
+  <script src="../../../guides.js" defer></script>
+</head>
+<body data-root="../../../" data-current-command="Add-TerminalSlide">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header class="docs-header">
+    <a class="docs-brand" href="../../../"><span>&gt;_</span> TerminalSlides</a>
+    <div class="docs-header-actions">
+      <button type="button" class="header-search" data-search-focus>Search <kbd>/</kbd></button>
+      <a href="https://github.com/jorgeasaurus/TerminalSlides">GitHub</a>
+      <button type="button" class="icon-button" data-theme-toggle aria-label="Switch color theme">◐</button>
+      <button type="button" class="icon-button menu-button" data-sidebar-toggle aria-label="Open guide navigation">Menu</button>
+    </div>
+  </header>
+  <div class="docs-shell">
+    <aside class="docs-sidebar" data-sidebar>
+      <label class="sidebar-search"><span>Search commands</span><input type="search" data-command-search placeholder="Filter commands"></label>
+      <nav data-command-navigation aria-label="Guide navigation"></nav>
+    </aside>
+    <main class="docs-article" id="content">
+      <p class="breadcrumb"><a href="../../">Guides</a> / Command reference</p>
+      <h1>Add-TerminalSlide</h1>
+      <section id="description">
+        <h2>Description</h2>
+        <p>Append a slide through the pipeline and compose its elements with the slide DSL.</p>
+      </section>
+      <section id="examples">
+        <h2>Examples</h2>
+        <h3>Example 1</h3>
+        <pre><code>$deck | Add-TerminalSlide `
+  -Title &#39;Agenda&#39; `
+  -Layout TitleAndContent `
+  -Content {
+    Add-SlideBullet &#39;Architecture&#39;
+    Add-SlideBullet &#39;Delivery plan&#39;
+  } | Out-Null</code></pre>
+      </section>
+      <section id="parameters">
+        <h2>Parameters</h2>
+        <section class="parameter-card" id="parameter-background">
+          <h3>-Background</h3>
+          <p>Specifies the Background value.</p>
+          
+          <dl>
+            <div><dt>Type</dt><dd><code>System.String</code></dd></div>
+            <div><dt>Required</dt><dd>false</dd></div>
+            <div><dt>Position</dt><dd>4</dd></div>
+            <div><dt>Pipeline input</dt><dd>false</dd></div>
+          </dl>
+        </section>
+        <section class="parameter-card" id="parameter-content">
+          <h3>-Content</h3>
+          <p>Specifies the Content value.</p>
+          
+          <dl>
+            <div><dt>Type</dt><dd><code>System.Management.Automation.ScriptBlock</code></dd></div>
+            <div><dt>Required</dt><dd>false</dd></div>
+            <div><dt>Position</dt><dd>2</dd></div>
+            <div><dt>Pipeline input</dt><dd>false</dd></div>
+          </dl>
+        </section>
+        <section class="parameter-card" id="parameter-hidden">
+          <h3>-Hidden</h3>
+          <p>Specifies the Hidden value.</p>
+          
+          <dl>
+            <div><dt>Type</dt><dd><code>System.Management.Automation.SwitchParameter</code></dd></div>
+            <div><dt>Required</dt><dd>false</dd></div>
+            <div><dt>Position</dt><dd>Named</dd></div>
+            <div><dt>Pipeline input</dt><dd>false</dd></div>
+          </dl>
+        </section>
+        <section class="parameter-card" id="parameter-layout">
+          <h3>-Layout</h3>
+          <p>Specifies the Layout value.</p>
+          
+          <dl>
+            <div><dt>Type</dt><dd><code>System.String</code></dd></div>
+            <div><dt>Required</dt><dd>false</dd></div>
+            <div><dt>Position</dt><dd>3</dd></div>
+            <div><dt>Pipeline input</dt><dd>false</dd></div>
+          </dl>
+        </section>
+        <section class="parameter-card" id="parameter-metadata">
+          <h3>-Metadata</h3>
+          <p>Specifies the Metadata value.</p>
+          
+          <dl>
+            <div><dt>Type</dt><dd><code>System.Collections.Hashtable</code></dd></div>
+            <div><dt>Required</dt><dd>false</dd></div>
+            <div><dt>Position</dt><dd>5</dd></div>
+            <div><dt>Pipeline input</dt><dd>false</dd></div>
+          </dl>
+        </section>
+        <section class="parameter-card" id="parameter-presentation">
+          <h3>-Presentation</h3>
+          <p>Specifies the Presentation value.</p>
+          
+          <dl>
+            <div><dt>Type</dt><dd><code>TerminalSlides.Schema.V1.TerminalPresentation</code></dd></div>
+            <div><dt>Required</dt><dd>true</dd></div>
+            <div><dt>Position</dt><dd>0</dd></div>
+            <div><dt>Pipeline input</dt><dd>true (ByValue)</dd></div>
+          </dl>
+        </section>
+        <section class="parameter-card" id="parameter-safemode">
+          <h3>-SafeMode</h3>
+          <p>Specifies the SafeMode value.</p>
+          
+          <dl>
+            <div><dt>Type</dt><dd><code>System.Management.Automation.SwitchParameter</code></dd></div>
+            <div><dt>Required</dt><dd>false</dd></div>
+            <div><dt>Position</dt><dd>Named</dd></div>
+            <div><dt>Pipeline input</dt><dd>false</dd></div>
+          </dl>
+        </section>
+        <section class="parameter-card" id="parameter-title">
+          <h3>-Title</h3>
+          <p>Specifies the Title value.</p>
+          
+          <dl>
+            <div><dt>Type</dt><dd><code>System.String</code></dd></div>
+            <div><dt>Required</dt><dd>true</dd></div>
+            <div><dt>Position</dt><dd>1</dd></div>
+            <div><dt>Pipeline input</dt><dd>false</dd></div>
+          </dl>
+        </section>
+      </section>
+      <section id="syntax">
+        <h2>Syntax</h2>
+        <pre><code>Add-TerminalSlide -Presentation &lt;TerminalPresentation&gt; -Title &lt;String&gt; [-Content &lt;ScriptBlock&gt;] [-Layout &lt;String&gt;] [-Background &lt;String&gt;] [-Metadata &lt;Hashtable&gt;] [-Hidden] [-SafeMode]</code></pre>
+      </section>
+      <nav class="pagination" aria-label="Command pagination"><a href="../add-slidetitle/"><span>Previous</span>Add-SlideTitle</a><a class="next" href="../copy-terminalslide/"><span>Next</span>Copy-TerminalSlide</a></nav>
+    </main>
+    <aside class="page-toc">
+      <strong>On this page</strong>
+      <a href="#description">Description</a>
+      <a href="#examples">Examples</a>
+      <a href="#parameters">Parameters</a>
+      <a href="#syntax">Syntax</a>
+    </aside>
+  </div>
+</body>
+</html>

@@ -19,6 +19,7 @@ $privateFiles = @(
     'Private/PresentationWireValidation.ps1'
     'Private/PresentationWireParser.ps1'
     'Private/PresentationMedia.ps1'
+    'Private/PresentationNativeImages.ps1'
     'Private/PresentationExportCodecs.ps1'
     'Private/PresentationMarkdownEnvelope.ps1'
     'Private/Format-WordWrap.ps1'

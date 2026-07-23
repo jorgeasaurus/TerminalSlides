@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Install TerminalSlides from PowerShell Gallery.">
+  <title>Install | TerminalSlides</title>
+  <link rel="stylesheet" href="../../guides.css">
+  <script src="../../guides.js" defer></script>
+</head>
+<body data-root="../../">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header class="docs-header">
+    <a class="docs-brand" href="../../"><span>&gt;_</span> TerminalSlides</a>
+    <div class="docs-header-actions">
+      <button type="button" class="header-search" data-search-focus>Search <kbd>/</kbd></button>
+      <a href="https://github.com/jorgeasaurus/TerminalSlides">GitHub</a>
+      <button type="button" class="icon-button" data-theme-toggle aria-label="Switch color theme">◐</button>
+      <button type="button" class="icon-button menu-button" data-sidebar-toggle aria-label="Open guide navigation">Menu</button>
+    </div>
+  </header>
+  <div class="docs-shell">
+    <aside class="docs-sidebar" data-sidebar>
+      <label class="sidebar-search"><span>Search commands</span><input type="search" data-command-search placeholder="Filter commands"></label>
+      <nav data-command-navigation aria-label="Guide navigation"></nav>
+    </aside>
+    <main class="docs-article" id="content">
+      <p class="breadcrumb"><a href="../">Guides</a> / Install</p>
+      <h1>Install</h1>
+      <p class="lead">TerminalSlides requires PowerShell 7.4 or later. Install the published module from PowerShell Gallery.</p>
+      <section id="install">
+        <h2>Install from PSGallery</h2>
+        <pre><code>Install-PSResource -Name TerminalSlides -Repository PSGallery -Scope CurrentUser -TrustRepository</code></pre>
+        <p>PowerShell loads TerminalSlides automatically when you call an exported command. You can import it explicitly when startup timing matters.</p>
+        <pre><code>Import-Module TerminalSlides</code></pre>
+      </section>
+      <section id="verify">
+        <h2>Verify</h2>
+        <pre><code>Get-Module TerminalSlides -ListAvailable
+Get-Command -Module TerminalSlides</code></pre>
+      </section>
+      <section id="update">
+        <h2>Update</h2>
+        <pre><code>Update-PSResource -Name TerminalSlides</code></pre>
+      </section>
+    </main>
+    <aside class="page-toc">
+      <strong>On this page</strong>
+      <a href="#install">Install from PSGallery</a>
+      <a href="#verify">Verify</a>
+      <a href="#update">Update</a>
+    </aside>
+  </div>
+</body>
+</html>

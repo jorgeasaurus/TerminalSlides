@@ -16,6 +16,7 @@
         'Private/PresentationExportCodecs.ps1'
         'Private/PresentationMarkdownEnvelope.ps1'
         'Private/PresentationMedia.ps1'
+        'Private/PresentationNativeImages.ps1'
         'Private/PresentationSemantics.ps1'
         'Private/PresentationSession.ps1'
         'Private/PresentationWireCodec.ps1'

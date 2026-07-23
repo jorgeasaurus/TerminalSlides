@@ -212,6 +212,171 @@ $($commands -join "`n")
 "@
 }
 
+function ConvertTo-HtmlText {
+    param([AllowEmptyString()][string]$Text)
+
+    return [System.Net.WebUtility]::HtmlEncode($Text)
+}
+
+function Get-CommandSyntaxText {
+    param([Parameter(Mandatory)]$Command)
+
+    $lines = foreach ($parameterSet in $Command.ParameterSets) {
+        $parts = [System.Collections.Generic.List[string]]::new()
+        $parts.Add($Command.Name)
+        foreach ($parameter in $parameterSet.Parameters) {
+            if ($parameter.Name -in $commonParameters) { continue }
+            $value = if ($parameter.ParameterType -eq [System.Management.Automation.SwitchParameter]) {
+                "-$($parameter.Name)"
+            }
+            else {
+                "-$($parameter.Name) <$($parameter.ParameterType.Name)>"
+            }
+            if (-not $parameter.IsMandatory) { $value = "[$value]" }
+            $parts.Add($value)
+        }
+        $parts -join ' '
+    }
+    return $lines -join "`n`n"
+}
+
+function Get-CommandParameterDocumentation {
+    param([Parameter(Mandatory)]$Command)
+
+    $parameterSets = @($Command.ParameterSets)
+    foreach ($name in $Command.Parameters.Keys | Sort-Object) {
+        if ($name -in $commonParameters) { continue }
+        $instances = @($parameterSets.Parameters | Where-Object Name -eq $name)
+        if ($instances.Count -eq 0) { continue }
+        $positions = @($instances.Position | Where-Object { $_ -ge 0 } | Sort-Object -Unique)
+        $parameter = $Command.Parameters[$name]
+        $validateSet = $parameter.Attributes |
+            Where-Object { $_ -is [System.Management.Automation.ValidateSetAttribute] } |
+            Select-Object -First 1
+        [pscustomobject]@{
+            Name = $name
+            Type = $parameter.ParameterType.FullName
+            Required = $instances.Count -eq $parameterSets.Count -and
+                @($instances | Where-Object { -not $_.IsMandatory }).Count -eq 0
+            Position = if ($positions.Count -eq 1) { [string]$positions[0] } else { 'Named' }
+            Pipeline = Get-PipelineInputText -Parameter ([pscustomobject]@{
+                ValueFromPipeline = @($instances | Where-Object ValueFromPipeline).Count -gt 0
+                ValueFromPipelineByPropertyName =
+                    @($instances | Where-Object ValueFromPipelineByPropertyName).Count -gt 0
+            })
+            AcceptedValues = if ($validateSet) { $validateSet.ValidValues -join ', ' } else { $null }
+        }
+    }
+}
+
+function New-CommandGuideHtml {
+    param(
+        [Parameter(Mandatory)]$Entry,
+        [Parameter(Mandatory)]$Command,
+        [AllowNull()]$PreviousEntry,
+        [AllowNull()]$NextEntry
+    )
+
+    $name = ConvertTo-HtmlText $Entry.Name
+    $description = ConvertTo-HtmlText $Entry.Description
+    $example = ConvertTo-HtmlText $Entry.Example
+    $syntax = ConvertTo-HtmlText (Get-CommandSyntaxText -Command $Command)
+    $parameters = @(Get-CommandParameterDocumentation -Command $Command)
+    $parameterHtml = if ($parameters.Count -eq 0) {
+        '<p>This command has no command-specific parameters.</p>'
+    }
+    else {
+        ($parameters | ForEach-Object {
+            $acceptedValues = if ($_.AcceptedValues) {
+                "<p><strong>Accepted values:</strong> $(ConvertTo-HtmlText $_.AcceptedValues)</p>"
+            }
+            else { '' }
+            @"
+        <section class="parameter-card" id="parameter-$($_.Name.ToLowerInvariant())">
+          <h3>-$([System.Net.WebUtility]::HtmlEncode($_.Name))</h3>
+          <p>Specifies the $([System.Net.WebUtility]::HtmlEncode($_.Name)) value.</p>
+          $acceptedValues
+          <dl>
+            <div><dt>Type</dt><dd><code>$(ConvertTo-HtmlText $_.Type)</code></dd></div>
+            <div><dt>Required</dt><dd>$($_.Required.ToString().ToLowerInvariant())</dd></div>
+            <div><dt>Position</dt><dd>$(ConvertTo-HtmlText $_.Position)</dd></div>
+            <div><dt>Pipeline input</dt><dd>$(ConvertTo-HtmlText $_.Pipeline)</dd></div>
+          </dl>
+        </section>
+"@
+        }) -join "`n"
+    }
+    $previousLink = if ($PreviousEntry) {
+        "<a href=`"../$($PreviousEntry.Name.ToLowerInvariant())/`"><span>Previous</span>$([System.Net.WebUtility]::HtmlEncode($PreviousEntry.Name))</a>"
+    }
+    else { '<span></span>' }
+    $nextLink = if ($NextEntry) {
+        "<a class=`"next`" href=`"../$($NextEntry.Name.ToLowerInvariant())/`"><span>Next</span>$([System.Net.WebUtility]::HtmlEncode($NextEntry.Name))</a>"
+    }
+    else { '<span></span>' }
+
+    return @"
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="$description">
+  <title>$name | TerminalSlides</title>
+  <link rel="stylesheet" href="../../../guides.css">
+  <script src="../../../guides.js" defer></script>
+</head>
+<body data-root="../../../" data-current-command="$name">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header class="docs-header">
+    <a class="docs-brand" href="../../../"><span>&gt;_</span> TerminalSlides</a>
+    <div class="docs-header-actions">
+      <button type="button" class="header-search" data-search-focus>Search <kbd>/</kbd></button>
+      <a href="https://github.com/jorgeasaurus/TerminalSlides">GitHub</a>
+      <button type="button" class="icon-button" data-theme-toggle aria-label="Switch color theme">◐</button>
+      <button type="button" class="icon-button menu-button" data-sidebar-toggle aria-label="Open guide navigation">Menu</button>
+    </div>
+  </header>
+  <div class="docs-shell">
+    <aside class="docs-sidebar" data-sidebar>
+      <label class="sidebar-search"><span>Search commands</span><input type="search" data-command-search placeholder="Filter commands"></label>
+      <nav data-command-navigation aria-label="Guide navigation"></nav>
+    </aside>
+    <main class="docs-article" id="content">
+      <p class="breadcrumb"><a href="../../">Guides</a> / Command reference</p>
+      <h1>$name</h1>
+      <section id="description">
+        <h2>Description</h2>
+        <p>$description</p>
+      </section>
+      <section id="examples">
+        <h2>Examples</h2>
+        <h3>Example 1</h3>
+        <pre><code>$example</code></pre>
+      </section>
+      <section id="parameters">
+        <h2>Parameters</h2>
+$parameterHtml
+      </section>
+      <section id="syntax">
+        <h2>Syntax</h2>
+        <pre><code>$syntax</code></pre>
+      </section>
+      <nav class="pagination" aria-label="Command pagination">$previousLink$nextLink</nav>
+    </main>
+    <aside class="page-toc">
+      <strong>On this page</strong>
+      <a href="#description">Description</a>
+      <a href="#examples">Examples</a>
+      <a href="#parameters">Parameters</a>
+      <a href="#syntax">Syntax</a>
+    </aside>
+  </div>
+</body>
+</html>
+"@
+}
+
 function Set-GeneratedFile {
     param(
         [Parameter(Mandatory)][string]$Path,
@@ -232,6 +397,10 @@ function Set-GeneratedFile {
         return
     }
 
+    $parent = Split-Path -Parent $Path
+    if (-not (Test-Path -LiteralPath $parent -PathType Container)) {
+        [void](New-Item -ItemType Directory -Path $parent -Force)
+    }
     Set-Content -LiteralPath $Path -Value $normalizedContent -Encoding utf8NoBOM -NoNewline
 }
 
@@ -239,7 +408,20 @@ Assert-CommandCatalog
 $websiteData = $catalog | ConvertTo-Json -Depth 10
 Set-GeneratedFile -Path $websiteDataPath -Content $websiteData
 Set-GeneratedFile -Path $helpPath -Content (New-NativeHelp)
+$sortedCatalog = @($catalog | Sort-Object Name)
+for ($index = 0; $index -lt $sortedCatalog.Count; $index++) {
+    $entry = $sortedCatalog[$index]
+    $command = Get-Command -Module $module.Name -Name $entry.Name -CommandType Function
+    $previousEntry = if ($index -gt 0) { $sortedCatalog[$index - 1] } else { $null }
+    $nextEntry = if ($index -lt $sortedCatalog.Count - 1) { $sortedCatalog[$index + 1] } else { $null }
+    $guidePath = Join-Path $repositoryRoot 'docs' 'guides' 'commands' `
+        $entry.Name.ToLowerInvariant() 'index.html'
+    Set-GeneratedFile -Path $guidePath -Content (
+        New-CommandGuideHtml -Entry $entry -Command $command `
+            -PreviousEntry $previousEntry -NextEntry $nextEntry
+    )
+}
 
 if (-not $Check) {
-    Write-Output 'Generated website command data and native PowerShell help.'
+    Write-Output 'Generated website command data, command guides, and native PowerShell help.'
 }

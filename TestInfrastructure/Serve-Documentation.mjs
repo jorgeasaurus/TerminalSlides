@@ -21,7 +21,7 @@ createServer((request, response) => {
   }
 
   const requestedPath = pathname === '/' ? '/index.html' : pathname;
-  const filePath = normalize(join(root, requestedPath));
+  let filePath = normalize(join(root, requestedPath));
   const relativePath = relative(root, filePath);
   if (relativePath === '..' || relativePath.startsWith(`..${sep}`) || isAbsolute(relativePath)) {
     response.writeHead(403).end('Forbidden');
@@ -29,7 +29,11 @@ createServer((request, response) => {
   }
 
   try {
-    const file = statSync(filePath);
+    let file = statSync(filePath);
+    if (file.isDirectory()) {
+      filePath = join(filePath, 'index.html');
+      file = statSync(filePath);
+    }
     if (!file.isFile()) throw new Error('Not a file');
     response.writeHead(200, {
       'Content-Length': file.size,
