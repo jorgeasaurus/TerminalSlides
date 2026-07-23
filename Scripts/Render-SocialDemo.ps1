@@ -3,6 +3,7 @@
 [CmdletBinding()]
 param(
     [string]$OutputPath,
+    [string]$PreviewPath,
     [switch]$KeepVhsOutput
 )
 
@@ -14,8 +15,12 @@ if ([string]::IsNullOrWhiteSpace($OutputPath)) {
     $OutputPath = Join-Path $repositoryRoot 'Assets/terminalslides-social-demo.mp4'
 }
 $OutputPath = [IO.Path]::GetFullPath($OutputPath, $repositoryRoot)
-$outputDirectory = Split-Path -Parent $OutputPath
-[void][IO.Directory]::CreateDirectory($outputDirectory)
+if ([string]::IsNullOrWhiteSpace($PreviewPath)) {
+    $PreviewPath = [IO.Path]::ChangeExtension($OutputPath, '.gif')
+}
+$PreviewPath = [IO.Path]::GetFullPath($PreviewPath, $repositoryRoot)
+[void][IO.Directory]::CreateDirectory((Split-Path -Parent $OutputPath))
+[void][IO.Directory]::CreateDirectory((Split-Path -Parent $PreviewPath))
 
 $vhs = Get-Command vhs -CommandType Application -ErrorAction Stop
 $ffmpeg = Get-Command ffmpeg -CommandType Application -ErrorAction Stop
@@ -41,6 +46,16 @@ try {
         $OutputPath
     if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $OutputPath)) {
         throw 'ffmpeg failed to normalize the social demo.'
+    }
+
+    & $ffmpeg.Source `
+        -hide_banner -loglevel error -y `
+        -i $OutputPath `
+        -filter_complex 'fps=10,scale=960:-1:flags=lanczos,split[frames][palette_source];[palette_source]palettegen=max_colors=128[palette];[frames][palette]paletteuse=dither=bayer:bayer_scale=3' `
+        -loop 0 `
+        $PreviewPath
+    if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $PreviewPath)) {
+        throw 'ffmpeg failed to create the README preview.'
     }
 
     $probeJson = & $ffprobe.Source `
@@ -71,14 +86,34 @@ try {
         throw "Unexpected video properties: $($probe | ConvertTo-Json -Compress -Depth 4)"
     }
 
+    $previewProbeJson = & $ffprobe.Source `
+        -v error `
+        -select_streams v:0 `
+        -show_entries 'stream=codec_name,width,height' `
+        -of json `
+        $PreviewPath
+    if ($LASTEXITCODE -ne 0) {
+        throw 'ffprobe failed to inspect the README preview.'
+    }
+    $previewStream = ($previewProbeJson | ConvertFrom-Json).streams[0]
+    if (
+        $previewStream.codec_name -ne 'gif' -or
+        $previewStream.width -ne 960 -or
+        $previewStream.height -ne 540
+    ) {
+        throw "Unexpected preview properties: $previewProbeJson"
+    }
+
     [pscustomobject]@{
         Path = $OutputPath
+        PreviewPath = $PreviewPath
         DurationSeconds = [Math]::Round($duration, 2)
         Resolution = "$($stream.width)x$($stream.height)"
         Codec = $stream.codec_name
         PixelFormat = $stream.pix_fmt
         FrameRate = $stream.r_frame_rate
         SizeBytes = (Get-Item -LiteralPath $OutputPath).Length
+        PreviewSizeBytes = (Get-Item -LiteralPath $PreviewPath).Length
     }
 }
 finally {

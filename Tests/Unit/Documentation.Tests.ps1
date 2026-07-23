@@ -154,6 +154,27 @@ Describe 'Generated command documentation' {
         $readme | Should -Not -Match 'actions/workflows/ci\.yml/badge\.svg'
     }
 
+    It 'embeds the generated social demo preview and links it to the MP4' {
+        $readme = Get-Content (Join-Path $script:RepositoryRoot 'README.md') -Raw
+        $gifPath = Join-Path $script:RepositoryRoot 'Assets/terminalslides-social-demo.gif'
+        $mp4Path = Join-Path $script:RepositoryRoot 'Assets/terminalslides-social-demo.mp4'
+
+        $readme | Should -Match (
+            '\[!\[[^\]]+\]\(\./Assets/terminalslides-social-demo\.gif\)\]' +
+            '\(\./Assets/terminalslides-social-demo\.mp4\)'
+        )
+        $gifPath | Should -Exist
+        $mp4Path | Should -Exist
+
+        $gifBytes = [IO.File]::ReadAllBytes($gifPath)
+        [Text.Encoding]::ASCII.GetString($gifBytes, 0, 6) | Should -Match '^GIF8[79]a$'
+        [BitConverter]::ToUInt16($gifBytes, 6) | Should -Be 960
+        [BitConverter]::ToUInt16($gifBytes, 8) | Should -Be 540
+
+        $mp4Bytes = [IO.File]::ReadAllBytes($mp4Path)
+        [Text.Encoding]::ASCII.GetString($mp4Bytes, 4, 4) | Should -Be 'ftyp'
+    }
+
     It 'publishes a distinct terminal capture for every built-in theme' {
         $readme = Get-Content (Join-Path $script:RepositoryRoot 'README.md') -Raw
         $themeFiles = @(Get-ChildItem (Join-Path $script:RepositoryRoot 'Themes') -Filter '*.psd1')

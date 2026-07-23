@@ -7,7 +7,9 @@
 
 TerminalSlides is a cross-platform PowerShell module for building and delivering ANSI-rendered slide decks directly in the terminal.
 
-[Watch the 20-second TerminalSlides demo](./Assets/terminalslides-social-demo.mp4)
+[![TerminalSlides demo showing installation, slides, charts, diagrams, overview, and keyboard help](./Assets/terminalslides-social-demo.gif)](./Assets/terminalslides-social-demo.mp4)
+
+[Watch the 20-second MP4 demo](./Assets/terminalslides-social-demo.mp4)
 
 ## Features
 
