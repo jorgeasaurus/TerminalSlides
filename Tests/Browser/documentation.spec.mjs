@@ -30,9 +30,12 @@ test('the styled layout adapts between desktop and mobile viewports', async ({ p
 
   const heading = page.getByRole('heading', { level: 1, name: /Present without leaving the terminal/i });
   const preview = page.getByLabel('Interactive TerminalSlides preview');
-  const importCommand = page.getByLabel('Import command', { exact: true });
+  const installCommand = page.getByLabel('Install command', { exact: true });
   await expect(heading).toBeVisible();
   await expect(preview).toBeVisible();
+  await expect(installCommand.locator('code')).toHaveText(
+    'Install-PSResource -Name TerminalSlides -Repository PSGallery -Scope CurrentUser -TrustRepository'
+  );
 
   const styleContract = await preview.evaluate((element) => {
     const style = getComputedStyle(element);
@@ -48,17 +51,23 @@ test('the styled layout adapts between desktop and mobile viewports', async ({ p
   expect(styleContract.borderRadius).toBe('14px');
   expect(styleContract.horizontalOverflow).toBeLessThanOrEqual(1);
 
+  const installCodeLayout = await installCommand.locator('code').evaluate((element) => ({
+    clientWidth: element.clientWidth,
+    scrollWidth: element.scrollWidth,
+  }));
+  expect(installCodeLayout.scrollWidth).toBeLessThanOrEqual(installCodeLayout.clientWidth + 1);
+
   const headingBox = await heading.boundingBox();
   const previewBox = await preview.boundingBox();
-  const importBox = await importCommand.boundingBox();
+  const installBox = await installCommand.boundingBox();
   expect(headingBox).not.toBeNull();
   expect(previewBox).not.toBeNull();
-  expect(importBox).not.toBeNull();
+  expect(installBox).not.toBeNull();
 
   const featuresLink = page.getByRole('link', { name: 'Features', exact: true });
   if (testInfo.project.name === 'mobile-chromium') {
     await expect(featuresLink).toBeHidden();
-    expect(previewBox.y).toBeGreaterThan(importBox.y + importBox.height);
+    expect(previewBox.y).toBeGreaterThan(installBox.y + installBox.height);
   } else {
     await expect(featuresLink).toBeVisible();
     expect(previewBox.x).toBeGreaterThan(headingBox.x + headingBox.width);

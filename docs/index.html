@@ -55,10 +55,10 @@
           <a class="button button-primary" href="#quick-start">Get started <span aria-hidden="true">→</span></a>
           <a class="button button-secondary" href="https://github.com/jorgeasaurus/TerminalSlides">View on GitHub</a>
         </div>
-        <div class="install-command" aria-label="Import command">
+        <div class="install-command" aria-label="Install command">
           <span class="prompt">PS&gt;</span>
-          <code>Import-Module ./TerminalSlides.psd1</code>
-          <button class="copy-button" type="button" data-copy="Import-Module ./TerminalSlides.psd1" aria-label="Copy import command">Copy</button>
+          <code>Install-PSResource -Name TerminalSlides -Repository PSGallery -Scope CurrentUser -TrustRepository</code>
+          <button class="copy-button" type="button" data-copy="Install-PSResource -Name TerminalSlides -Repository PSGallery -Scope CurrentUser -TrustRepository" aria-label="Copy install command">Copy</button>
         </div>
         <p class="compatibility">PowerShell 7.4+ <span></span> Windows, macOS, and Linux <span></span> MIT licensed</p>
       </div>
@@ -128,16 +128,16 @@
       <div class="quick-copy">
         <p class="eyebrow">Quick start</p>
         <h2>From blank prompt<br>to first slide.</h2>
-        <p>Clone the repository, import the module, and start presenting. The fluent API keeps the structure readable as your story grows.</p>
+        <p>Install TerminalSlides from <a href="https://www.powershellgallery.com/packages/TerminalSlides">PowerShell Gallery</a> and start presenting. The fluent API keeps the structure readable as your story grows.</p>
         <ol class="steps">
-          <li><span>1</span><div><strong>Import</strong><p>Clone the repository and import its module manifest.</p></div></li>
+          <li><span>1</span><div><strong>Install</strong><p>Install the module from PSGallery for your current user.</p></div></li>
           <li><span>2</span><div><strong>Compose</strong><p>Build slides with ordinary PowerShell.</p></div></li>
           <li><span>3</span><div><strong>Present</strong><p>Run the deck in any modern terminal.</p></div></li>
         </ol>
       </div>
       <div class="code-window">
         <div class="code-tabs"><span class="active">demo.ps1</span><button type="button" class="copy-button code-copy" data-copy-target="quick-code">Copy</button></div>
-        <pre id="quick-code"><code><span class="code-muted">Import-Module</span> ./TerminalSlides.psd1
+        <pre id="quick-code"><code><span class="code-command">Install-PSResource</span> -Name TerminalSlides -Repository PSGallery -Scope CurrentUser -TrustRepository
 
 <span class="code-variable">$deck</span> = <span class="code-command">New-TerminalPresentation</span> `
   -Title <span class="code-string">'Shipping the terminal way'</span> `
@@ -264,7 +264,7 @@
     <section class="section final-cta">
       <p class="eyebrow">Your next deck starts here</p>
       <h2>Trade the slide editor<br>for a prompt.</h2>
-      <p>Clone TerminalSlides and turn the terminal you already use into a focused presentation environment.</p>
+      <p>Install TerminalSlides from PowerShell Gallery and turn the terminal you already use into a focused presentation environment.</p>
       <div class="hero-actions centered">
         <a class="button button-primary" href="#quick-start">Build your first deck <span aria-hidden="true">→</span></a>
         <a class="button button-secondary" href="https://github.com/jorgeasaurus/TerminalSlides">Star on GitHub</a>

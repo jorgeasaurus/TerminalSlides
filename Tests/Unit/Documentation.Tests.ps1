@@ -82,25 +82,28 @@ Describe 'Generated command documentation' {
         $index | Should -Match 'id="commands"'
         $index | Should -Match 'id="command-search"'
         $index | Should -Match 'id="command-grid"'
-        @([regex]::Matches($index, './TerminalSlides\.psd1')) | Should -HaveCount 3
-        $index | Should -Not -Match 'TerminalSlides/TerminalSlides\.psd1'
+        $index | Should -Not -Match 'TerminalSlides\.psd1'
         $clientScript | Should -Match ([regex]::Escape('fetch("./commands.json")'))
         $clientScript | Should -Match 'function isInteractiveTarget\(target\)'
         @([regex]::Matches($clientScript, 'if \(isInteractiveTarget\(event\.target\)\) return;')) |
             Should -HaveCount 1
     }
 
-    It 'links the deployed Pages site without claiming an unpublished Gallery release' {
+    It 'uses PSGallery-first onboarding in every user-facing entry point' {
         $index = Get-Content (Join-Path $script:RepositoryRoot 'docs/index.html') -Raw
         $readme = Get-Content (Join-Path $script:RepositoryRoot 'README.md') -Raw
+        $contributing = Get-Content (Join-Path $script:RepositoryRoot 'CONTRIBUTING.md') -Raw
+        $installCommand = 'Install-PSResource -Name TerminalSlides -Repository PSGallery -Scope CurrentUser -TrustRepository'
 
-        $index | Should -Not -Match 'Install-Module TerminalSlides'
-        $index | Should -Not -Match 'PowerShell Gallery'
-        $index | Should -Not -Match 'powershellgallery\.com'
-        $index | Should -Not -Match 'jorgeasaurus\.github\.io'
+        foreach ($document in @($index, $readme, $contributing)) {
+            $document | Should -Match ([regex]::Escape($installCommand))
+            $document | Should -Not -Match 'Import-Module\s+\./TerminalSlides\.psd1'
+            $document | Should -Not -Match '(?i)clone the repository.+import'
+        }
+
+        $index | Should -Match 'PowerShell Gallery'
+        $index | Should -Match 'powershellgallery\.com/packages/TerminalSlides'
         $readme | Should -Match 'https://jorgeasaurus\.github\.io/TerminalSlides/'
-        $readme | Should -Not -Match 'Install-Module\s+TerminalSlides'
-        $readme | Should -Not -Match '(?m)^Import-Module\s+TerminalSlides\s*$'
     }
 
     It 'uses public README badge endpoints' {
