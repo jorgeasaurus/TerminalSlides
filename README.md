@@ -57,6 +57,16 @@ $deck |
 Show-TerminalPresentation -Presentation $deck
 ```
 
+## Built-in demos
+
+```powershell
+# TerminalSlides feature tour
+Start-TerminalSlidesDemo
+
+# Intune Hydration Kit showcase
+Start-TerminalSlidesDemo -Name IntuneHydrationKit
+```
+
 ## Fluent API example
 
 ```powershell

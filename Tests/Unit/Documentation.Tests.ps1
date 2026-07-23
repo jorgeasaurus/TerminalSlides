@@ -167,9 +167,12 @@ Describe 'Published command examples' {
         }
         Mock Show-TerminalPresentation {}
         Mock Start-TerminalSlidesDemo {
-            param([switch]$PassThru)
+            param(
+                [string]$Name = 'TerminalSlides',
+                [switch]$PassThru
+            )
 
-            if ($PassThru) { New-TerminalPresentation -Title 'Demo fixture' }
+            if ($PassThru) { New-TerminalPresentation -Title "$Name demo fixture" }
         }
 
         foreach ($temporaryName in 'terminalslides-deck.html', 'terminalslides-deck.json') {
@@ -187,7 +190,9 @@ Describe 'Published command examples' {
 
     It 'models the demo PassThru output contract' {
         @(Start-TerminalSlidesDemo) | Should -HaveCount 0
-        (Start-TerminalSlidesDemo -PassThru).Title | Should -Be 'Demo fixture'
+        (Start-TerminalSlidesDemo -PassThru).Title | Should -Be 'TerminalSlides demo fixture'
+        (Start-TerminalSlidesDemo -Name IntuneHydrationKit -PassThru).Title |
+            Should -Be 'IntuneHydrationKit demo fixture'
     }
 
     It 'executes the <Name> example against controlled fixtures' -ForEach $publishedExamples {

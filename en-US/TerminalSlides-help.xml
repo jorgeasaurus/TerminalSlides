@@ -2491,12 +2491,19 @@ $deck = New-TerminalPresentation `
       <command:name>Start-TerminalSlidesDemo</command:name>
       <command:verb>Start</command:verb>
       <command:noun>TerminalSlidesDemo</command:noun>
-      <maml:description><maml:para>Launch the built-in feature tour or return its presentation object for inspection.</maml:para></maml:description>
+      <maml:description><maml:para>Launch the TerminalSlides feature tour or the Intune Hydration Kit showcase, or return either deck for inspection.</maml:para></maml:description>
     </command:details>
-    <maml:description><maml:para>Launch the built-in feature tour or return its presentation object for inspection.</maml:para></maml:description>
+    <maml:description><maml:para>Launch the TerminalSlides feature tour or the Intune Hydration Kit showcase, or return either deck for inspection.</maml:para></maml:description>
     <command:syntax>
     <command:syntaxItem>
       <maml:name>Start-TerminalSlidesDemo</maml:name>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="0" aliases="none">
+        <maml:name>Name</maml:name>
+        <maml:description><maml:para>Specifies the Name value. Accepted values: TerminalSlides, IntuneHydrationKit.</maml:para></maml:description>
+        <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
+        <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>PassThru</maml:name>
         <maml:description><maml:para>Specifies the PassThru value.</maml:para></maml:description>
@@ -2506,6 +2513,13 @@ $deck = New-TerminalPresentation `
     </command:syntaxItem>
     </command:syntax>
     <command:parameters>
+    <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="0" aliases="none">
+      <maml:name>Name</maml:name>
+      <maml:description><maml:para>Specifies the Name value. Accepted values: TerminalSlides, IntuneHydrationKit.</maml:para></maml:description>
+      <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
+      <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
+      <dev:defaultValue>None</dev:defaultValue>
+    </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
       <maml:name>PassThru</maml:name>
       <maml:description><maml:para>Specifies the PassThru value.</maml:para></maml:description>
@@ -2519,9 +2533,11 @@ $deck = New-TerminalPresentation `
       <command:example>
         <maml:title>Example 1</maml:title>
         <dev:code>Start-TerminalSlidesDemo
+Start-TerminalSlidesDemo -Name IntuneHydrationKit
 
-# Inspect the deck without presenting it:
-$demo = Start-TerminalSlidesDemo -PassThru</dev:code>
+# Inspect a showcase without presenting it:
+$demo = Start-TerminalSlidesDemo `
+  -Name IntuneHydrationKit -PassThru</dev:code>
         <dev:remarks><maml:para>Demonstrates Start-TerminalSlidesDemo in a TerminalSlides workflow.</maml:para></dev:remarks>
       </command:example>
     </command:examples>

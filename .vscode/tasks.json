@@ -208,6 +208,23 @@
             "problemMatcher": []
         },
         {
+            "label": "Start Intune Hydration Kit Demo",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-Command",
+                "Import-Module '${workspaceFolder}/TerminalSlides.psd1' -Force; Start-TerminalSlidesDemo -Name IntuneHydrationKit"
+            ],
+            "group": "none",
+            "presentation": {
+                "reveal": "always",
+                "focus": true,
+                "panel": "dedicated"
+            },
+            "problemMatcher": []
+        },
+        {
             "label": "Get Module Version",
             "type": "shell",
             "command": "pwsh",

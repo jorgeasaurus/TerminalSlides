@@ -1,5 +1,6 @@
 @{
     Files = @(
+        'Assets/intune-hydration-kit-tui.png'
         'Assets/presentation-team-photo.jpg'
         'Classes/TerminalSlidesClasses.ps1'
         'en-US/TerminalSlides-help.xml'
