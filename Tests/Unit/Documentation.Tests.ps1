@@ -128,7 +128,11 @@ Describe 'Published command examples' {
             $deck | Add-TerminalSlide -Title $title -Content { Add-SlideText "Fixture $title" } | Out-Null
         }
         Mock Show-TerminalPresentation {}
-        Mock Start-TerminalSlidesDemo { New-TerminalPresentation -Title 'Demo fixture' }
+        Mock Start-TerminalSlidesDemo {
+            param([switch]$PassThru)
+
+            if ($PassThru) { New-TerminalPresentation -Title 'Demo fixture' }
+        }
 
         foreach ($temporaryName in 'terminalslides-deck.html', 'terminalslides-deck.json') {
             $path = Join-Path ([IO.Path]::GetTempPath()) $temporaryName
@@ -141,6 +145,11 @@ Describe 'Published command examples' {
             $path = Join-Path ([IO.Path]::GetTempPath()) $temporaryName
             if (Test-Path -LiteralPath $path) { Remove-Item -LiteralPath $path -Force }
         }
+    }
+
+    It 'models the demo PassThru output contract' {
+        @(Start-TerminalSlidesDemo) | Should -HaveCount 0
+        (Start-TerminalSlidesDemo -PassThru).Title | Should -Be 'Demo fixture'
     }
 
     It 'executes the <Name> example against controlled fixtures' -ForEach $publishedExamples {
