@@ -6,7 +6,7 @@ function New-TerminalSpectreRenderOptions {
     )
 
     $capabilities = [TerminalSpectreCapabilities]::new()
-    $capabilities.Ansi = $true
+    $capabilities.Ansi = $Capability.AnsiSupport
     $capabilities.Interactive = $false
     $capabilities.Unicode = $Capability.UnicodeSupport
     $capabilities.Links = $false

@@ -397,6 +397,8 @@ Describe 'Native terminal image overlays' {
 
             $eightBit.ColorSystem | Should -Be ([Spectre.Console.ColorSystem]::EightBit)
             $noColor.ColorSystem | Should -Be ([Spectre.Console.ColorSystem]::NoColors)
+            $eightBit.Ansi | Should -BeFalse
+            $noColor.Ansi | Should -BeFalse
         }
     }
 
