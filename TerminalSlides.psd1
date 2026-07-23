@@ -4,7 +4,7 @@
     GUID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
     Author = 'Jorge'
     CompanyName = 'TerminalSlides'
-    Copyright = '(c) 2024 Jorge. All rights reserved.'
+    Copyright = '(c) 2026 Jorge. All rights reserved.'
     Description = 'A PowerShell module for building and delivering terminal-based slide presentations'
     PowerShellVersion = '7.4'
     RequiredAssemblies = @('lib/TerminalSlides.Schema.dll')
