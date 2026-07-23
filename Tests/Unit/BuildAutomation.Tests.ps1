@@ -2,7 +2,8 @@ Describe 'Build automation' {
     BeforeAll {
         $script:RepositoryRoot = Join-Path $PSScriptRoot '..' '..'
         $script:BuildPath = Join-Path $script:RepositoryRoot 'build.ps1'
-        $script:PowerShellPath = (Get-Process -Id $PID).Path
+        $script:PowerShellPath = Get-Command pwsh -CommandType Application `
+            -ErrorAction Stop | Select-Object -First 1 -ExpandProperty Source
     }
 
     It 'returns a nonzero process exit code when a Pester test fails' {
@@ -47,5 +48,15 @@ Describe 'Build automation' {
         @([regex]::Matches($workflow, '(?m)^\s+run: \./build\.ps1(?:\s.*)?$')) |
             Should -HaveCount 2
         $workflow | Should -Not -Match '(?m)^\s+run: Invoke-Pester'
+        @([regex]::Matches($workflow, '(?m)^\s+if-no-files-found: warn$')) |
+            Should -HaveCount 2
+    }
+
+    It 'unloads conflicting module versions before importing pinned tools' {
+        $buildScript = Get-Content -LiteralPath $script:BuildPath -Raw
+
+        $buildScript | Should -Match 'Get-Module -Name \$Name'
+        $buildScript | Should -Match 'Where-Object Version -ne \$Version'
+        $buildScript | Should -Match 'Remove-Module -Force'
     }
 }

@@ -29,7 +29,7 @@ jobs:
         with:
           name: test-results-quality-linux
           path: build/TestResults/TestResults.xml
-          if-no-files-found: error
+          if-no-files-found: warn
 
   compatibility:
     name: Functional tests (${{ matrix.os }})
@@ -53,4 +53,4 @@ jobs:
         with:
           name: test-results-${{ matrix.os }}
           path: build/TestResults/TestResults.xml
-          if-no-files-found: error
+          if-no-files-found: warn

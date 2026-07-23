@@ -24,6 +24,9 @@ function Import-ExactModule {
             -Scope CurrentUser -Force -AllowClobber
     }
 
+    Get-Module -Name $Name |
+        Where-Object Version -ne $Version |
+        Remove-Module -Force
     Import-Module -Name $Name -RequiredVersion $Version -Force
 }
 
