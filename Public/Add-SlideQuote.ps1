@@ -6,5 +6,6 @@ function Add-SlideQuote {
         [string]$Region = 'Content',
         [int]$RevealStep = 0
     )
-    Add-CurrentSlideElement -Element (New-InternalSlideElement -Type Quote -Content @{ Text = $Text; Attribution = $Attribution } -Region $Region -RevealStep $RevealStep -Alignment Center)
+    $payload = [TerminalSlides.Schema.V1.QuotePayload]::new($Text, $Attribution)
+    Add-CurrentSlideElement -Element (New-InternalSlideElement -Kind Quote -Payload $payload -Region $Region -RevealStep $RevealStep -Alignment Center)
 }

@@ -7,5 +7,5 @@ function Add-SlideSubtitle {
         [int]$RevealStep = 0,
         [string]$ForegroundColor
     )
-    Add-CurrentSlideElement -Element (New-InternalSlideElement -Type Subtitle -Content $Subtitle -Region $Region -Alignment $Alignment -RevealStep $RevealStep -ForegroundColor $ForegroundColor)
+    Add-CurrentSlideElement -Element (New-InternalSlideElement -Kind Subtitle -Payload ([TerminalSlides.Schema.V1.TextPayload]::new($Subtitle)) -Region $Region -Alignment $Alignment -RevealStep $RevealStep -ForegroundColor $ForegroundColor)
 }

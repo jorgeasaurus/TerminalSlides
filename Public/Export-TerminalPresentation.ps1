@@ -1,110 +1,148 @@
-function Export-TerminalPresentation {
-    [CmdletBinding()]
+function Write-TerminalExportFile {
     param(
-        [Parameter(Mandatory)][TerminalPresentation]$Presentation,
         [Parameter(Mandatory)][string]$Path,
-        [ValidateSet('Ansi','PlainText','Markdown','Html','Psd1','Json')][string]$Format = 'PlainText'
+        [Parameter(Mandatory)][AllowEmptyString()][string]$Content,
+        [Parameter(Mandatory)][bool]$Overwrite,
+        [AllowNull()][object]$MediaTransaction
     )
 
+    Assert-TerminalValidUtf16 -Value $Content
+    $parent = Split-Path -Path $Path -Parent
+    if (-not (Test-Path -LiteralPath $parent -PathType Container)) {
+        [void][System.IO.Directory]::CreateDirectory($parent)
+    }
+    $temporaryPath = Join-Path $parent ('.' + [System.IO.Path]::GetFileName($Path) + '.' + [guid]::NewGuid().ToString('N') + '.tmp')
+    $assetBackup = $null
     try {
-        $targetPath = if ([System.IO.Path]::IsPathRooted($Path)) { $Path } else { Join-Path (Get-Location) $Path }
-        $parent = Split-Path -Path $targetPath -Parent
-        if (-not (Test-Path $parent)) { New-Item -ItemType Directory -Path $parent -Force | Out-Null }
-        switch ($Format) {
-            'Ansi' {
-                $content = for ($i = 0; $i -lt $Presentation.Slides.Count; $i++) {
-                    Render-TerminalPresentationToString -Presentation $Presentation -SlideIndex $i -RevealStep $Presentation.Slides[$i].MaxRevealStep
-                }
-                Set-Content -Path $targetPath -Value ($content -join ([Environment]::NewLine + [Environment]::NewLine + ('-' * 40) + [Environment]::NewLine)) -NoNewline
+        [System.IO.File]::WriteAllText($temporaryPath, $Content, [System.Text.UTF8Encoding]::new($false))
+        if ($MediaTransaction -and $MediaTransaction.HasAssets) {
+            $assetBackup = Install-TerminalStagedAssets -Transaction $MediaTransaction
+        }
+        try {
+            [System.IO.File]::Move($temporaryPath, $Path, $Overwrite)
+        }
+        catch {
+            if ($MediaTransaction -and $MediaTransaction.HasAssets -and
+                (Test-Path -LiteralPath $MediaTransaction.FinalDirectory)) {
+                Remove-Item -LiteralPath $MediaTransaction.FinalDirectory -Recurse -Force -ErrorAction SilentlyContinue
             }
-            'PlainText' {
-                $content = for ($i = 0; $i -lt $Presentation.Slides.Count; $i++) {
-                    Render-TerminalPresentationToString -Presentation $Presentation -SlideIndex $i -RevealStep $Presentation.Slides[$i].MaxRevealStep -PlainText
-                }
-                Set-Content -Path $targetPath -Value ($content -join ("`n" + ('-' * 40) + "`n"))
+            if ($assetBackup -and (Test-Path -LiteralPath $assetBackup)) {
+                Move-Item -LiteralPath $assetBackup -Destination $MediaTransaction.FinalDirectory
+                $assetBackup = $null
             }
-            'Markdown' {
-                $sb = [System.Text.StringBuilder]::new()
-                [void]$sb.AppendLine('---')
-                [void]$sb.AppendLine("title: $($Presentation.Title)")
-                if ($Presentation.Author) { [void]$sb.AppendLine("author: $($Presentation.Author)") }
-                if ($Presentation.Theme) { [void]$sb.AppendLine("theme: $($Presentation.Theme)") }
-                [void]$sb.AppendLine('---')
-                [void]$sb.AppendLine()
-                foreach ($slide in $Presentation.Slides) {
-                    [void]$sb.AppendLine("# $($slide.Title)")
-                    foreach ($element in $slide.Elements) {
-                        switch ($element.Type) {
-                            'Title' { [void]$sb.AppendLine("## $($element.Content)") }
-                            'Subtitle' { [void]$sb.AppendLine("### $($element.Content)") }
-                            'Bullet' { [void]$sb.AppendLine("- $($element.Content)") }
-                            'Code' {
-                                $language = if ($element.Properties -and $element.Properties.ContainsKey('Language')) { $element.Properties.Language } else { 'text' }
-                                $codeText = if ($element.Content -is [System.Collections.IDictionary]) { [string]$element.Content['Code'] } else { [string]$element.Content.Code }
-                                [void]$sb.AppendLine('```' + $language)
-                                [void]$sb.AppendLine($codeText)
-                                [void]$sb.AppendLine('```')
-                            }
-                            'Quote' { [void]$sb.AppendLine('> ' + $element.Content.Text) }
-                            default { [void]$sb.AppendLine([string]$element.Content) }
-                        }
-                    }
-                    if ($slide.Notes) { [void]$sb.AppendLine(); [void]$sb.AppendLine('<!-- Notes: ' + $slide.Notes + ' -->') }
-                    [void]$sb.AppendLine(); [void]$sb.AppendLine('---'); [void]$sb.AppendLine()
-                }
-                Set-Content -Path $targetPath -Value $sb.ToString()
+            throw
+        }
+        if ($assetBackup -and (Test-Path -LiteralPath $assetBackup)) {
+            Remove-Item -LiteralPath $assetBackup -Recurse -Force
+            $assetBackup = $null
+        }
+    }
+    finally {
+        if (Test-Path -LiteralPath $temporaryPath) {
+            Remove-Item -LiteralPath $temporaryPath -Force -ErrorAction SilentlyContinue
+        }
+        if ($MediaTransaction -and $MediaTransaction.StagingDirectory -and
+            (Test-Path -LiteralPath $MediaTransaction.StagingDirectory)) {
+            Remove-Item -LiteralPath $MediaTransaction.StagingDirectory -Recurse -Force -ErrorAction SilentlyContinue
+        }
+        if ($assetBackup -and (Test-Path -LiteralPath $assetBackup) -and -not (Test-Path -LiteralPath $MediaTransaction.FinalDirectory)) {
+            Move-Item -LiteralPath $assetBackup -Destination $MediaTransaction.FinalDirectory -ErrorAction SilentlyContinue
+        }
+    }
+}
+
+function Export-TerminalPresentation {
+    [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'Medium')]
+    param(
+        [Parameter(Mandatory)][TerminalSlides.Schema.V1.TerminalPresentation]$Presentation,
+        [Parameter(Mandatory)][string]$Path,
+        [ValidateSet('Ansi','PlainText','Markdown','Html','Psd1','Json')][string]$Format = 'PlainText',
+        [switch]$Force
+    )
+
+    $targetPath = [System.IO.Path]::GetFullPath($Path, (Get-Location).Path)
+    $exists = Test-Path -LiteralPath $targetPath -PathType Leaf
+    if ($exists -and -not $Force) {
+        throw "Path '$targetPath' already exists. Use -Force to overwrite it."
+    }
+    if (-not $PSCmdlet.ShouldProcess($targetPath, "Export presentation as $Format")) { return }
+
+    $visiblePresentation = New-TerminalPresentationView -Presentation $Presentation
+    $portableFormats = @('Markdown','Html','Psd1','Json')
+    $portableExport = if ($Format -in $portableFormats) {
+        New-TerminalPortableExport -Presentation $visiblePresentation -TargetPath $targetPath -Overwrite:$Force.IsPresent
+    }
+    else { [pscustomobject]@{ Presentation = $visiblePresentation; Transaction = $null } }
+    $exportPresentation = $portableExport.Presentation
+    $slides = @($exportPresentation.Slides)
+    try {
+        $content = switch ($Format) {
+        'Ansi' {
+            $rendered = foreach ($slide in $slides) {
+                Render-TerminalPresentationToString -Presentation $exportPresentation -SlideIndex ($slide.Index - 1) -RevealStep (Get-TerminalSlideMaximumRevealStep -Slide $slide)
             }
-            'Html' {
-                $slidesHtml = foreach ($slide in $Presentation.Slides) {
-                    $body = foreach ($element in $slide.Elements) {
-                        switch ($element.Type) {
-                            'Bullet' { "<li>$([System.Net.WebUtility]::HtmlEncode([string]$element.Content))</li>" }
-                            'Code' {
-                                $codeText = if ($element.Content -is [System.Collections.IDictionary]) { [string]$element.Content['Code'] } else { [string]$element.Content.Code }
-                                "<pre><code>$([System.Net.WebUtility]::HtmlEncode($codeText))</code></pre>"
-                            }
-                            'Quote' { "<blockquote><p>$([System.Net.WebUtility]::HtmlEncode($element.Content.Text))</p><footer>$([System.Net.WebUtility]::HtmlEncode($element.Content.Attribution))</footer></blockquote>" }
-                            default { "<p>$([System.Net.WebUtility]::HtmlEncode([string]$element.Content))</p>" }
-                        }
-                    }
-                    "<section class='slide'><h2>$([System.Net.WebUtility]::HtmlEncode($slide.Title))</h2>$($body -join '')</section>"
-                }
-                $html = @"
+            $rendered -join ([Environment]::NewLine + [Environment]::NewLine + ('-' * 40) + [Environment]::NewLine)
+        }
+        'PlainText' {
+            $rendered = foreach ($slide in $slides) {
+                Render-TerminalPresentationToString -Presentation $exportPresentation -SlideIndex ($slide.Index - 1) -RevealStep (Get-TerminalSlideMaximumRevealStep -Slide $slide) -PlainText
+            }
+            $rendered -join ("`n" + ('-' * 40) + "`n")
+        }
+        'Markdown' {
+            $visibleDocument = ConvertTo-TerminalMarkdownDocument $exportPresentation
+            $presentationData = ConvertTo-PresentationData -Presentation $exportPresentation
+            $marker = [ordered]@{
+                MarkerVersion = 2
+                ProjectionHash = Get-TerminalMarkdownProjectionHash -VisibleDocument $visibleDocument -PresentationData $presentationData
+                Presentation = $presentationData
+            }
+            $visibleDocument + '<!-- terminalslides:envelope ' + (ConvertTo-TerminalDataMarker $marker) + ' -->'
+        }
+        'Html' {
+            $encode = { param($Value) ConvertTo-TerminalHtmlEncodedText -Value $Value }
+            $style = ConvertTo-TerminalHtmlStyle (Resolve-TerminalPresentationTheme -Presentation $exportPresentation)
+            $slidesHtml = foreach ($slide in $slides) {
+                $body = foreach ($element in $slide.Elements) { ConvertTo-TerminalHtmlElement -Element $element }
+                '<section class="slide"><h2>' + (& $encode $slide.Title) + '</h2>' + ($body -join '') + '</section>'
+            }
+            @"
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset='utf-8' />
-<title>$([System.Net.WebUtility]::HtmlEncode($Presentation.Title))</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>$(& $encode $Presentation.Title)</title>
 <style>
-body { font-family: system-ui, sans-serif; background: #111827; color: #f9fafb; margin: 0; padding: 2rem; }
-.slide { background: #1f2937; border-radius: 12px; padding: 2rem; margin-bottom: 2rem; }
-pre { background: #0f172a; padding: 1rem; overflow-x: auto; }
-blockquote { border-left: 4px solid #60a5fa; margin: 1rem 0; padding-left: 1rem; }
+$style
 </style>
 </head>
 <body>
-<h1>$([System.Net.WebUtility]::HtmlEncode($Presentation.Title))</h1>
+<h1>$(& $encode $Presentation.Title)</h1>
 $($slidesHtml -join [Environment]::NewLine)
 </body>
 </html>
 "@
-                Set-Content -Path $targetPath -Value $html
-            }
-            'Psd1' {
-                $data = ConvertTo-PresentationData -Presentation $Presentation
-                $psd1 = ($data | ConvertTo-Json -Depth 20)
-                $content = '@{' + [Environment]::NewLine + "    Json = @'" + [Environment]::NewLine + $psd1 + [Environment]::NewLine + "'@" + [Environment]::NewLine + '}' + [Environment]::NewLine
-                Set-Content -Path $targetPath -Value $content
-            }
-            'Json' {
-                $data = ConvertTo-PresentationData -Presentation $Presentation
-                $json = $data | ConvertTo-Json -Depth 20
-                Set-Content -Path $targetPath -Value $json
-            }
         }
-        Get-Item -Path $targetPath
+        'Psd1' {
+            $data = ConvertTo-PresentationData -Presentation $exportPresentation
+            $marker = ConvertTo-TerminalDataMarker -Data $data
+            "@{ TerminalSlidesEnvelope = '$marker' }" + [Environment]::NewLine
+        }
+        'Json' { ConvertTo-TerminalWireJson (ConvertTo-PresentationData -Presentation $exportPresentation) }
+        }
+
+        Write-TerminalExportFile -Path $targetPath -Content ([string]$content) -Overwrite:$Force.IsPresent -MediaTransaction $portableExport.Transaction
     }
-    catch {
-        throw
+    finally {
+        if ($portableExport.Transaction -and $portableExport.Transaction.StagingDirectory -and
+            (Test-Path -LiteralPath $portableExport.Transaction.StagingDirectory)) {
+            Remove-Item -LiteralPath $portableExport.Transaction.StagingDirectory -Recurse -Force -ErrorAction SilentlyContinue
+        }
+        if ($portableExport.Transaction) {
+            Remove-TerminalCreatedDirectoriesIfEmpty `
+                -Paths ([string[]]@($portableExport.Transaction.CreatedTargetDirectories))
+        }
     }
+    Get-Item -LiteralPath $targetPath
 }

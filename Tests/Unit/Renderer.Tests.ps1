@@ -61,7 +61,9 @@ Describe 'Renderer helpers' {
     It 'renders image elements without alt text' {
         InModuleScope TerminalSlides {
             $theme = Get-ResolvedTheme -Name Midnight
-            $element = New-InternalSlideElement -Type 'Image' -Content @{ Path = 'diagram.png' }
+            $element = New-InternalSlideElement -Kind Image -Payload (
+                [TerminalSlides.Schema.V1.ImagePayload]::new('diagram.png', $null)
+            )
             $lines = ConvertTo-ElementLines -Element $element -Width 40 -Theme $theme
             $lines[0] | Should -Be 'Image: diagram.png'
             $lines.Count | Should -Be 2
@@ -72,7 +74,9 @@ Describe 'Renderer helpers' {
         InModuleScope TerminalSlides {
             $theme = Get-ResolvedTheme -Name Midnight
             $theme.BoxDrawingStyle = 'rounded'
-            $element = New-InternalSlideElement -Type 'Box' -Content 'hi'
+            $element = New-InternalSlideElement -Kind Box -Payload (
+                [TerminalSlides.Schema.V1.TextPayload]::new('hi')
+            )
             $lines = ConvertTo-ElementLines -Element $element -Width 12 -Theme $theme
             $lines[0] | Should -Match ([regex]::Escape([string][char]0x256D))
             $theme.BoxDrawingStyle = 'ascii'
@@ -153,7 +157,9 @@ Describe 'Renderer helpers' {
     It 'applies syntax highlighting to code elements' {
         InModuleScope TerminalSlides {
             $theme = Get-ResolvedTheme -Name Midnight
-            $element = New-InternalSlideElement -Type 'Code' -Content ([ordered]@{ Code = 'function Test {}'; Language = 'powershell' })
+            $element = New-InternalSlideElement -Kind Code -Payload (
+                [TerminalSlides.Schema.V1.CodePayload]::new('function Test {}', 'powershell')
+            )
             $lines = ConvertTo-ElementLines -Element $element -Width 60 -Theme $theme
             ($lines -join "`n") | Should -Match "`e\["
         }

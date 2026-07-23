@@ -3,7 +3,7 @@ function Get-SyntaxHighlight {
     param(
         [AllowNull()][string]$Code,
         [string]$Language = 'text',
-        [ThemeDefinition]$Theme
+        [TerminalSlides.Schema.V1.ThemeDefinition]$Theme
     )
 
     $code = $Code ?? ''

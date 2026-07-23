@@ -2,7 +2,7 @@ function Get-TerminalSlide {
     [CmdletBinding()]
     [OutputType([object])]
     param(
-        [Parameter(Mandatory, ValueFromPipeline)][TerminalPresentation]$Presentation,
+        [Parameter(Mandatory, ValueFromPipeline)][TerminalSlides.Schema.V1.TerminalPresentation]$Presentation,
         [int]$Index,
         [string]$Title
     )

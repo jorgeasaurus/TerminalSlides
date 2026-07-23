@@ -6,7 +6,8 @@
     CompanyName = 'TerminalSlides'
     Copyright = '(c) 2024 Jorge. All rights reserved.'
     Description = 'A PowerShell module for building and delivering terminal-based slide presentations'
-    PowerShellVersion = '7.0'
+    PowerShellVersion = '7.4'
+    RequiredAssemblies = @('lib/TerminalSlides.Schema.dll')
     FunctionsToExport = @(
         'New-TerminalPresentation'
         'Add-TerminalSlide'
@@ -18,8 +19,8 @@
         'Add-SlideTable'
         'Add-SlideChart'
         'Add-SlideDiagram'
-        'Node'
-        'Edge'
+        'Add-SlideDiagramNode'
+        'Add-SlideDiagramEdge'
         'Add-SlideImage'
         'Add-SlideQuote'
         'Add-SlideBox'

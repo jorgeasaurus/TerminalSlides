@@ -10,10 +10,33 @@ Describe 'Import and export' {
         $deck = New-TerminalPresentation -Title 'Roundtrip'
         $deck | Add-TerminalSlide -Title 'Slide' -Content { Add-SlideText 'Hello' } | Out-Null
         $path = Join-Path $script:WorkPath 'deck.psd1'
-        Export-TerminalPresentation -Presentation $deck -Format Psd1 -Path $path | Out-Null
+        Export-TerminalPresentation -Presentation $deck -Format Psd1 -Path $path -Force | Out-Null
         $imported = Import-TerminalPresentation -Path $path
         $imported.Title | Should -Be 'Roundtrip'
-        $imported.Slides[0].Elements[0].Content | Should -Be 'Hello'
+        $imported.Slides[0].Elements[0].Payload.Text | Should -Be 'Hello'
+    }
+
+    It 'roundtrips <Format> through literal wildcard filenames' -TestCases @(
+        @{ Format = 'Json'; Extension = 'json' }
+        @{ Format = 'Psd1'; Extension = 'psd1' }
+        @{ Format = 'Markdown'; Extension = 'md' }
+    ) {
+        param($Format, $Extension)
+
+        $deck = New-TerminalPresentation -Title "Literal $Format"
+        $deck | Add-TerminalSlide -Title 'Slide' -Content { Add-SlideText 'Literal path content' } | Out-Null
+        $fileNames = @("deck[1].$Extension")
+        if (-not $IsWindows) { $fileNames += "deck?.$Extension" }
+
+        foreach ($fileName in $fileNames) {
+            $path = Join-Path $script:WorkPath $fileName
+            Export-TerminalPresentation -Presentation $deck -Format $Format -Path $path -Force | Out-Null
+
+            $imported = Import-TerminalPresentation -Path $path
+
+            $imported.Title | Should -Be "Literal $Format"
+            $imported.Slides[0].Elements[0].Payload.Text | Should -Be 'Literal path content'
+        }
     }
 
     It 'imports markdown' {
@@ -63,9 +86,9 @@ text
 Get-Process
 '@ | Set-Content -Path $path
         $deck = Import-TerminalPresentation -Path $path
-        $codeElement = $deck.Slides[0].Elements | Where-Object { $_.Type -eq 'Code' }
+        $codeElement = $deck.Slides[0].Elements | Where-Object { $_.Kind -eq 'Code' }
         $codeElement | Should -Not -BeNullOrEmpty
-        $codeElement.Content.Code | Should -Match 'Get-Process'
+        $codeElement.Payload.Code | Should -Match 'Get-Process'
     }
 
     It 'throws on missing import path' {
@@ -77,7 +100,7 @@ Get-Process
         $deck | Add-TerminalSlide -Title 'One' -Content { Add-SlideText 'first' } | Out-Null
         $deck | Add-TerminalSlide -Title 'Two' -Content { Add-SlideText 'second' } | Out-Null
         $path = Join-Path $script:WorkPath 'deck.ansi'
-        Export-TerminalPresentation -Presentation $deck -Format Ansi -Path $path | Out-Null
+        Export-TerminalPresentation -Presentation $deck -Format Ansi -Path $path -Force | Out-Null
         $raw = Get-Content -Path $path -Raw
         ([regex]::Matches($raw, ('-' * 40))).Count | Should -Be 1
         $plain = $raw -replace "`e\[[\d;]*m", ''
@@ -90,7 +113,7 @@ Get-Process
         $deck | Add-TerminalSlide -Title 'S' -Content { Add-SlideText 'x' } | Out-Null
         $deck.ModifiedDate = [datetime]'2020-01-02T03:04:05Z'
         $path = Join-Path $script:WorkPath 'dates.psd1'
-        Export-TerminalPresentation -Presentation $deck -Format Psd1 -Path $path | Out-Null
+        Export-TerminalPresentation -Presentation $deck -Format Psd1 -Path $path -Force | Out-Null
         $imported = Import-TerminalPresentation -Path $path
         $imported.ModifiedDate.ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss') | Should -Be '2020-01-02T03:04:05'
     }
@@ -107,7 +130,7 @@ Get-Process
         $deck = New-TerminalPresentation -Title 'Html'
         $deck | Add-TerminalSlide -Title 'Slide' -Content { Add-SlideText 'Hello HTML' } | Out-Null
         $path = Join-Path $script:WorkPath 'deck.html'
-        Export-TerminalPresentation -Presentation $deck -Format Html -Path $path | Out-Null
+        Export-TerminalPresentation -Presentation $deck -Format Html -Path $path -Force | Out-Null
         (Get-Content -Path $path -Raw) | Should -Match 'Hello HTML'
     }
 }

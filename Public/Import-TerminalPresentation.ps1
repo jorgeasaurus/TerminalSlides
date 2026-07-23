@@ -1,3 +1,42 @@
+function Set-TerminalImportedSourceDirectory {
+    param(
+        [Parameter(Mandatory)][TerminalSlides.Schema.V1.TerminalPresentation]$Presentation,
+        [Parameter(Mandatory)][string]$SourcePath
+    )
+
+    $basePath = Split-Path -Path $SourcePath -Parent
+    foreach ($element in @($Presentation.Slides.Elements | Where-Object Kind -eq Image)) {
+        if (-not [System.IO.Path]::IsPathRooted($element.Payload.Path)) {
+            Set-TerminalMediaOrigin -Element $element -Directory $basePath
+        }
+    }
+    return $Presentation
+}
+
+function Import-TerminalPowerShellDataSnapshot {
+    param([Parameter(Mandatory)][byte[]]$Bytes)
+
+    [void](ConvertFrom-TerminalUtf8Bytes -Bytes $Bytes -RemoveByteOrderMark)
+    $snapshotPath = Join-Path ([IO.Path]::GetTempPath()) ('terminalslides-' + [guid]::NewGuid().ToString('N') + '.psd1')
+    try {
+        $stream = [IO.FileStream]::new(
+            $snapshotPath,
+            [IO.FileMode]::CreateNew,
+            [IO.FileAccess]::Write,
+            [IO.FileShare]::Read
+        )
+        try {
+            $stream.Write($Bytes, 0, $Bytes.Length)
+            $stream.Flush($true)
+        }
+        finally { $stream.Dispose() }
+        return Microsoft.PowerShell.Utility\Import-PowerShellDataFile -LiteralPath $snapshotPath
+    }
+    finally {
+        Remove-Item -LiteralPath $snapshotPath -Force -ErrorAction SilentlyContinue
+    }
+}
+
 function Import-TerminalPresentation {
     [CmdletBinding()]
     [OutputType([object])]
@@ -5,24 +44,61 @@ function Import-TerminalPresentation {
 
     try {
         $resolvedPath = if ([System.IO.Path]::IsPathRooted($Path)) { $Path } else { Join-Path (Get-Location) $Path }
-        if (-not (Test-Path $resolvedPath)) { throw "Path '$resolvedPath' was not found." }
+        if (-not (Test-Path -LiteralPath $resolvedPath -PathType Leaf)) { throw "Path '$resolvedPath' was not found." }
         $extension = [System.IO.Path]::GetExtension($resolvedPath).ToLowerInvariant()
         switch ($extension) {
             '.psd1' {
-                $data = Import-PowerShellDataFile -Path $resolvedPath
-                if ($data.ContainsKey('Json')) {
-                    return New-PresentationFromData -Data ($data.Json | ConvertFrom-Json -AsHashtable)
+                $data = Import-TerminalPowerShellDataSnapshot -Bytes ([IO.File]::ReadAllBytes($resolvedPath))
+                if ($data.ContainsKey('TerminalSlidesEnvelope')) {
+                    $presentation = New-PresentationFromData -Data (ConvertFrom-TerminalDataMarker -Marker $data.TerminalSlidesEnvelope)
+                    return Set-TerminalImportedSourceDirectory -Presentation $presentation -SourcePath $resolvedPath
                 }
-                return New-PresentationFromData -Data $data
+                if ($data.ContainsKey('TerminalSlidesData')) {
+                    $presentation = New-PresentationFromData -Data (ConvertFrom-TerminalDataMarker -Marker $data.TerminalSlidesData)
+                    return Set-TerminalImportedSourceDirectory -Presentation $presentation -SourcePath $resolvedPath
+                }
+                if ($data.ContainsKey('Json')) {
+                    $presentation = New-PresentationFromData -Data (ConvertFrom-TerminalWireJson -Json ([string]$data.Json))
+                    return Set-TerminalImportedSourceDirectory -Presentation $presentation -SourcePath $resolvedPath
+                }
+                $presentation = New-PresentationFromData -Data $data
+                return Set-TerminalImportedSourceDirectory -Presentation $presentation -SourcePath $resolvedPath
             }
             '.json' {
-                return New-PresentationFromData -Data ((Get-Content -Path $resolvedPath -Raw) | ConvertFrom-Json -AsHashtable)
+                $json = ConvertFrom-TerminalUtf8Bytes -Bytes ([IO.File]::ReadAllBytes($resolvedPath)) -RemoveByteOrderMark
+                $presentation = New-PresentationFromData -Data (ConvertFrom-TerminalWireJson -Json $json)
+                return Set-TerminalImportedSourceDirectory -Presentation $presentation -SourcePath $resolvedPath
             }
             '.md' { }
             '.markdown' { }
             default { throw "Unsupported presentation format '$extension'." }
         }
-        $content = Get-Content -Path $resolvedPath -Raw
+        $content = ConvertFrom-TerminalUtf8Bytes -Bytes ([IO.File]::ReadAllBytes($resolvedPath)) -RemoveByteOrderMark
+        $canonicalMatch = [regex]::Match($content, '<!--\s*terminalslides:envelope\s+(?<data>[A-Za-z0-9+/=]+)\s*-->\s*\z')
+        if ($canonicalMatch.Success) {
+            $marker = ConvertFrom-TerminalDataMarker -Marker $canonicalMatch.Groups['data'].Value
+            Assert-TerminalMarkdownEnvelope -Envelope $marker
+            $visibleDocument = $content.Remove($canonicalMatch.Index, $canonicalMatch.Length)
+            if ([uint64]$marker.MarkerVersion -eq 2) {
+                $actualHash = Get-TerminalMarkdownProjectionHash -VisibleDocument $visibleDocument -PresentationData $marker.Presentation
+                if ($actualHash -cne $marker.ProjectionHash) {
+                    throw 'The visible Markdown was edited, or its embedded presentation no longer matches, after export.'
+                }
+            }
+            $sourceThemeName = [string]$marker.Presentation.Presentation.Theme
+            $presentation = New-PresentationFromData -Data $marker.Presentation
+            if ([uint64]$marker.MarkerVersion -eq 1 -and -not
+                (Test-TerminalMarkdownV1Projection -VisibleDocument $visibleDocument -Presentation $presentation -SourceThemeName $sourceThemeName)) {
+                throw 'The visible Markdown was edited after export. Remove the terminalslides:envelope marker to import the visible Markdown dialect, or re-export the deck.'
+            }
+            return Set-TerminalImportedSourceDirectory -Presentation $presentation -SourcePath $resolvedPath
+        }
+        if ($content -match '<!--\s*terminalslides:envelope(?:\s|-->)') {
+            throw 'The Markdown TerminalSlides envelope is malformed or is not the trailing document envelope.'
+        }
+        if ($content -match '<!--\s*terminalslides:data\s+') {
+            throw 'Legacy Markdown data markers have no integrity binding. Remove the terminalslides:data marker to import the visible Markdown dialect.'
+        }
         $title = 'Imported Presentation'
         $author = $null
         $theme = 'Midnight'
@@ -30,9 +106,17 @@ function Import-TerminalPresentation {
         if ($frontmatterMatch.Success) {
             $frontmatter = $frontmatterMatch.Groups['frontmatter'].Value
             foreach ($line in ($frontmatter -split "`n")) {
-                if ($line -match '^title:\s*(.+)$') { $title = $matches[1].Trim() }
-                if ($line -match '^author:\s*(.+)$') { $author = $matches[1].Trim() }
-                if ($line -match '^theme:\s*(.+)$') { $theme = $matches[1].Trim() }
+                if ($line -match '^(title|author|theme):\s*(.+)$') {
+                    $name = $matches[1]
+                    $rawValue = $matches[2].Trim()
+                    try { $value = ConvertFrom-TerminalJsonValue -Json $rawValue }
+                    catch { $value = $rawValue }
+                    switch ($name) {
+                        'title' { $title = [string]$value }
+                        'author' { $author = [string]$value }
+                        'theme' { $theme = [string]$value }
+                    }
+                }
             }
             $content = $content.Substring($frontmatterMatch.Length).TrimStart()
         }
@@ -90,7 +174,7 @@ function Import-TerminalPresentation {
                 }
             } | Out-Null
         }
-        return $presentation
+        return Set-TerminalImportedSourceDirectory -Presentation $presentation -SourcePath $resolvedPath
     }
     catch {
         throw

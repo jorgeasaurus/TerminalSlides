@@ -2,7 +2,7 @@ function Remove-TerminalSlide {
     [CmdletBinding()]
     [OutputType([object])]
     param(
-        [Parameter(Mandatory, ValueFromPipeline)][TerminalPresentation]$Presentation,
+        [Parameter(Mandatory, ValueFromPipeline)][TerminalSlides.Schema.V1.TerminalPresentation]$Presentation,
         [Parameter(Mandatory)][int]$Index
     )
     process {

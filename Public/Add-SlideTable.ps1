@@ -6,5 +6,6 @@ function Add-SlideTable {
         [int]$RevealStep = 0,
         [switch]$Border
     )
-    Add-CurrentSlideElement -Element (New-InternalSlideElement -Type Table -Content $Data -Region $Region -RevealStep $RevealStep -Border:$Border)
+    $payload = [TerminalSlides.Schema.V1.TablePayload]::new((ConvertTo-TerminalDataRows $Data))
+    Add-CurrentSlideElement -Element (New-InternalSlideElement -Kind Table -Payload $payload -Region $Region -RevealStep $RevealStep -Border:$Border)
 }

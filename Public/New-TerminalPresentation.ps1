@@ -8,24 +8,24 @@ function New-TerminalPresentation {
         [string]$Author,
         [string]$Description,
         [string]$Theme = 'Midnight',
-        [int]$Width = 0,
-        [int]$Height = 0,
-        [string]$DefaultTransition = 'None',
+        [ValidateScript({ $_ -eq 0 -or $_ -ge 20 })][int]$Width = 0,
+        [ValidateScript({ $_ -eq 0 -or $_ -ge 10 })][int]$Height = 0,
         [string]$DefaultLayout = 'TitleAndContent',
         [hashtable]$Metadata = @{}
     )
 
     try {
-        $null = Get-ResolvedTheme -Name $Theme
-        $presentation = [TerminalPresentation]::new()
+        $resolvedTheme = Get-ResolvedTheme -Name $Theme
+        Assert-TerminalSlideLayout -Layout $DefaultLayout
+        $presentation = [TerminalSlides.Schema.V1.TerminalPresentation]::new()
         $presentation.Title = $Title
         $presentation.Subtitle = $Subtitle
         $presentation.Author = $Author
         $presentation.Description = $Description
         $presentation.Theme = $Theme
+        $presentation.EmbeddedTheme = Copy-TerminalThemeDefinition $resolvedTheme
         $presentation.Width = $Width
         $presentation.Height = $Height
-        $presentation.DefaultTransition = $DefaultTransition
         $presentation.DefaultLayout = $DefaultLayout
         $presentation.Metadata.Title = $Title
         $presentation.Metadata.Subtitle = $Subtitle

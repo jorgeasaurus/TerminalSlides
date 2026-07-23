@@ -42,6 +42,8 @@ if ($env:TERMINALSLIDES_RUN_TMUX_TESTS -eq '1' -and
     throw 'TERMINALSLIDES_RUN_TMUX_TESTS=1 requires tmux to be installed and available on PATH.'
 }
 
+& (Join-Path $PSScriptRoot 'Scripts/Build-SchemaAssembly.ps1') -Check
+
 if (-not $SkipScriptAnalyzer) {
     Import-ExactModule -Name PSScriptAnalyzer -Version $scriptAnalyzerVersion
     $analysisPaths = @(
