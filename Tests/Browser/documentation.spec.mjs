@@ -82,6 +82,54 @@ test('the presentation photo is a browser-renderable image', async ({ page, requ
   expect(dimensions.height).toBe(800);
 });
 
+test('the theme gallery presents every built-in theme with a rendered terminal capture', async ({ page }) => {
+  await page.goto('/#themes');
+
+  const expectedThemes = [
+    'Midnight',
+    'PowerShell',
+    'Solarized Dark',
+    'Solarized Light',
+    'Retro Terminal',
+    'Minimal',
+    'Monochrome',
+    'High Contrast',
+  ];
+  const gallery = page.getByLabel('Built-in terminal theme previews');
+  const cards = gallery.locator('.theme-card');
+
+  await expect(gallery).toBeVisible();
+  await expect(cards).toHaveCount(expectedThemes.length);
+  await expect(cards.locator('img')).toHaveCount(expectedThemes.length);
+
+  for (const theme of expectedThemes) {
+    await expect(cards.filter({ hasText: theme })).toHaveCount(1);
+  }
+
+  const images = cards.locator('img');
+  for (let index = 0; index < expectedThemes.length; index += 1) {
+    await images.nth(index).scrollIntoViewIfNeeded();
+    await expect(images.nth(index)).toBeVisible();
+  }
+
+  const captures = await images.evaluateAll((elements) =>
+    elements.map((image) => ({
+      alt: image.alt,
+      complete: image.complete,
+      height: image.naturalHeight,
+      src: image.getAttribute('src'),
+      width: image.naturalWidth,
+    }))
+  );
+  expect(new Set(captures.map(({ src }) => src)).size).toBe(expectedThemes.length);
+  for (const capture of captures) {
+    expect(capture.alt).not.toBe('');
+    expect(capture.complete).toBeTruthy();
+    expect(capture.width).toBe(1600);
+    expect(capture.height).toBe(900);
+  }
+});
+
 test('the documentation server rejects malformed and traversing paths safely', async ({ request }) => {
   const malformed = await request.get('/%E0%A4%A');
   expect(malformed.status()).toBe(400);
