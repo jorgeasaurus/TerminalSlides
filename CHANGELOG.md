@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.0
+
+- Added Sixel rendering to built-in demos with an explicit block-image fallback
+- Added an embeddable VHS-powered social demo
+- Fixed the documentation terminal preview alignment
+
 ## 0.2.0
 
 - Added optional Sixel image rendering with block-renderer fallback
