@@ -1,0 +1,227 @@
+{
+    "version": "2.0.0",
+    "osx": {
+        "options": {
+            "env": {
+                "PATH": "/opt/homebrew/opt/powershell/bin:${env:PATH}"
+            }
+        }
+    },
+    "tasks": [
+        {
+            "label": "Build and Test",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-File",
+                "${workspaceFolder}/build.ps1"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Test: All",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-File",
+                "${workspaceFolder}/build.ps1"
+            ],
+            "group": "test",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Test: Renderer",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-File",
+                "${workspaceFolder}/build.ps1",
+                "-TestPath",
+                "${workspaceFolder}/Tests/Unit/Renderer.Tests.ps1",
+                "-TestResultPath",
+                "build/TestResults/Renderer.xml",
+                "-SkipCodeCoverage"
+            ],
+            "group": "test",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Test: Keyboard Controls (tmux)",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-File",
+                "${workspaceFolder}/build.ps1",
+                "-TestPath",
+                "${workspaceFolder}/Tests/Integration/KeyboardControls.Tmux.Tests.ps1",
+                "-TestResultPath",
+                "build/TestResults/Tmux.xml",
+                "-SkipCodeCoverage",
+                "-SkipScriptAnalyzer"
+            ],
+            "options": {
+                "env": {
+                    "TERMINALSLIDES_RUN_TMUX_TESTS": "1"
+                }
+            },
+            "group": "test",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Install: Documentation Dependencies",
+            "type": "shell",
+            "command": "npm",
+            "args": [
+                "ci"
+            ],
+            "group": "none",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Install: Documentation Chromium",
+            "type": "shell",
+            "command": "npx",
+            "args": [
+                "playwright",
+                "install",
+                "chromium"
+            ],
+            "dependsOn": "Install: Documentation Dependencies",
+            "dependsOrder": "sequence",
+            "group": "none",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Test: Documentation Browser",
+            "type": "shell",
+            "command": "npm",
+            "args": [
+                "run",
+                "test:docs"
+            ],
+            "dependsOn": "Install: Documentation Chromium",
+            "dependsOrder": "sequence",
+            "group": "test",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Generate Documentation",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-File",
+                "${workspaceFolder}/Scripts/Update-Documentation.ps1"
+            ],
+            "group": "none",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Stage Module",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-File",
+                "${workspaceFolder}/Scripts/Stage-Module.ps1",
+                "-Destination",
+                "${workspaceFolder}/build/TerminalSlides"
+            ],
+            "group": "none",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Import Local Module",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-Command",
+                "Import-Module '${workspaceFolder}/TerminalSlides.psd1' -Force -Verbose"
+            ],
+            "group": "none",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Start Feature Demo",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-Command",
+                "Import-Module '${workspaceFolder}/TerminalSlides.psd1' -Force; Start-TerminalSlidesDemo"
+            ],
+            "group": "none",
+            "presentation": {
+                "reveal": "always",
+                "focus": true,
+                "panel": "dedicated"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Get Module Version",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-Command",
+                "(Import-PowerShellDataFile '${workspaceFolder}/TerminalSlides.psd1').ModuleVersion"
+            ],
+            "group": "none",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        }
+    ]
+}
