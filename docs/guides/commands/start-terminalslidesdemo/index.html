@@ -34,8 +34,12 @@
       <section id="examples">
         <h2>Examples</h2>
         <h3>Example 1</h3>
-        <pre><code>Start-TerminalSlidesDemo
+        <pre><code># Uses Sixel images when supported, with a block fallback.
+Start-TerminalSlidesDemo
 Start-TerminalSlidesDemo -Name IntuneHydrationKit
+
+# Force terminal-cell image rendering instead.
+Start-TerminalSlidesDemo -ImageRenderer Blocks
 
 # Inspect a showcase without presenting it:
 $demo = Start-TerminalSlidesDemo `
@@ -43,6 +47,17 @@ $demo = Start-TerminalSlidesDemo `
       </section>
       <section id="parameters">
         <h2>Parameters</h2>
+        <section class="parameter-card" id="parameter-imagerenderer">
+          <h3>-ImageRenderer</h3>
+          <p>Specifies the ImageRenderer value.</p>
+          <p><strong>Accepted values:</strong> Blocks, Sixel</p>
+          <dl>
+            <div><dt>Type</dt><dd><code>System.String</code></dd></div>
+            <div><dt>Required</dt><dd>false</dd></div>
+            <div><dt>Position</dt><dd>1</dd></div>
+            <div><dt>Pipeline input</dt><dd>false</dd></div>
+          </dl>
+        </section>
         <section class="parameter-card" id="parameter-name">
           <h3>-Name</h3>
           <p>Specifies the Name value.</p>
@@ -68,7 +83,7 @@ $demo = Start-TerminalSlidesDemo `
       </section>
       <section id="syntax">
         <h2>Syntax</h2>
-        <pre><code>Start-TerminalSlidesDemo [-Name &lt;String&gt;] [-PassThru]</code></pre>
+        <pre><code>Start-TerminalSlidesDemo [-Name &lt;String&gt;] [-ImageRenderer &lt;String&gt;] [-PassThru]</code></pre>
       </section>
       <nav class="pagination" aria-label="Command pagination"><a href="../show-terminalpresentation/"><span>Previous</span>Show-TerminalPresentation</a><a class="next" href="../test-terminalpresentation/"><span>Next</span>Test-TerminalPresentation</a></nav>
     </main>

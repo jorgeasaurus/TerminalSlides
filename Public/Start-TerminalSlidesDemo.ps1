@@ -204,6 +204,8 @@ function Start-TerminalSlidesDemo {
     param(
         [ValidateSet('TerminalSlides', 'IntuneHydrationKit')]
         [string]$Name = 'TerminalSlides',
+        [ValidateSet('Blocks', 'Sixel')]
+        [string]$ImageRenderer = 'Sixel',
         [switch]$PassThru
     )
 
@@ -213,5 +215,5 @@ function Start-TerminalSlidesDemo {
     }
     if ($PassThru) { return $presentation }
 
-    Show-TerminalPresentation -Presentation $presentation
+    Show-TerminalPresentation -Presentation $presentation -ImageRenderer $ImageRenderer
 }

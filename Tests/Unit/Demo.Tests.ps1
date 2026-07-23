@@ -17,6 +17,17 @@ Describe 'TerminalSlides feature demo' {
         ($demo.Slides | Where-Object { $_.Notes }).Count | Should -BeGreaterThan 0
     }
 
+    It 'uses Sixel by default while allowing the block image fallback' {
+        $parameter = (Get-Command Start-TerminalSlidesDemo).Parameters.ImageRenderer
+        $validateSet = $parameter.Attributes |
+            Where-Object { $_ -is [System.Management.Automation.ValidateSetAttribute] }
+
+        $validateSet.ValidValues | Should -Be @('Blocks', 'Sixel')
+        $parameter = (Get-Command Start-TerminalSlidesDemo).ScriptBlock.Ast.Body.ParamBlock.Parameters |
+            Where-Object { $_.Name.VariablePath.UserPath -eq 'ImageRenderer' }
+        $parameter.DefaultValue.Value | Should -Be 'Sixel'
+    }
+
     It 'renders every demo slide at its final reveal state' {
         $demo = Start-TerminalSlidesDemo -PassThru
 

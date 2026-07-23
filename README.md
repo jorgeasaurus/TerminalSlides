@@ -60,11 +60,14 @@ Show-TerminalPresentation -Presentation $deck
 ## Built-in demos
 
 ```powershell
-# TerminalSlides feature tour
+# TerminalSlides feature tour; Sixel images with a block fallback
 Start-TerminalSlidesDemo
 
 # Intune Hydration Kit showcase
 Start-TerminalSlidesDemo -Name IntuneHydrationKit
+
+# Force terminal-cell image rendering
+Start-TerminalSlidesDemo -ImageRenderer Blocks
 ```
 
 ## Fluent API example

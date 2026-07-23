@@ -105,7 +105,7 @@
     "name": "Start-TerminalSlidesDemo",
     "category": "Present and validate",
     "description": "Launch the TerminalSlides feature tour or the Intune Hydration Kit showcase, or return either deck for inspection.",
-    "example": "Start-TerminalSlidesDemo\nStart-TerminalSlidesDemo -Name IntuneHydrationKit\n\n# Inspect a showcase without presenting it:\n$demo = Start-TerminalSlidesDemo `\n  -Name IntuneHydrationKit -PassThru"
+    "example": "# Uses Sixel images when supported, with a block fallback.\nStart-TerminalSlidesDemo\nStart-TerminalSlidesDemo -Name IntuneHydrationKit\n\n# Force terminal-cell image rendering instead.\nStart-TerminalSlidesDemo -ImageRenderer Blocks\n\n# Inspect a showcase without presenting it:\n$demo = Start-TerminalSlidesDemo `\n  -Name IntuneHydrationKit -PassThru"
   },
   {
     "name": "Test-TerminalPresentation",

@@ -2525,6 +2525,13 @@ $deck = New-TerminalPresentation `
         <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
         <dev:defaultValue>TerminalSlides</dev:defaultValue>
       </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
+        <maml:name>ImageRenderer</maml:name>
+        <maml:description><maml:para>Specifies the ImageRenderer value. Accepted values: Blocks, Sixel.</maml:para></maml:description>
+        <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
+        <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
+        <dev:defaultValue>Sixel</dev:defaultValue>
+      </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>PassThru</maml:name>
         <maml:description><maml:para>Specifies the PassThru value.</maml:para></maml:description>
@@ -2541,6 +2548,13 @@ $deck = New-TerminalPresentation `
       <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
       <dev:defaultValue>TerminalSlides</dev:defaultValue>
     </command:parameter>
+    <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
+      <maml:name>ImageRenderer</maml:name>
+      <maml:description><maml:para>Specifies the ImageRenderer value. Accepted values: Blocks, Sixel.</maml:para></maml:description>
+      <command:parameterValue required="false" variableLength="false">System.String</command:parameterValue>
+      <dev:type><maml:name>System.String</maml:name><maml:uri /></dev:type>
+      <dev:defaultValue>Sixel</dev:defaultValue>
+    </command:parameter>
     <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
       <maml:name>PassThru</maml:name>
       <maml:description><maml:para>Specifies the PassThru value.</maml:para></maml:description>
@@ -2553,8 +2567,12 @@ $deck = New-TerminalPresentation `
     <command:examples>
       <command:example>
         <maml:title>Example 1</maml:title>
-        <dev:code>Start-TerminalSlidesDemo
+        <dev:code># Uses Sixel images when supported, with a block fallback.
+Start-TerminalSlidesDemo
 Start-TerminalSlidesDemo -Name IntuneHydrationKit
+
+# Force terminal-cell image rendering instead.
+Start-TerminalSlidesDemo -ImageRenderer Blocks
 
 # Inspect a showcase without presenting it:
 $demo = Start-TerminalSlidesDemo `

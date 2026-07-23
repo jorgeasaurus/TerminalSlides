@@ -32,7 +32,14 @@ Describe 'Presentation execution contracts' {
             Mock New-TerminalSlidesDemoPresentation { $deck }
             Mock Show-TerminalPresentation {}
             Start-TerminalSlidesDemo
-            Should -Invoke Show-TerminalPresentation -ParameterFilter { $Presentation -eq $deck }
+            Should -Invoke Show-TerminalPresentation -ParameterFilter {
+                $Presentation -eq $deck -and $ImageRenderer -eq 'Sixel'
+            }
+
+            Start-TerminalSlidesDemo -ImageRenderer Blocks
+            Should -Invoke Show-TerminalPresentation -ParameterFilter {
+                $Presentation -eq $deck -and $ImageRenderer -eq 'Blocks'
+            }
         }
     }
 
