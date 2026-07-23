@@ -116,7 +116,7 @@ Describe 'Generated command documentation' {
         $hashes = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
 
         $themeFiles | Should -HaveCount 8
-        @([regex]::Matches($readme, '(?m)^## Built-in themes$')) | Should -HaveCount 1
+        @([regex]::Matches($readme, '(?m)^## Built-in themes\r?$')) | Should -HaveCount 1
         foreach ($themeFile in $themeFiles) {
             $slug = [regex]::Replace(
                 $themeFile.BaseName,
