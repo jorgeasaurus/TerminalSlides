@@ -1,3 +1,7 @@
+function Read-TerminalPresentationKey {
+    $script:NativePresentationKeyReader.Invoke($true)
+}
+
 function Show-TerminalPresentation {
     [CmdletBinding(DefaultParameterSetName='Presentation')]
     param(
@@ -19,18 +23,15 @@ function Show-TerminalPresentation {
     $capability = Get-TerminalPresentationCapability
     if (-not $capability.Interactive -or $capability.IsRedirected -or -not $capability.AnsiSupport) {
         for ($i = 0; $i -lt $Presentation.Slides.Count; $i++) {
-            $text = Render-TerminalPresentationToString -Presentation $Presentation -SlideIndex $i -RevealStep $Presentation.Slides[$i].MaxRevealStep -PlainText -Capability $capability
+            $maximumRevealStep = Get-TerminalSlideMaximumRevealStep -Slide $Presentation.Slides[$i]
+            $text = Render-TerminalPresentationToString -Presentation $Presentation -SlideIndex $i -RevealStep $maximumRevealStep -PlainText -Capability $capability
             Write-Output $text
             if ($i -lt $Presentation.Slides.Count - 1) { Write-Output ("`n" + ('-' * 40) + "`n") }
         }
         return
     }
 
-    $slideIndex = 0
-    $revealStep = 0
-    $showNotes = $false
-    $displayMode = 'Slide'
-    $showTimer = $false
+    $session = New-TerminalPresentationSession
     $startTime = [datetime]::UtcNow
     $escAltOn = "`e[?1049h"
     $escAltOff = "`e[?1049l"
@@ -42,36 +43,12 @@ function Show-TerminalPresentation {
         else { Write-Host -NoNewline $hideCursor }
         do {
             $elapsed = [datetime]::UtcNow - $startTime
-            $rendered = Render-TerminalPresentationToString -Presentation $Presentation -SlideIndex $slideIndex -RevealStep $revealStep -ShowNotes:$showNotes -DisplayMode $displayMode -Elapsed $elapsed -ShowTimer:$showTimer -Capability $capability
+            $rendered = Render-TerminalPresentationToString -Presentation $Presentation -SlideIndex $session.SlideIndex -RevealStep $session.RevealStep -ShowNotes:$session.ShowNotes -DisplayMode $session.DisplayMode -Elapsed $elapsed -ShowTimer:$session.ShowTimer -Capability $capability
             Write-Host -NoNewline $rendered
-            $key = [Console]::ReadKey($true)
-            switch ($key.Key) {
-                'RightArrow' { if ($revealStep -lt $Presentation.Slides[$slideIndex].MaxRevealStep) { $revealStep++ } elseif ($slideIndex -lt $Presentation.Slides.Count - 1) { $slideIndex++; $revealStep = 0 } }
-                'Spacebar' { if ($revealStep -lt $Presentation.Slides[$slideIndex].MaxRevealStep) { $revealStep++ } elseif ($slideIndex -lt $Presentation.Slides.Count - 1) { $slideIndex++; $revealStep = 0 } }
-                'N' { if ($revealStep -lt $Presentation.Slides[$slideIndex].MaxRevealStep) { $revealStep++ } elseif ($slideIndex -lt $Presentation.Slides.Count - 1) { $slideIndex++; $revealStep = 0 } }
-                'PageDown' { if ($slideIndex -lt $Presentation.Slides.Count - 1) { $slideIndex++; $revealStep = 0 } }
-                'LeftArrow' { if ($revealStep -gt 0) { $revealStep-- } elseif ($slideIndex -gt 0) { $slideIndex--; $revealStep = $Presentation.Slides[$slideIndex].MaxRevealStep } }
-                'Backspace' { if ($revealStep -gt 0) { $revealStep-- } elseif ($slideIndex -gt 0) { $slideIndex--; $revealStep = $Presentation.Slides[$slideIndex].MaxRevealStep } }
-                'P' { if ($revealStep -gt 0) { $revealStep-- } elseif ($slideIndex -gt 0) { $slideIndex--; $revealStep = $Presentation.Slides[$slideIndex].MaxRevealStep } }
-                'PageUp' { if ($slideIndex -gt 0) { $slideIndex--; $revealStep = $Presentation.Slides[$slideIndex].MaxRevealStep } }
-                'Home' { $slideIndex = 0; $revealStep = 0 }
-                'End' { $slideIndex = $Presentation.Slides.Count - 1; $revealStep = $Presentation.Slides[$slideIndex].MaxRevealStep }
-                'S' { $showNotes = -not $showNotes }
-                'O' { $displayMode = if ($displayMode -eq 'Overview') { 'Slide' } else { 'Overview' } }
-                'B' { $displayMode = if ($displayMode -eq 'Blank') { 'Slide' } else { 'Blank' } }
-                'T' { $showTimer = -not $showTimer }
-                'H' { $displayMode = if ($displayMode -eq 'Help') { 'Slide' } else { 'Help' } }
-                'Escape' { break }
-                default {
-                    if ($key.KeyChar -in @('q','Q','?')) {
-                        if ($key.KeyChar -eq '?') {
-                            $displayMode = if ($displayMode -eq 'Help') { 'Slide' } else { 'Help' }
-                        }
-                        else { break }
-                    }
-                }
-            }
-        } while ($true)
+            $key = Read-TerminalPresentationKey
+            $action = ConvertTo-TerminalPresentationAction -Key $key
+            $session = Invoke-TerminalPresentationAction -Session $session -Action $action -Presentation $Presentation
+        } while ($session.IsRunning)
     }
     finally {
         Write-Host -NoNewline (Get-AnsiReset)

@@ -57,7 +57,7 @@ Describe 'Build automation' {
             Should -HaveCount 2
         $workflow | Should -Not -Match '(?m)^\s+run: Invoke-Pester'
         @([regex]::Matches($workflow, '(?m)^\s+if-no-files-found: warn\r?$')) |
-            Should -HaveCount 2
+            Should -HaveCount 3
     }
 
     It 'unloads conflicting module versions before importing pinned tools' {
