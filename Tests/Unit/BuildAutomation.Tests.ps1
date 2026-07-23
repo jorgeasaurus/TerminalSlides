@@ -12,7 +12,8 @@ Describe 'Build automation' {
             New-Item -Path $Path -ItemType Directory -Force | Out-Null
             Set-Content -LiteralPath (Join-Path $Path 'TerminalSlides.psm1') -Value ''
             New-ModuleManifest -Path (Join-Path $Path 'TerminalSlides.psd1') `
-                -RootModule 'TerminalSlides.psm1' -ModuleVersion '9.8.7'
+                -RootModule 'TerminalSlides.psm1' -ModuleVersion '9.8.7' `
+                -RequiredModules @{ ModuleName = 'UnavailablePublishDependency'; RequiredVersion = '99.0.0' }
         }
 
         function New-SchemaBuildFixture {
@@ -184,6 +185,8 @@ Describe 'Build automation' {
         $ci | Should -Match 'gh release view .*--json isDraft'
         $ci.IndexOf('Publish to PowerShell Gallery') |
             Should -BeLessThan $ci.IndexOf('Finalize GitHub release')
+        (Get-WorkflowJobBlocks -Text $ci | Where-Object Name -EQ 'release').Body |
+            Should -Not -Match 'Test-ModuleManifest'
 
         $pages | Should -Match 'npm ci'
         $pages | Should -Match 'playwright install --with-deps chromium'

@@ -13,9 +13,9 @@ if (-not $manifestPath) {
     throw "No module manifest was found in '$resolvedModulePath'."
 }
 
-$manifest = Test-ModuleManifest -Path $manifestPath
+$manifest = Import-PowerShellDataFile -Path $manifestPath
 $moduleName = [System.IO.Path]::GetFileNameWithoutExtension($manifestPath)
-$version = [version]$manifest.Version
+$version = [version]$manifest.ModuleVersion
 
 function Find-PublishedModuleVersion {
     Find-Module -Name $moduleName -RequiredVersion $version -Repository $Repository -ErrorAction SilentlyContinue

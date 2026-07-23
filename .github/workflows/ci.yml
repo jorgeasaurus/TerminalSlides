@@ -216,7 +216,6 @@ jobs:
           if ($manifest.ModuleVersion -ne $tagVersion) {
             throw "Tag version ($tagVersion) does not match module version ($($manifest.ModuleVersion))."
           }
-          Test-ModuleManifest -Path $manifestPath | Out-Null
 
       - name: Create release archive
         id: archive
