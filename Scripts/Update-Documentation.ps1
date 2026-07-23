@@ -140,14 +140,24 @@ $($parameters -join "`n")
 function New-CommandParametersXml {
     param([Parameter(Mandatory)]$Command)
 
+    $parameterSets = @($Command.ParameterSets)
     $parameters = foreach ($name in $Command.Parameters.Keys) {
         if ($name -in $commonParameters) { continue }
-        $parameter = $Command.ParameterSets.Parameters |
-            Where-Object Name -eq $name |
-            Select-Object -First 1
-        if ($parameter) {
-            New-ParameterXml -Command $Command -Parameter $parameter
+        $instances = @($parameterSets.Parameters | Where-Object Name -eq $name)
+        if ($instances.Count -eq 0) { continue }
+
+        $positions = @($instances.Position | Where-Object { $_ -ge 0 } | Sort-Object -Unique)
+        $parameter = [pscustomobject]@{
+            Name                            = $name
+            IsMandatory                     = $instances.Count -eq $parameterSets.Count -and
+                                              @($instances | Where-Object { -not $_.IsMandatory }).Count -eq 0
+            Position                        = if ($positions.Count -eq 1) { $positions[0] } else { -1 }
+            ValueFromPipeline                = @($instances | Where-Object ValueFromPipeline).Count -gt 0
+            ValueFromPipelineByPropertyName  = @($instances | Where-Object ValueFromPipelineByPropertyName).Count -gt 0
+            Aliases                          = @($instances.Aliases | Sort-Object -Unique)
+            ParameterType                    = $instances[0].ParameterType
         }
+        New-ParameterXml -Command $Command -Parameter $parameter
     }
     return $parameters -join "`n"
 }

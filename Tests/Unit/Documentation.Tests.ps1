@@ -63,6 +63,18 @@ Describe 'Generated command documentation' {
         }
     }
 
+    It 'summarizes parameter-set-specific requirements accurately' {
+        $help = Get-Help Add-SlideDiagram -Full
+        $summaryParameters = @($help.Parameters.Parameter |
+            Where-Object Name -in 'Content', 'Diagram')
+        $syntaxParameters = @($help.Syntax.SyntaxItem.Parameter |
+            Where-Object Name -in 'Content', 'Diagram')
+
+        $summaryParameters | Should -HaveCount 2
+        @($summaryParameters | Where-Object Required -eq 'false') | Should -HaveCount 2
+        @($syntaxParameters | Where-Object Required -eq 'true') | Should -HaveCount 2
+    }
+
     It 'exposes an accessible searchable command reference' {
         $index = Get-Content (Join-Path $script:RepositoryRoot 'docs/index.html') -Raw
         $clientScript = Get-Content (Join-Path $script:RepositoryRoot 'docs/script.js') -Raw
