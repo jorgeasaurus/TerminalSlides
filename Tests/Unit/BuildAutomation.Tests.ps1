@@ -176,6 +176,7 @@ Describe 'Build automation' {
     It 'keeps quality gates single-run and makes release and Pages deployment retry-safe' {
         $ci = Get-Content -LiteralPath (Join-Path $script:RepositoryRoot '.github/workflows/ci.yml') -Raw
         $pages = Get-Content -LiteralPath (Join-Path $script:RepositoryRoot '.github/workflows/pages.yml') -Raw
+        $releaseJob = Get-WorkflowJobBlocks -Text $ci | Where-Object Name -EQ 'release'
 
         @([regex]::Matches($ci, '(?m)^\s+run: \./build\.ps1\s*$')) | Should -HaveCount 1
         $ci | Should -Match 'run: \./build\.ps1 -SkipCodeCoverage -SkipScriptAnalyzer'
@@ -185,8 +186,12 @@ Describe 'Build automation' {
         $ci | Should -Match 'gh release view .*--json isDraft'
         $ci.IndexOf('Publish to PowerShell Gallery') |
             Should -BeLessThan $ci.IndexOf('Finalize GitHub release')
-        (Get-WorkflowJobBlocks -Text $ci | Where-Object Name -EQ 'release').Body |
-            Should -Not -Match 'Test-ModuleManifest'
+        $ci | Should -Match '(?s)workflow_dispatch:\s+inputs:\s+release_tag:'
+        @([regex]::Matches($ci, 'ref: \$\{\{ inputs\.release_tag \|\| github\.ref \}\}')) |
+            Should -HaveCount 6
+        $releaseJob.Body | Should -Match 'Install module dependencies'
+        $releaseJob.Body | Should -Match 'RELEASE_TAG:.*inputs\.release_tag.*github\.ref_name'
+        $releaseJob.Body | Should -Not -Match 'Test-ModuleManifest'
 
         $pages | Should -Match 'npm ci'
         $pages | Should -Match 'playwright install --with-deps chromium'
