@@ -41,11 +41,16 @@ test('the landing terminal keeps its complete frame aligned', async ({ page }) =
     const code = element.querySelector('code');
     const terminalBounds = element.getBoundingClientRect();
     const codeBounds = code.getBoundingClientRect();
+    const boxLineWidths = code.textContent
+      .split('\n')
+      .filter((line) => /^[┌│└]/u.test(line))
+      .map((line) => [...line].length);
     return {
       overflow: element.scrollWidth - element.clientWidth,
       scrollLeft: element.scrollLeft,
       leftInset: codeBounds.left - terminalBounds.left,
       rightInset: terminalBounds.right - codeBounds.right,
+      boxLineWidths,
     };
   });
 
@@ -53,6 +58,7 @@ test('the landing terminal keeps its complete frame aligned', async ({ page }) =
   expect(alignment.scrollLeft).toBe(0);
   expect(alignment.leftInset).toBeGreaterThan(0);
   expect(alignment.rightInset).toBeGreaterThan(0);
+  expect(alignment.boxLineWidths).toEqual(Array(8).fill(58));
 });
 
 test('the guides expose every command and filter the sidebar locally', async ({ page }, testInfo) => {
