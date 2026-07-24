@@ -301,6 +301,80 @@ Describe 'Native terminal image overlays' {
         Import-Module (Join-Path $script:RepositoryRoot 'TerminalSlides.psd1') -Force
     }
 
+    It 'calculates a height-bounded Sixel width and rejects invalid dimensions' {
+        InModuleScope TerminalSlides {
+            $cellSize = [pscustomobject]@{ PixelWidth = 10; PixelHeight = 20 }
+
+            Get-TerminalSixelFitWidth -ImageWidth 1200 -ImageHeight 800 `
+                -AvailableWidth 136 -AvailableHeight 25 -CellSize $cellSize |
+                Should -Be 75
+            Get-TerminalSixelFitWidth -ImageWidth 1 -ImageHeight 1000 `
+                -AvailableWidth 10 -AvailableHeight 1 -CellSize $cellSize |
+                Should -Be 0
+            {
+                Get-TerminalSixelFitWidth -ImageWidth 0 -ImageHeight 800 `
+                    -AvailableWidth 10 -AvailableHeight 5 -CellSize $cellSize
+            } | Should -Throw '*dimensions must be positive*'
+        }
+    }
+
+    It 'fits a wide Sixel image above the slide progress row' {
+        InModuleScope TerminalSlides -Parameters @{ RepositoryRoot = $script:RepositoryRoot } {
+            param($RepositoryRoot)
+            $path = Join-Path $RepositoryRoot 'Assets/presentation-team-photo.jpg'
+            $deck = New-TerminalPresentation -Title 'Native image' -Width 140 -Height 32
+            $deck | Add-TerminalSlide -Title 'Photo' -Layout ImageFocus -Content {
+                Add-SlideImage -Path $path -AltText 'Presentation team' -Region Image
+            } | Out-Null
+            $capability = [TerminalSlides.Schema.V1.TerminalCapability]@{
+                Width = 140
+                Height = 32
+                AnsiSupport = $true
+                TrueColorSupport = $true
+                Color256Support = $true
+                UnicodeSupport = $true
+                Interactive = $true
+                IsRedirected = $false
+            }
+            $pixelImage = Get-SpectreImage -ImagePath $path -Format Sixel -Force
+            $layoutPlan = Get-TerminalSlideLayoutPlan -Presentation $deck -SlideIndex 0 `
+                -RevealStep 0 -Capability $capability
+            $placement = $layoutPlan.Placements |
+                Where-Object {
+                    $_.Element.Kind -eq [TerminalSlides.Schema.V1.ElementKind]::Image
+                } |
+                Select-Object -First 1
+            $availableWidth = [Math]::Max(
+                1,
+                $placement.Region.Width - ($placement.Element.Padding * 2)
+            )
+            $availableHeight = ($placement.Region.Y + $placement.Region.Height) - $placement.StartY
+            $cellSize = [PwshSpectreConsole.Terminal.Compatibility]::GetCellSize()
+            $expectedWidth = Get-TerminalSixelFitWidth -ImageWidth $pixelImage.Width `
+                -ImageHeight $pixelImage.Height -AvailableWidth $availableWidth `
+                -AvailableHeight $availableHeight -CellSize $cellSize
+            Mock Get-SpectreImage { $pixelImage }
+
+            $overlay = Get-TerminalNativeImageOverlay -Presentation $deck -SlideIndex 0 `
+                -RevealStep 0 -DisplayMode Slide -Capability $capability -LayoutPlan $layoutPlan
+
+            $pixelImage.MaxWidth | Should -Be $expectedWidth
+            $pixelImage.MaxWidth | Should -BeLessOrEqual $availableWidth
+            $overlay | Should -Match ([regex]::Escape("`eP"))
+            $sixelHeader = [regex]::Match(
+                $overlay,
+                [regex]::Escape("`eP") + '[^"]*"1;1;(?<Width>\d+);(?<Height>\d+)'
+            )
+            $sixelHeader.Success | Should -BeTrue
+            $renderedCellHeight = [Math]::Ceiling(
+                [int]$sixelHeader.Groups['Height'].Value / $cellSize.PixelHeight
+            )
+            $renderedBottom = $placement.StartY + $renderedCellHeight - 1
+            $progressRow = $layoutPlan.Dimensions.Height - 2
+            $renderedBottom | Should -BeLessThan $progressRow
+        }
+    }
+
     It 'shares one layout plan between the cell and Sixel renderers' {
         InModuleScope TerminalSlides -Parameters @{ RepositoryRoot = $script:RepositoryRoot } {
             param($RepositoryRoot)
@@ -397,6 +471,36 @@ Describe 'Native terminal image overlays' {
             $overlay | Should -BeNullOrEmpty
             $warnings | Should -HaveCount 1
             $warnings[0].Message | Should -Match 'Sixel rendering is unavailable'
+        }
+    }
+
+    It 'preserves the fallback when an extreme aspect ratio cannot fit one cell' {
+        InModuleScope TerminalSlides -Parameters @{ RepositoryRoot = $script:RepositoryRoot } {
+            param($RepositoryRoot)
+            $path = Join-Path $RepositoryRoot 'Assets/presentation-team-photo.jpg'
+            $deck = New-TerminalPresentation -Title 'Tall image' -Width 40 -Height 18
+            $deck | Add-TerminalSlide -Title 'Photo' -Layout ImageFocus -Content {
+                Add-SlideImage -Path $path -AltText 'Tall image' -Region Image
+            } | Out-Null
+            $capability = [TerminalSlides.Schema.V1.TerminalCapability]@{
+                Width = 40
+                Height = 18
+                AnsiSupport = $true
+                Interactive = $true
+                IsRedirected = $false
+            }
+            $layoutPlan = Get-TerminalSlideLayoutPlan -Presentation $deck -SlideIndex 0 `
+                -RevealStep 0 -Capability $capability
+            $tallImage = [pscustomobject]@{ Width = 1; Height = 10000; MaxWidth = 0 }
+            Mock Get-SpectreImage { $tallImage }
+            $warnings = @()
+
+            Get-TerminalNativeImageOverlay -Presentation $deck -SlideIndex 0 `
+                -RevealStep 0 -DisplayMode Slide -Capability $capability `
+                -LayoutPlan $layoutPlan -WarningAction SilentlyContinue `
+                -WarningVariable warnings | Should -BeNullOrEmpty
+
+            $warnings[-1].Message | Should -Match 'Sixel rendering is unavailable'
         }
     }
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.2
+
+- Fixed Sixel image sizing so slide progress remains visible
+
 ## 0.3.1
 
 - Corrected the copyright year to 2026
