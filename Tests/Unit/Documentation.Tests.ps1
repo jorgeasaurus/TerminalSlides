@@ -205,6 +205,22 @@ Describe 'Generated command documentation' {
         }
     }
 
+    It 'uses a real captured slide on the landing page' {
+        $index = Get-Content (Join-Path $script:RepositoryRoot 'docs/index.html') -Raw
+        $capturePath = Join-Path $script:RepositoryRoot 'docs/theme-previews/midnight.png'
+        $bytes = [IO.File]::ReadAllBytes($capturePath)
+
+        $capturePath | Should -Exist
+        $bytes[0..7] | Should -Be @(137, 80, 78, 71, 13, 10, 26, 10)
+        [BitConverter]::ToInt32([byte[]]@($bytes[19], $bytes[18], $bytes[17], $bytes[16]), 0) |
+            Should -Be 1600
+        [BitConverter]::ToInt32([byte[]]@($bytes[23], $bytes[22], $bytes[21], $bytes[20]), 0) |
+            Should -Be 900
+        $index | Should -Match 'src="theme-previews/midnight\.png"'
+        $index | Should -Match 'alt="Captured TerminalSlides Midnight slide'
+        $index | Should -Not -Match '(?s)<section class="terminal-preview"[^>]*>.*?<pre>'
+    }
+
     It 'uses the exact demo slide photo as its social preview image' {
         $demo = Start-TerminalSlidesDemo -PassThru
         $slideImage = $demo.Slides.Elements |

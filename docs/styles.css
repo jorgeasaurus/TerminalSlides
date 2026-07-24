@@ -173,8 +173,7 @@ h1 {
 .meta { margin-top: 1rem; color: var(--muted); font-size: .82rem; }
 
 .terminal-preview {
-  container-type: inline-size;
-  max-width: 52rem;
+  max-width: 62rem;
   margin: 5rem auto 0;
   overflow: hidden;
   border: 1px solid var(--border);
@@ -183,28 +182,12 @@ h1 {
   box-shadow: 0 2rem 6rem rgba(0, 0, 0, .32);
 }
 
-.terminal-bar {
-  display: flex;
-  justify-content: space-between;
-  padding: .72rem 1rem;
-  border-bottom: 1px solid #1b293b;
-  color: #8092a8;
-  font-size: .75rem;
+.terminal-preview img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
 }
-
-.terminal-preview pre {
-  margin: 0;
-  padding: 1.4rem;
-  overflow-x: clip;
-  color: #dbe7f5;
-  font: clamp(8px, 1.9cqi, .9rem)/1.5 "SFMono-Regular", Consolas, monospace;
-  text-size-adjust: 100%;
-  -webkit-text-size-adjust: 100%;
-}
-
-.terminal-preview strong,
-.terminal-preview .accent,
-.terminal-preview .prompt { color: #5eead4; }
 
 footer {
   display: flex;

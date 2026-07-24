@@ -25,40 +25,32 @@ test('invalid saved themes do not escape the supported theme set', async ({ page
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
 });
 
-test('the landing terminal keeps its complete frame aligned', async ({ page }) => {
+test('the landing page renders a real captured slide responsively', async ({ page }) => {
   await page.goto('/');
-  await page.locator('html').evaluate((element) => {
-    element.style.fontSize = '140%';
-  });
 
   const preview = page.getByLabel('TerminalSlides example');
-  const terminal = preview.locator('pre');
+  const capture = preview.getByRole('img');
   await expect(preview).toBeVisible();
-  await terminal.evaluate((element) => {
-    element.scrollLeft = element.scrollWidth;
-  });
-  const alignment = await terminal.evaluate((element) => {
-    const code = element.querySelector('code');
-    const terminalBounds = element.getBoundingClientRect();
-    const codeBounds = code.getBoundingClientRect();
-    const boxLineWidths = code.textContent
-      .split('\n')
-      .filter((line) => /^[┌│└]/u.test(line))
-      .map((line) => [...line].length);
+  await expect(capture).toHaveAttribute('src', 'theme-previews/midnight.png');
+  const rendering = await capture.evaluate((element) => {
+    const bounds = element.getBoundingClientRect();
     return {
-      overflow: element.scrollWidth - element.clientWidth,
-      scrollLeft: element.scrollLeft,
-      leftInset: codeBounds.left - terminalBounds.left,
-      rightInset: terminalBounds.right - codeBounds.right,
-      boxLineWidths,
+      complete: element.complete,
+      naturalWidth: element.naturalWidth,
+      naturalHeight: element.naturalHeight,
+      renderedWidth: bounds.width,
+      renderedHeight: bounds.height,
+      viewportWidth: document.documentElement.clientWidth,
+      pageOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
     };
   });
 
-  expect(alignment.overflow).toBeLessThanOrEqual(1);
-  expect(alignment.scrollLeft).toBe(0);
-  expect(alignment.leftInset).toBeGreaterThan(0);
-  expect(alignment.rightInset).toBeGreaterThan(0);
-  expect(alignment.boxLineWidths).toEqual(Array(8).fill(58));
+  expect(rendering.complete).toBeTruthy();
+  expect(rendering.naturalWidth).toBe(1600);
+  expect(rendering.naturalHeight).toBe(900);
+  expect(rendering.renderedWidth).toBeLessThanOrEqual(rendering.viewportWidth);
+  expect(rendering.renderedWidth / rendering.renderedHeight).toBeCloseTo(16 / 9, 2);
+  expect(rendering.pageOverflow).toBeLessThanOrEqual(1);
 });
 
 test('the guides expose every command and filter the sidebar locally', async ({ page }, testInfo) => {
