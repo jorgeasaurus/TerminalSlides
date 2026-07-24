@@ -28,6 +28,34 @@ function New-TerminalSpectreRenderOptions {
     )
 }
 
+function Get-TerminalSixelFitWidth {
+    param(
+        [Parameter(Mandatory)][int]$ImageWidth,
+        [Parameter(Mandatory)][int]$ImageHeight,
+        [Parameter(Mandatory)][int]$AvailableWidth,
+        [Parameter(Mandatory)][int]$AvailableHeight,
+        [object]$CellSize
+    )
+
+    if (-not $CellSize) {
+        $CellSize = [PwshSpectreConsole.Terminal.Compatibility]::GetCellSize()
+    }
+    if ($ImageWidth -le 0 -or $ImageHeight -le 0 -or
+        $CellSize.PixelWidth -le 0 -or $CellSize.PixelHeight -le 0) {
+        throw 'Sixel image and terminal cell dimensions must be positive.'
+    }
+
+    $heightLimitedPixelWidth = [Math]::Floor(
+        ([double]$AvailableHeight * $CellSize.PixelHeight * $ImageWidth) / $ImageHeight
+    )
+    $heightLimitedCellWidth = [Math]::Floor(
+        $heightLimitedPixelWidth / $CellSize.PixelWidth
+    )
+    $fitWidth = [int][Math]::Min($AvailableWidth, $heightLimitedCellWidth)
+    if ($fitWidth -lt 1) { return 0 }
+    return $fitWidth
+}
+
 function Get-TerminalNativeImageOverlay {
     [CmdletBinding()]
     param(
@@ -67,12 +95,18 @@ function Get-TerminalNativeImageOverlay {
 
             $image = Get-SpectreImage -ImagePath $resolvedPath -MaxWidth $availableWidth `
                 -Format Sixel -ErrorAction Stop
-            if ($image.PSObject.Properties.Name -contains 'MaxWidth') {
-                $image.MaxWidth = $availableWidth
+            $fitWidth = Get-TerminalSixelFitWidth -ImageWidth $image.Width `
+                -ImageHeight $image.Height -AvailableWidth $availableWidth `
+                -AvailableHeight $availableHeight
+            if ($fitWidth -lt 1) {
+                throw 'The image aspect ratio cannot fit inside the available terminal cells.'
             }
-            $options = New-TerminalSpectreRenderOptions -Width $availableWidth `
+            if ($image.PSObject.Properties.Name -contains 'MaxWidth') {
+                $image.MaxWidth = $fitWidth
+            }
+            $options = New-TerminalSpectreRenderOptions -Width $fitWidth `
                 -Height $availableHeight -Capability $Capability
-            $rawImage = (@($image.Render($options, $availableWidth)).Text -join '').TrimEnd("`r", "`n")
+            $rawImage = (@($image.Render($options, $fitWidth)).Text -join '').TrimEnd("`r", "`n")
             if (-not $rawImage.Contains("`eP")) {
                 throw 'The image renderer did not return a Sixel control stream.'
             }
