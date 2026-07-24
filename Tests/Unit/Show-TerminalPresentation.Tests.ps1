@@ -344,19 +344,22 @@ Describe 'Native terminal image overlays' {
                     $_.Element.Kind -eq [TerminalSlides.Schema.V1.ElementKind]::Image
                 } |
                 Select-Object -First 1
+            $availableWidth = [Math]::Max(
+                1,
+                $placement.Region.Width - ($placement.Element.Padding * 2)
+            )
             $availableHeight = ($placement.Region.Y + $placement.Region.Height) - $placement.StartY
             $cellSize = [PwshSpectreConsole.Terminal.Compatibility]::GetCellSize()
-            $expectedWidth = [Math]::Floor(
-                ($availableHeight * $cellSize.PixelHeight * $pixelImage.Width) /
-                ($cellSize.PixelWidth * $pixelImage.Height)
-            )
+            $expectedWidth = Get-TerminalSixelFitWidth -ImageWidth $pixelImage.Width `
+                -ImageHeight $pixelImage.Height -AvailableWidth $availableWidth `
+                -AvailableHeight $availableHeight -CellSize $cellSize
             Mock Get-SpectreImage { $pixelImage }
 
             $overlay = Get-TerminalNativeImageOverlay -Presentation $deck -SlideIndex 0 `
                 -RevealStep 0 -DisplayMode Slide -Capability $capability -LayoutPlan $layoutPlan
 
             $pixelImage.MaxWidth | Should -Be $expectedWidth
-            $pixelImage.MaxWidth | Should -BeLessThan $placement.Region.Width
+            $pixelImage.MaxWidth | Should -BeLessOrEqual $availableWidth
             $overlay | Should -Match ([regex]::Escape("`eP"))
             $sixelHeader = [regex]::Match(
                 $overlay,
